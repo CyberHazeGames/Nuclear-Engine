@@ -178,10 +178,10 @@ namespace Nuclear
 
 				Graphics::ShaderPipelineBakingDesc bakedesc;
 				bakedesc.pVariantsFactory = &Graphics::GraphicsModule::Get().GetDefaultShaderPipelineVariantFactory();
-				bakedesc.mPreVariantPipelineCreationCallback = ([](Diligent::GraphicsPipelineStateCreateInfo& PSOCreateInfo) {
+				bakedesc.mPreVariantPipelineCreationCallback = ([this](Diligent::GraphicsPipelineStateCreateInfo& PSOCreateInfo) {
 					PSOCreateInfo.GraphicsPipeline.NumRenderTargets = 1;
-					PSOCreateInfo.GraphicsPipeline.RTVFormats[0] = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc().ColorBufferFormat;
-					PSOCreateInfo.GraphicsPipeline.DSVFormat = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc().DepthBufferFormat;
+					PSOCreateInfo.GraphicsPipeline.RTVFormats[0] = PostFXRT.GetDesc().ColorTexFormat;
+					PSOCreateInfo.GraphicsPipeline.DSVFormat = Diligent::TEX_FORMAT_UNKNOWN;
 					});
 
 
@@ -209,7 +209,7 @@ namespace Nuclear
 				PSOCreateInfo.GraphicsPipeline.NumRenderTargets = 1;
 				PSOCreateInfo.GraphicsPipeline.RTVFormats[0] = TEX_FORMAT_RGBA16_FLOAT;
 				PSOCreateInfo.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = false;
-				PSOCreateInfo.GraphicsPipeline.DSVFormat = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc().DepthBufferFormat;
+				PSOCreateInfo.GraphicsPipeline.DSVFormat = TEX_FORMAT_UNKNOWN;
 				PSOCreateInfo.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 				PSOCreateInfo.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = true;
 				PSOCreateInfo.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;

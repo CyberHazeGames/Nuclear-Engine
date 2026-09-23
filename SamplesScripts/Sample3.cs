@@ -13,6 +13,8 @@ namespace Samples
             Logger.Info("Script Start id " + ID);
         }
 
+        bool GPressed = false;
+
         public override void OnUpdate(float td)
         {
             //Logger.Info("Update Time Delta "+ td);
@@ -20,9 +22,10 @@ namespace Samples
             //bool result = HasComponent<Nuclear.Components.EntityInfoComponent>();
             //Logger.Info("Result " + result);
 
-            if(Input.IsKeyPressed(Input.KeyCode.G))
+            if(Input.IsKeyPressed(Input.KeyCode.G) && !GPressed)
             {
                 Logger.Info("G KeyPressed ");
+                GPressed = true;
             }
         
         }
