@@ -14,9 +14,8 @@ namespace Nuclear
 			~Script();
 
 
-			Scripting::ScriptFunction mConstructor = nullptr;
-			Scripting::ScriptFunction mOnStartMethod = nullptr;
-			Scripting::ScriptFunction mOnUpdateMethod = nullptr;
+			std::string mOnStartMethod;
+			std::string mOnUpdateMethod;
 
 			Scripting::ScriptingClass mClass;
 

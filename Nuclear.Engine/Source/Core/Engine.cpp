@@ -29,11 +29,12 @@
 #include <Assets/AssetLibrary.h>
 
 //Dependencies Linking
-#pragma comment(lib,"assimp-vc143-mt.lib")
+// Assimp's toolset-specific library name is selected by the project.
 
 #pragma comment(lib,"freetype.lib")
 #pragma comment(lib,"msdf-atlas-gen.lib")
-#pragma comment(lib,"msdfgen.lib")
+#pragma comment(lib,"msdfgen-core.lib")
+#pragma comment(lib,"msdfgen-ext.lib")
 
 //Diligent Linking
 #pragma comment(lib,"Diligent-Common.lib")
@@ -52,6 +53,9 @@
 
 #pragma comment(lib,"Diligent-GraphicsAccessories.lib")
 #pragma comment(lib,"Diligent-GraphicsTools.lib")
+#pragma comment(lib,"Diligent-GraphicsEngineD3DBase.lib")
+#pragma comment(lib,"Diligent-GraphicsEngineOpenGL-static.lib")
+#pragma comment(lib,"Diligent-GraphicsEngineVk-static.lib")
 #pragma comment(lib,"Diligent-BasicPlatform.lib")
 #pragma comment(lib,"Diligent-Win32Platform.lib")
 
@@ -123,20 +127,7 @@ namespace Nuclear
 			}
 			if (desc.AutoInitScriptingModule)
 			{
-				namespace fs = std::filesystem;
-
 				Scripting::ScriptingModuleDesc scdesc;
-				fs::path monopath = std::filesystem::current_path().string() + "/mono";
-
-				if (!fs::exists(monopath))
-				{
-					monopath = std::filesystem::current_path().string() + "/../mono";
-					if (!fs::exists(monopath))
-					{
-						NUCLEAR_FATAL("[Engine] Failed to find mono runtime assemblies directory!");
-					}
-				}
-				scdesc.mMonoRuntimeDir = monopath.string();
 				scdesc.mScriptingCoreAssemblyDir = std::filesystem::current_path().string();
 				scdesc.mClientAssemblyPath = std::filesystem::current_path().string() + "/" + desc.mScriptingClientDllName;
 				scdesc.mClientNamespace = desc.mScriptingAssemblyNamespace;
@@ -203,6 +194,7 @@ namespace Nuclear
 		void Engine::Shutdown()
 		{
 			NUCLEAR_INFO("[Engine] Shutting Down Engine.");
+			Scripting::ScriptingModule::Get().Shutdown();
 			Assets::AssetLibrary::Get().Clear();
 			pClient = nullptr;
 			Threading::ThreadingModule::Get().Shutdown();

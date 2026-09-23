@@ -161,7 +161,7 @@ public:
 		auto bobmodel = GetAssetManager().Import<Assets::Mesh>("@CommonAssets@/Models/Bob/boblampclean.md5mesh", desc);
 
 		//Load vampire Model
-		auto vampiremodel = GetAssetManager().Import<Assets::Mesh>("@CommonAssets@/Models/vampire/vampire_a_lusth.fbx", desc);
+		auto vampiremodel = GetAssetManager().Import<Assets::Mesh>("@CommonAssets@/Models/vampire/dancing_vampire.dae", desc);
 
 		BobAnimator.Initialize(bobmodel->GetImportedAnimations());
 		VampireAnimator.Initialize(vampiremodel->GetImportedAnimations());

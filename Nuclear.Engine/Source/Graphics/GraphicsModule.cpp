@@ -752,12 +752,7 @@ namespace Nuclear
 			case RENDER_DEVICE_TYPE_D3D11:
 			{
 				EngineD3D11CreateInfo EngineCI;
-#if ENGINE_DLL
-				GetEngineFactoryD3D11Type GetEngineFactoryD3D11 = nullptr;
-				// Load the dll and import GetEngineFactoryD3D11() function
-				LoadGraphicsEngineD3D11(GetEngineFactoryD3D11);
-#endif
-				auto* pFactoryD3D11 = GetEngineFactoryD3D11();
+				auto* pFactoryD3D11 = LoadAndGetEngineFactoryD3D11();
 				pFactoryD3D11->SetMessageCallback(DiligentMassageCallback);
 
 				EngineCI.GraphicsAPIVersion = { 11, 0 };
@@ -775,15 +770,10 @@ namespace Nuclear
 
 			case RENDER_DEVICE_TYPE_D3D12:
 			{
-#if ENGINE_DLL
-				GetEngineFactoryD3D12Type GetEngineFactoryD3D12 = nullptr;
-				// Load the dll and import GetEngineFactoryD3D12() function
-				LoadGraphicsEngineD3D12(GetEngineFactoryD3D12);
-#endif
 				EngineD3D12CreateInfo EngineCI;
 				EngineCI.GraphicsAPIVersion = { 11, 0 };
 
-				auto* pFactoryD3D12 = GetEngineFactoryD3D12();
+				auto* pFactoryD3D12 = LoadAndGetEngineFactoryD3D12();
 				pFactoryD3D12->SetMessageCallback(DiligentMassageCallback);
 
 				pEngineFactory = pFactoryD3D12;
@@ -799,13 +789,7 @@ namespace Nuclear
 			case RENDER_DEVICE_TYPE_GL:
 			{
 
-#if ENGINE_DLL
-				// Declare function pointer
-				GetEngineFactoryOpenGLType GetEngineFactoryOpenGL = nullptr;
-				// Load the dll and import GetEngineFactoryOpenGL() function
-				LoadGraphicsEngineOpenGL(GetEngineFactoryOpenGL);
-#endif
-				auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
+				auto* pFactoryOpenGL = LoadAndGetEngineFactoryOpenGL();
 				pFactoryOpenGL->SetMessageCallback(DiligentMassageCallback);
 
 				pEngineFactory = pFactoryOpenGL;
@@ -820,14 +804,9 @@ namespace Nuclear
 
 			case RENDER_DEVICE_TYPE_VULKAN:
 			{
-#if ENGINE_DLL
-				GetEngineFactoryVkType GetEngineFactoryVk = nullptr;
-				// Load the dll and import GetEngineFactoryVk() function
-				LoadGraphicsEngineVk(GetEngineFactoryVk);
-#endif
 				EngineVkCreateInfo EngVkCreateInfo;
 
-				auto* pFactoryVk = GetEngineFactoryVk();
+				auto* pFactoryVk = LoadAndGetEngineFactoryVk();
 				pFactoryVk->SetMessageCallback(DiligentMassageCallback);
 
 				pEngineFactory = pFactoryVk;

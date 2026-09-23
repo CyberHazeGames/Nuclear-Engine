@@ -143,7 +143,7 @@ TextureLoaderImpl::TextureLoaderImpl(IReferenceCounters*        pRefCounters,
 
     if (TexLoadInfo.IsSRGB)
     {
-        m_TexDesc.Format = TexFormatToSRGB(m_TexDesc.Format);
+        m_TexDesc.Format = UnormFormatToSRGB(m_TexDesc.Format);
     }
 }
 

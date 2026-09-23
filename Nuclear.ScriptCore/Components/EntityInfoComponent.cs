@@ -1,28 +1,25 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+using Nuclear.Managed.Interop;
 
 namespace Nuclear.Components
 {
-
     public class EntityInfoComponent : Component
     {
-        //TODO
-        //Entity ParentEntity;
-        //ECS.Transform Transform;
-
-
         public string Name
         {
             get => GetName_Native(Entity.ID);
             set => SetName_Native(Entity.ID, value);
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern string GetName_Native(uint entity);
+        public static unsafe string GetName_Native(uint entity)
+        {
+            using NativeString result = NativeCalls.EntityGetName(entity);
+            return result.ToString() ?? string.Empty;
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void SetName_Native(uint entity, string name);
-
+        public static unsafe void SetName_Native(uint entity, string name)
+        {
+            using NativeString text = name ?? string.Empty;
+            NativeCalls.EntitySetName(entity, text);
+        }
     }
-
 }

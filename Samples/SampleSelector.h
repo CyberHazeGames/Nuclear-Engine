@@ -40,7 +40,7 @@ public:
 
 		GetAssetManager().Import<Assets::Mesh>("@CommonAssets@/Models/Bob/boblampclean.md5mesh");
 
-		GetAssetManager().Import<Assets::Mesh>("@CommonAssets@/Models/vampire/vampire_a_lusth.fbx");
+		GetAssetManager().Import<Assets::Mesh>("@CommonAssets@/Models/vampire/dancing_vampire.dae");
 
 		Assets::MeshImportingDesc sponza_desc;
 		sponza_desc.pMaterialShader = PBR;

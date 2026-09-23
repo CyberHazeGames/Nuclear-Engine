@@ -1,7 +1,10 @@
 #pragma once
 #include <NE_Common.h>
-#include <Scripting/MonoDeclarations.h>
+#include <memory>
 #include <string>
+
+namespace Nuclear::Managed { class ManagedObject; }
+
 namespace Nuclear
 {
 	namespace Scripting
@@ -10,16 +13,14 @@ namespace Nuclear
 		class NEAPI ScriptingObject
 		{
 		public:
-			_MonoObject* GetMonoObjectPtr() const;
-
-			ScriptFunction GetVirtualMethod(const std::string& methodname);
-			_MonoObject* CallMethod(ScriptFunction method, void** params = nullptr);
-
+			bool IsValid() const;
+			void CallMethod(const std::string& method);
+			void CallMethod(const std::string& method, float value);
 			ScriptingClass* GetScriptingClass();
 		private:
 			friend class ScriptingClass;
-			Uint32 mHandle = 0;
-			ScriptingClass* pParent;
+			std::shared_ptr<Nuclear::Managed::ManagedObject> pObject;
+			ScriptingClass* pParent = nullptr;
 		};
 	}
 }

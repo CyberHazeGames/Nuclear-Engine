@@ -2,6 +2,7 @@
 #include <NE_Common.h>
 #include <Scripting/ScriptingObject.h>
 #include <string>
+namespace Nuclear::Managed { class Type; }
 namespace Nuclear
 {
 	namespace Scripting
@@ -45,15 +46,12 @@ namespace Nuclear
 		class NEAPI ScriptingClass
 		{
 		public:
-			ScriptingObject CreateObject();
-
-			// method name only "Load()"
-			ScriptFunction GetMethod(const std::string& methodname);
-
-			_MonoClass* GetClassPtr();
+			ScriptingObject CreateObject(Uint32 entityID = 0);
+			Nuclear::Managed::Type* GetClassPtr();
 		private:
 			friend class ScriptingModule;
-			_MonoClass* pClass = nullptr;
+			Nuclear::Managed::Type* pClass = nullptr;
+			std::weak_ptr<void> mRuntimeLifetime;
 			ScriptingClassCreationDesc mDesc;
 		};
 	}

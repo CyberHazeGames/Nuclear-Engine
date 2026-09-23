@@ -1,47 +1,33 @@
-﻿using System.Runtime.CompilerServices;
+using Nuclear.Managed.Interop;
 
 namespace Nuclear.Utilities
 {
     public class Logger
     {
-        public static void Trace(object message)
+        public static unsafe void Trace(object message)
         {
-            LoggerTrace_Native(message);
+            using NativeString text = message?.ToString() ?? string.Empty;
+            NativeCalls.LoggerTrace(text);
         }
-
-        public static void Info(object message)
+        public static unsafe void Info(object message)
         {
-            LoggerInfo_Native(message);
+            using NativeString text = message?.ToString() ?? string.Empty;
+            NativeCalls.LoggerInfo(text);
         }
-
-        public static void Warn(object message)
+        public static unsafe void Warn(object message)
         {
-            LoggerWarn_Native(message);
-        }     
-
-        public static void Error(object message)
-        {
-            LoggerError_Native(message);
+            using NativeString text = message?.ToString() ?? string.Empty;
+            NativeCalls.LoggerWarn(text);
         }
-
-        public static void Fatal(object message)
+        public static unsafe void Error(object message)
         {
-            LoggerFatal_Native(message);
+            using NativeString text = message?.ToString() ?? string.Empty;
+            NativeCalls.LoggerError(text);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void LoggerInfo_Native(object message);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void LoggerWarn_Native(object message);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void LoggerTrace_Native(object message);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void LoggerError_Native(object message);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void LoggerFatal_Native(object message);
+        public static unsafe void Fatal(object message)
+        {
+            using NativeString text = message?.ToString() ?? string.Empty;
+            NativeCalls.LoggerFatal(text);
+        }
     }
 }

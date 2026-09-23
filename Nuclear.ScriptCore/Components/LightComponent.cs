@@ -1,47 +1,22 @@
-﻿using Nuclear.ECS;
-using System;
-using System.Runtime.CompilerServices;
-
-
 namespace Nuclear.Components
 {
     public class LightComponent : Component
     {
-        public Graphics.Color Color
+        public unsafe Graphics.Color Color
         {
             get
             {
-                GetColor_Native(Entity.ID, out Graphics.Color result);
+                Graphics.Color result;
+                NativeCalls.LightGetColor(Entity.ID, &result);
                 return result;
             }
-
-            set
-            {
-                SetColor_Native(Entity.ID, ref value);
-            }
+            set { NativeCalls.LightSetColor(Entity.ID, &value); }
         }
 
-        public float Intensity
+        public unsafe float Intensity
         {
-            get
-            {                
-                return GetIntensity_Native(Entity.ID);
-            }
-
-            set
-            {
-                SetIntensity_Native(Entity.ID, ref value);
-            }
+            get { return NativeCalls.LightGetIntensity(Entity.ID); }
+            set { NativeCalls.LightSetIntensity(Entity.ID, value); }
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void GetColor_Native(uint id, out Graphics.Color outcolor);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SetColor_Native(uint id, ref Graphics.Color incolor);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float GetIntensity_Native(uint id);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SetIntensity_Native(uint id, ref float infloat);
     }
 }

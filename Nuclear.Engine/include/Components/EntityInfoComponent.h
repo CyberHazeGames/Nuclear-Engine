@@ -1,7 +1,7 @@
 #pragma once
 #include <ECS/Transform.h>
 #include <ECS/Entity.h>
-
+#include <string>
 namespace Nuclear
 {
 	namespace Components

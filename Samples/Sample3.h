@@ -26,7 +26,7 @@ public:
 	void SetupAssets()
 	{
 
-		script = GetAssetManager().Import<Assets::Script>("@CurrentPath@/../Textures/SamplesScripts/Sample3.cs");
+		script = GetAssetManager().Import<Assets::Script>("@CurrentPath@/../SamplesScripts/Sample3.cs");
 
 		GetAssetManager().LoadFolder("@Assets@/Textures/PBR/RustedIron/");
 		GetAssetManager().LoadFolder("@Assets@/Textures/PBR/Plastic/");

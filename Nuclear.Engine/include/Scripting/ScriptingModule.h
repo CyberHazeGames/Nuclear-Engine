@@ -6,13 +6,10 @@
 #include <Scripting/ScriptingRegistry.h>
 #include <Assets/Script.h>
 #include <Core/Path.h>
+#include <memory>
 
 namespace Nuclear
 {
-	namespace Systems
-	{
-		class ScriptingModule;
-	}
 	namespace Scripting
 	{
 		struct ScriptingAssemblyCreationDesc
@@ -22,11 +19,8 @@ namespace Nuclear
 		};
 		struct ScriptingModuleDesc
 		{
-			//Directory only
-			Core::Path mMonoRuntimeDir;
+			// Directory containing ScriptCore and the Nuclear.Managed runtime files.
 			Core::Path mScriptingCoreAssemblyDir;
-
-			//Path + filename
 			std::string mClientNamespace = "ClientScripts";
 			Core::Path mClientAssemblyPath;
 			bool mAutoInitClientAssembly = true;
@@ -34,56 +28,27 @@ namespace Nuclear
 		class NEAPI ScriptingModule : public Core::EngineModule<ScriptingModule>
 		{
 			friend class Core::EngineModule<ScriptingModule>;
+			friend class ScriptingClass;
 		public:
+			~ScriptingModule();
 			bool Initialize(const ScriptingModuleDesc& desc);
-
 			void Shutdown() override;
-
-			bool CreateScriptAsset(Assets::Script* script,const std::string& scriptclassname);
-
-			ScriptingClass CreateScriptClass(Scripting::ScriptingAssembly* assembly, const ScriptingClassCreationDesc& desc);
-
-			bool CreateScriptingAssembly(Scripting::ScriptingAssembly* assembly, const ScriptingAssemblyCreationDesc& desc);
-
-			std::string ToStdString(_MonoString* monostring);
-
-			_MonoDomain* GetDomain();
+			bool IsInitialized() const;
+			bool CreateScriptAsset(Assets::Script* script, const std::string& scriptclassname);
+			ScriptingClass CreateScriptClass(ScriptingAssembly* assembly, const ScriptingClassCreationDesc& desc);
+			bool CreateScriptingAssembly(ScriptingAssembly* assembly, const ScriptingAssemblyCreationDesc& desc);
 			ScriptingAssembly* GetCoreAssembly();
 			ScriptingAssembly* GetClientAssembly();
 			ScriptingRegistry& GetRegistry();
 		private:
 			ScriptingModule();
-
 			void InitBindings();
-			void InitCoreAssembly();
-			ScriptingClass ScriptCoreClass;
-
+			void TrackObject(const std::shared_ptr<Nuclear::Managed::ManagedObject>& object);
+			struct Runtime;
+			std::unique_ptr<Runtime> pRuntime;
 			ScriptingAssembly mCoreAssembly;
 			ScriptingAssembly mClientAssembly;
-
 			ScriptingRegistry mRegistry;
-
-			_MonoDomain* pRuntimeDomain;
 		};
-
-
-		//class NEAPI ScriptingModule
-		//{
-		//public:
-		//	bool Initialize();
-
-		//	void Shutdown();
-
-		//	bool CreateScript(Assets::Script* script, const std::string& scriptcode, Scripting::ScriptingModule* scriptmodule);
-
-		//	void CreateScriptingModule(Scripting::ScriptingModule* scriptmodule, ScriptModuleCreationDesc desc);
-
-		//	bool BuildScriptingModule(Scripting::ScriptingModule* scriptmodule);
-
-		//	ScriptingContext* GetContext();
-		//private:
-		//	_MonoDomain* pRuntimeDomain;
-
-		//};
 	}
 }

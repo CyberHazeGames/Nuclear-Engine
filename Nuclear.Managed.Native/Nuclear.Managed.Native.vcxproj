@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A41A4632-548E-4E22-844C-4BA4CDA251CF}</ProjectGuid>
+    <ProjectName>Nuclear.Managed.Native</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Release'">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(MSBuildThisFileDirectory)..\Bin\$(Configuration)X64\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\Build\Nuclear.Managed.Native\$(Configuration)\</IntDir>
+    <TargetName>Nuclear.Managed.Native</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles>ManagedPCH.hpp</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;$(MSBuildThisFileDirectory)Source;$(MSBuildThisFileDirectory)ThirdParty\NetCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary Condition="'$(Configuration)' == 'Debug'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)' == 'Release'">MultiThreadedDLL</RuntimeLibrary>
+      <Optimization Condition="'$(Configuration)' == 'Debug'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)' == 'Release'">MaxSpeed</Optimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Assembly.cpp" />
+    <ClCompile Include="Source\Attribute.cpp" />
+    <ClCompile Include="Source\DotnetServices.cpp" />
+    <ClCompile Include="Source\FieldInfo.cpp" />
+    <ClCompile Include="Source\GC.cpp" />
+    <ClCompile Include="Source\HostInstance.cpp" />
+    <ClCompile Include="Source\ManagedObject.cpp" />
+    <ClCompile Include="Source\Memory.cpp" />
+    <ClCompile Include="Source\MethodInfo.cpp" />
+    <ClCompile Include="Source\PropertyInfo.cpp" />
+    <ClCompile Include="Source\String.cpp" />
+    <ClCompile Include="Source\StringHelper.cpp" />
+    <ClCompile Include="Source\Type.cpp" />
+    <ClCompile Include="Source\TypeCache.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Nuclear\Managed\Array.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\Assembly.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\Attribute.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\Core.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\DotnetServices.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\FieldInfo.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\GC.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\HostInstance.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\ManagedObject.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\Memory.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\MessageLevel.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\MethodInfo.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\PropertyInfo.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\StableVector.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\String.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\StringHelper.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\Type.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\TypeCache.hpp" />
+    <ClInclude Include="include\Nuclear\Managed\Utility.hpp" />
+    <ClInclude Include="Source\HostFXRErrorCodes.hpp" />
+    <ClInclude Include="Source\HostFXRDiscovery.hpp" />
+    <ClInclude Include="Source\ManagedFunctions.hpp" />
+    <ClInclude Include="Source\ManagedPCH.hpp" />
+    <ClInclude Include="Source\Verify.hpp" />
+    <ClInclude Include="ThirdParty\NetCore\coreclr_delegates.h" />
+    <ClInclude Include="ThirdParty\NetCore\hostfxr.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

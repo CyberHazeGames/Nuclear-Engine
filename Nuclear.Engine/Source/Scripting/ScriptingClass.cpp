@@ -1,40 +1,33 @@
+#include "ManagedRuntime.h"
 #include <Scripting/ScriptingClass.h>
 #include <Scripting/ScriptingModule.h>
+#include <Nuclear/Managed/Type.hpp>
 #include <Utilities/Logger.h>
 
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
-#include <mono/metadata/appdomain.h>
 namespace Nuclear
 {
 	namespace Scripting
 	{
-		ScriptingObject ScriptingClass::CreateObject()
+		ScriptingObject ScriptingClass::CreateObject(Uint32 entityID)
 		{
 			ScriptingObject result;
-
-			MonoObject* instance = mono_object_new(ScriptingModule::Get().GetDomain(), pClass);
-
-			if (!instance)
-			{
-				NUCLEAR_ERROR("[ScriptingClass : {0}] Failed Create object C# class!", mDesc.mClassName);
+			if (mRuntimeLifetime.expired() || !ScriptingModule::Get().IsInitialized() || !pClass || !*pClass)
 				return result;
-			}
 
-			mono_runtime_object_init(instance);
-			result.mHandle = mono_gchandle_new(instance, false);
+			result.pObject = std::make_shared<Nuclear::Managed::ManagedObject>(pClass->CreateInstance());
+			if (!result.pObject->IsValid())
+			{
+				NUCLEAR_ERROR("[ScriptingClass] Failed to construct {0}", mDesc.mFullName);
+				return {};
+			}
+			result.pParent = this;
+			ScriptingModule::Get().TrackObject(result.pObject);
+			result.pObject->InvokeMethod("BindEntity", entityID);
 			return result;
 		}
-		ScriptFunction ScriptingClass::GetMethod(const std::string& methodname)
+		Nuclear::Managed::Type* ScriptingClass::GetClassPtr()
 		{
-			MonoMethodDesc* methodDesc = mono_method_desc_new((mDesc.mClassName + "::" + methodname).c_str(), false);
-			return mono_method_desc_search_in_class(methodDesc, pClass);
+			return mRuntimeLifetime.expired() ? nullptr : pClass;
 		}
-		_MonoClass* ScriptingClass::GetClassPtr()
-		{
-			return pClass;
-		}
-
 	}
 }

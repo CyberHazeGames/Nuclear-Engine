@@ -1,49 +1,39 @@
+#include "ManagedRuntime.h"
 #include <Scripting/ScriptingRegistry.h>
 #include <Scripting/ScriptingAssembly.h>
-#include <Components/Components.h>
-#include <Utilities/Logger.h>
-
-#include <mono/metadata/reflection.h>
-
-#define RegisterEngineComponent(Type, image)                                                                    \
-    {                                                                                              \
-        MonoType* monotype = mono_reflection_type_from_name((char*)"Nuclear.Components." #Type, image);     \
-        if (monotype)                                                                                  \
-        {                                                                                          \
-            Uint32 id = mono_type_get_type(monotype);                                                    \
-            mAddComponentFuncs[monotype] = [](ECS::Entity& entity) { entity.AddComponent<Type>(); };     \
-           	mHasComponentFuncs[monotype] = [](ECS::Entity& entity) { return entity.HasComponent<Type>(); }; \
-        }                                                                                          \
-        else                                                                                       \
-        {                                                                                          \
-           NUCLEAR_ERROR("[ScriptingRegistry] " #Type" has no C# equivalent");                     \
-        }                                                                                          \
-    }
+#include <Components/EntityInfoComponent.h>
+#include <Components/LightComponent.h>
+#include <Nuclear/Managed/Assembly.hpp>
 
 namespace Nuclear
 {
 	namespace Scripting
 	{
-		ScriptingRegistry::ScriptingRegistry()
+		template<typename T>
+		void RegisterComponent(ScriptingRegistry& registry, ScriptingAssembly* assembly, const char* name)
 		{
-			mAddComponentFuncs.clear();
-			mHasComponentFuncs.clear();
-		}
-		ScriptingRegistry::~ScriptingRegistry()
-		{
-			mAddComponentFuncs.clear();
-			mHasComponentFuncs.clear();
+			auto& type = assembly->GetAssembly()->GetLocalType(name);
+			if (!type)
+				return;
+			registry.mAddComponentFuncs[type.GetTypeId()] = [](ECS::Entity& entity) {
+				if (!entity.HasComponent<T>())
+					entity.AddComponent<T>();
+			};
+			registry.mHasComponentFuncs[type.GetTypeId()] = [](ECS::Entity& entity) {
+				return entity.HasComponent<T>();
+			};
 		}
 		void ScriptingRegistry::RegisterEngineComponents(ScriptingAssembly* coreassembly)
 		{
-			using namespace Components;
-			RegisterEngineComponent(EntityInfoComponent, coreassembly->GetImage());
-			RegisterEngineComponent(CameraComponent, coreassembly->GetImage());
-			RegisterEngineComponent(MeshComponent, coreassembly->GetImage());
-			RegisterEngineComponent(ColliderComponent, coreassembly->GetImage());
-			RegisterEngineComponent(RigidBodyComponent, coreassembly->GetImage());
-			RegisterEngineComponent(LightComponent, coreassembly->GetImage());
-			RegisterEngineComponent(ScriptComponent, coreassembly->GetImage());
+			Clear();
+			// Register only components with managed wrappers.
+			RegisterComponent<Components::EntityInfoComponent>(*this, coreassembly, "Nuclear.Components.EntityInfoComponent");
+			RegisterComponent<Components::LightComponent>(*this, coreassembly, "Nuclear.Components.LightComponent");
+		}
+		void ScriptingRegistry::Clear()
+		{
+			mAddComponentFuncs.clear();
+			mHasComponentFuncs.clear();
 		}
 	}
 }

@@ -287,12 +287,10 @@ namespace Nuclear.Platform
             NUM_SCANCODES = 512
         };
 
-        public static bool IsKeyPressed(KeyCode keycode)
+        public static unsafe bool IsKeyPressed(KeyCode keycode)
         {
-            return IsKeyPressed_Native(keycode);
+            return NativeCalls.IsKeyPressed(keycode) != 0;
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool IsKeyPressed_Native(KeyCode key);
     }
 }

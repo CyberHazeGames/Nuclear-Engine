@@ -1,12 +1,10 @@
-#include "Scripting/ScriptingBindings.h"
-#include "Scripting/ScriptingModule.h"
-#include "Core/Scene.h"
-#include <mono/metadata/debug-helpers.h>
-#include <mono/metadata/appdomain.h>
+#include "ManagedRuntime.h"
+#include <Scripting/ScriptingBindings.h>
+#include <Scripting/ScriptingModule.h>
+#include <Core/Scene.h>
 #include <Utilities/Logger.h>
-#include <ECS/Entity.h>
-#include <Core/Engine.h>
 #include <Components/LightComponent.h>
+#include <Components/EntityInfoComponent.h>
 
 namespace Nuclear
 {
@@ -14,76 +12,79 @@ namespace Nuclear
 	{
 		namespace Bindings
 		{
-			void Utilities_Logger_Trace(_MonoObject* message)
-			{
-				MonoString* str = mono_object_to_string(message, NULL);
-				CLIENT_TRACE(ScriptingModule::Get().ToStdString(str));
-			}
-			void Utilities_Logger_Info(_MonoObject* message)
-			{
-				MonoString* str = mono_object_to_string(message, NULL);
-				CLIENT_INFO(ScriptingModule::Get().ToStdString(str));
-			}
-			void Utilities_Logger_Warn(_MonoObject* message)
-			{
-				MonoString* str = mono_object_to_string(message, NULL);
-				CLIENT_WARN(ScriptingModule::Get().ToStdString(str));
-			}
-			void Utilities_Logger_Error(_MonoObject* message)
-			{
-				MonoString* str = mono_object_to_string(message, NULL);
-				CLIENT_ERROR(ScriptingModule::Get().ToStdString(str));
-			}
-			void Utilities_Logger_FatalError(_MonoObject* message)
-			{
-				MonoString* str = mono_object_to_string(message, NULL);
-				CLIENT_FATAL(ScriptingModule::Get().ToStdString(str));
-			}
-			void ECS_Entity_AddComponent(Uint32 id, void* type)
-			{
-				ECS::Entity entity(Core::Scene::Get().GetRegistry(), id);
+			void Utilities_Logger_Trace(Nuclear::Managed::String message) { CLIENT_TRACE("{0}", std::string(message)); }
+			void Utilities_Logger_Info(Nuclear::Managed::String message) { CLIENT_INFO("{0}", std::string(message)); }
+			void Utilities_Logger_Warn(Nuclear::Managed::String message) { CLIENT_WARN("{0}", std::string(message)); }
+			void Utilities_Logger_Error(Nuclear::Managed::String message) { CLIENT_ERROR("{0}", std::string(message)); }
+			void Utilities_Logger_FatalError(Nuclear::Managed::String message) { CLIENT_FATAL("{0}", std::string(message)); }
 
-				MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
-				ScriptingModule::Get().GetRegistry().mAddComponentFuncs[monoType](entity);				
-			}
-			bool ECS_Entity_HasComponent(Uint32 id, void* type)
+			Uint32 ECS_Entity_AddComponent(Uint32 id, Nuclear::Managed::ReflectionType type)
 			{
-				ECS::Entity entity(Core::Scene::Get().GetRegistry(), id);
-
-				MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
-				bool result = ScriptingModule::Get().GetRegistry().mHasComponentFuncs[monoType](entity);
-				return result;
+				auto& registry = Core::Scene::Get().GetRegistry();
+				auto& functions = ScriptingModule::Get().GetRegistry().mAddComponentFuncs;
+				auto function = functions.find(type.m_TypeID);
+				if (!registry.valid(static_cast<entt::entity>(id)) || function == functions.end())
+					return false;
+				ECS::Entity entity(registry, id);
+				function->second(entity);
+				return true;
 			}
-
-			bool Platform_Input_IsKeyPressed(Platform::Input::KeyCode key)
+			Uint32 ECS_Entity_HasComponent(Uint32 id, Nuclear::Managed::ReflectionType type)
+			{
+				auto& registry = Core::Scene::Get().GetRegistry();
+				auto& functions = ScriptingModule::Get().GetRegistry().mHasComponentFuncs;
+				auto function = functions.find(type.m_TypeID);
+				if (!registry.valid(static_cast<entt::entity>(id)) || function == functions.end())
+					return false;
+				ECS::Entity entity(registry, id);
+				return function->second(entity);
+			}
+			Nuclear::Managed::String Components_EntityInfoComponent_GetName(Uint32 id)
+			{
+				auto& registry = Core::Scene::Get().GetRegistry();
+				auto entity = static_cast<entt::entity>(id);
+				auto info = registry.valid(entity) ? registry.try_get<Components::EntityInfoComponent>(entity) : nullptr;
+				return Nuclear::Managed::String::New(info ? info->mName : "");
+			}
+			void Components_EntityInfoComponent_SetName(Uint32 id, Nuclear::Managed::String name)
+			{
+				auto& registry = Core::Scene::Get().GetRegistry();
+				auto entity = static_cast<entt::entity>(id);
+				auto info = registry.valid(entity) ? registry.try_get<Components::EntityInfoComponent>(entity) : nullptr;
+				if (info)
+					info->mName = std::string(name);
+			}
+			Uint32 Platform_Input_IsKeyPressed(Platform::Input::KeyCode key)
 			{
 				return Platform::Input::Get().IsKeyPressed(key);
 			}
-
+			static Components::LightComponent* GetLight(Uint32 id)
+			{
+				auto& registry = Core::Scene::Get().GetRegistry();
+				auto entity = static_cast<entt::entity>(id);
+				return registry.valid(entity) ? registry.try_get<Components::LightComponent>(entity) : nullptr;
+			}
 			void Components_LightComponent_GetColor(Uint32 id, Graphics::Color* outcolor)
 			{
-				ECS::Entity entity(Core::Scene::Get().GetRegistry(), id);
-				*outcolor = entity.GetComponent<Components::LightComponent>().GetColor();
+				auto light = GetLight(id);
+				if (outcolor)
+					*outcolor = light ? light->GetColor() : Graphics::Color(0.0f);
 			}
-
 			void Components_LightComponent_SetColor(Uint32 id, Graphics::Color* incolor)
 			{
-				ECS::Entity entity(Core::Scene::Get().GetRegistry(), id);
-				entity.GetComponent<Components::LightComponent>().SetColor(*incolor);
+				if (auto light = GetLight(id); light && incolor)
+					light->SetColor(*incolor);
 			}
-
 			float Components_LightComponent_GetIntensity(Uint32 id)
 			{
-				ECS::Entity entity(Core::Scene::Get().GetRegistry(), id);
-				return entity.GetComponent<Components::LightComponent>().GetIntensity();
+				auto light = GetLight(id);
+				return light ? light->GetIntensity() : 0.0f;
 			}
-
-			void Components_LightComponent_SetIntensity(Uint32 id, float inIntensity)
+			void Components_LightComponent_SetIntensity(Uint32 id, float intensity)
 			{
-				ECS::Entity entity(Core::Scene::Get().GetRegistry(), id);
-				entity.GetComponent<Components::LightComponent>().SetIntensity(inIntensity);
+				if (auto light = GetLight(id))
+					light->SetIntensity(intensity);
 			}
-		
 		}
 	}
 }

@@ -63,7 +63,7 @@ List is W.I.P (There are lots of features not written here)
 <details>
 	<summary><b>Scripting</b></summary>
 
-	- C# Scripting through Mono
+	- C# scripting on .NET 10 through Nuclear.Managed
 	- Section W.I.P
 
 </details>
@@ -78,7 +78,7 @@ If you wish to build with another compiler/platform, please note that:
 
 ## Windows
 
-* Visual Studio 2022 or newer is required if you wish to build the solution directly
+* Visual Studio 2026 with the MSVC v145 toolset is required if you wish to build the solution directly
 * Clone repo & submodules
 * Run **RunCmakeForDependencies.bat**
 * Compile Assimp & Diligent & OpenAL-soft found in External/CmakeProjects
@@ -105,7 +105,7 @@ Consoles are planned but not a priority now...
 | Freeimage | submodule | Built with their provided build-tools |
 | Freetype | submodule | Built with their provided build-tools |
 | msdf-atlas-gen | submodule | Built with their provided build-tools |
-| Mono | External | Put headers in External/mono |
+| [Nuclear.Managed](Nuclear.Managed/README.md) | Included source fork of Coral (MIT) | Nuclear.Managed and Nuclear.Managed.Native projects; requires the x64 .NET 10 runtime and .NET 10 SDK |
 | SDL2 | External | Put headers in External/SDL/include |
 | libsndfile | External | Put the .lib in your Build Output directory |
 | spdlog | included | Built with the engine |

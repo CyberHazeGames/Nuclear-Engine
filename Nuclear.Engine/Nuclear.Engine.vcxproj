@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -21,14 +21,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -44,6 +44,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <AssimpLibraryName Condition="Exists('$(MSBuildProjectDirectory)\..\Bin\$(Configuration)X64\assimp-vc145-mt.lib')">assimp-vc145-mt.lib</AssimpLibraryName>
+    <AssimpLibraryName Condition="'$(AssimpLibraryName)' == ''">assimp-vc143-mt.lib</AssimpLibraryName>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\Bin\DebugX64\</OutDir>
@@ -61,8 +65,8 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNICODE;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
@@ -75,8 +79,8 @@
     <Link>
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Bin\DebugX64\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Bin\DebugX64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>..\Bin\$(Configuration)X64\assimp-vc145-mt.lib;shell32.lib;ole32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -86,8 +90,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;WIN32;NDEBUG;_WINDOWS;_USRDLL;UNICODE;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;PLATFORM_WIN32;NUCLEARENGINE_EXPORTS</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;WIN32;NDEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;PLATFORM_WIN32;NUCLEARENGINE_EXPORTS;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <DebugInformationFormat>None</DebugInformationFormat>
@@ -102,8 +106,8 @@
       <OptimizeReferences>
       </OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Bin\ReleaseX64\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Bin\ReleaseX64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>..\Bin\$(Configuration)X64\assimp-vc145-mt.lib;shell32.lib;ole32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -169,7 +173,7 @@
     <ClInclude Include="include\Platform\Input.h" />
     <ClInclude Include="include\Utilities\DataBlob.h" />
     <ClInclude Include="include\Utilities\Logger.h" />
-    <ClInclude Include="include\Scripting\MonoDeclarations.h" />
+    <ClInclude Include="Source\Scripting\ManagedRuntime.h" />
     <ClInclude Include="include\Scripting\ScriptingBindings.h" />
     <ClInclude Include="include\Scripting\ScriptingClass.h" />
     <ClInclude Include="include\Scripting\ScriptingRegistry.h" />
@@ -735,6 +739,11 @@
     <None Include="include\Parsers\impl\unicode.inl" />
     <None Include="include\Parsers\impl\yaml_formatter.inl" />
     <None Include="Source\Rendering\RenderPasses\XeGTAO\XeGTAO.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nuclear.Managed.Native\Nuclear.Managed.Native.vcxproj">
+      <Project>{A41A4632-548E-4E22-844C-4BA4CDA251CF}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

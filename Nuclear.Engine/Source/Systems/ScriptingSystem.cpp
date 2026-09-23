@@ -20,10 +20,8 @@ namespace Nuclear
 			auto scriptasset = script.GetScriptAsset();
 			if (scriptasset)
 			{
-				script.GetScriptingObject() = scriptasset->mClass.CreateObject();
 				Uint32 entityID = static_cast<Uint32>(entity);
-				void* param[] = { &entityID };
-				script.GetScriptingObject().CallMethod(scriptasset->mConstructor, param);
+				script.GetScriptingObject() = scriptasset->mClass.CreateObject(entityID);
 				script.GetScriptingObject().CallMethod(scriptasset->mOnStartMethod);
 			}
 
@@ -63,8 +61,7 @@ namespace Nuclear
 				auto pScriptasset = script.GetScriptAsset();
 				if (pScriptasset)
 				{
-					void* args[] = { &dt };
-					script.GetScriptingObject().CallMethod(pScriptasset->mOnUpdateMethod, args);
+					script.GetScriptingObject().CallMethod(pScriptasset->mOnUpdateMethod, dt);
 				}
 
 			}

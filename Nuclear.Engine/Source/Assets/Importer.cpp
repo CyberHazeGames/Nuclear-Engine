@@ -97,7 +97,11 @@ namespace Nuclear
 				TextureDesc desc;
 				TextureData data;
 
-				Importers::TextureImporter::Get().Load(Path.GetRealPath(), &desc, Desc);
+				if (!Importers::TextureImporter::Get().Load(Path.GetRealPath(), &desc, Desc))
+				{
+					NUCLEAR_ERROR("[Importer] Failed To Decode Texture: '{0}'", Path.GetInputPath());
+					return Fallbacks::FallbacksModule::Get().GetDefaultBlackImage();
+				}
 
 				auto result = &AssetLibrary::Get().mImportedTextures.AddAsset();
 				if (Desc.mCommonOptions.mAssetName == "")
@@ -519,7 +523,11 @@ namespace Nuclear
 			{
 				fullname = desc.mScriptFullName;
 			}
-			Scripting::ScriptingModule::Get().CreateScriptAsset(result, fullname);
+			if (!Scripting::ScriptingModule::Get().CreateScriptAsset(result, fullname))
+			{
+				NUCLEAR_ERROR("[Assets] Failed to import script: {0}", fullname);
+				return nullptr;
+			}
 
 			result->mState = IAsset::State::Loaded;
 			NUCLEAR_TRACE("[Assets] Imported: {0} ", Path.GetInputPath());

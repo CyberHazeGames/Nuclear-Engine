@@ -47,6 +47,9 @@ copy External\PhysX\physx\bin\win.x86_64.vc142.mt\release\PhysXExtensions_static
 copy External\PhysX\physx\bin\win.x86_64.vc142.mt\release\PhysXPvdSDK_static_64.lib	   Bin\ReleaseX64
 
 ::Diligent Debug
+copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineD3DBase\Debug\Diligent-GraphicsEngineD3DBase.lib Bin\DebugX64
+copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineOpenGL\Debug\Diligent-GraphicsEngineOpenGL-static.lib Bin\DebugX64
+copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineVulkan\Debug\Diligent-GraphicsEngineVk-static.lib Bin\DebugX64
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineD3D11\Debug\GraphicsEngineD3D11_64d.lib          	 Bin\DebugX64
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineD3D12\Debug\GraphicsEngineD3D12_64d.lib          	 Bin\DebugX64
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineOpenGL\Debug\GraphicsEngineOpenGL_64d.lib          Bin\DebugX64
@@ -73,6 +76,9 @@ copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineOpenGL\Debug\Graphic
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineVulkan\Debug\GraphicsEngineVk_64d.dll          	     Bin\DebugX64
 
 ::Diligent Release
+copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineD3DBase\Release\Diligent-GraphicsEngineD3DBase.lib Bin\ReleaseX64
+copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineOpenGL\Release\Diligent-GraphicsEngineOpenGL-static.lib Bin\ReleaseX64
+copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineVulkan\Release\Diligent-GraphicsEngineVk-static.lib Bin\ReleaseX64
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineD3D11\Release\GraphicsEngineD3D11_64r.lib          	 Bin\ReleaseX64
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineD3D12\Release\GraphicsEngineD3D12_64r.lib          	 Bin\ReleaseX64
 copy External\CmakeProjects\Diligent\Graphics\GraphicsEngineOpenGL\Release\GraphicsEngineOpenGL_64r.lib          Bin\ReleaseX64

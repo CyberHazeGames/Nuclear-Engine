@@ -1,50 +1,33 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
+using System;
 
 namespace Nuclear.ECS
 {
-
     public class Entity
     {
         public uint ID { get; private set; }
+        protected Entity() { }
 
-        protected Entity() { ID = 0; }
+        // Called by the host after construction and before OnStart.
+        internal void BindEntity(uint id) { ID = id; }
 
-        internal Entity(uint id)
+        public virtual void OnStart() { }
+        public virtual void OnUpdate(float deltaTime) { }
+
+        public unsafe T AddComponent<T>() where T : Components.Component, new()
         {
-            ID = id;
+            if (NativeCalls.AddComponent(ID, typeof(T)) == 0)
+                throw new InvalidOperationException($"Cannot add {typeof(T).FullName} to entity {ID}.");
+            return new T { Entity = this };
         }
 
-        ~Entity() { }
-
-        public T AddComponent<T>() where T : Components.Component, new()
+        public unsafe bool HasComponent<T>() where T : Components.Component, new()
         {
-            AddComponent_Native(ID, typeof(T));
-            T component = new T();
-            component.Entity = this;
-            return component;
-        }
-
-        public bool HasComponent<T>() where T : Components.Component, new()
-        {
-            return HasComponent_Native(ID, typeof(T));
+            return NativeCalls.HasComponent(ID, typeof(T)) != 0;
         }
 
         public T GetComponent<T>() where T : Components.Component, new()
         {
-            if (HasComponent<T>())
-            {
-                T component = new T();
-                component.Entity = this;
-                return component;
-            }
-            return null;
+            return HasComponent<T>() ? new T { Entity = this } : null;
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void AddComponent_Native(uint id, Type type);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool HasComponent_Native(uint id, Type type);
     }
 }
