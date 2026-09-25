@@ -6,6 +6,8 @@ namespace Nuclear
 {
 	namespace Fallbacks
 	{
+		FallbacksModule& FallbacksModule::Get() { static FallbacksModule instance; return instance; }
+		bool FallbacksModule::OnInitialize() { return Initialize(); }
 		FallbacksModule::FallbacksModule()
 		{
 			DefaultBlackImage = nullptr;

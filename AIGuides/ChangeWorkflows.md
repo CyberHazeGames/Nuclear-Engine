@@ -10,6 +10,15 @@ Use these as change-impact maps, then read the current implementation. They do n
 4. Check umbrella headers such as `NuclearEngine.h`, `Components/Components.h`, or `Systems/Systems.h` when the new type belongs in the public aggregate API.
 5. Build the affected project and consumers when public declarations or binary interfaces changed.
 
+## Add or change an engine module or audio backend
+
+- Derive from `EngineModule` and register through `Engine::GetModuleManager()` before `Start`; declare dependencies by registered name. The manager owns `unique_ptr` registrations and borrows references to longer-lived singleton modules.
+- For an external DLL, export `GetNuclearEngineModulePlugin` with the factory table in [EngineModulePlugin.h](../Nuclear.Engine/include/Core/EngineModulePlugin.h). Match the engine architecture, runtime, and C++ ABI; the DLL's destroy callback must destroy each instance it created.
+- Use `ModuleManager::LoadPlugin(path)` for an explicit DLL or `EngineStartupDesc.mModulePluginDirectory` for a startup scan of `Nuclear.Module.*.dll` files. Load before `StartModules`, and keep module dependencies valid across DLLs.
+- Keep load, initialize, and start phases paired with stop, shutdown, and unload. Initialization failure should leave the module safe for unload; the manager rolls back previously completed phases in reverse dependency order.
+- For audio, implement `AudioBackend` in a separate DLL project and export `GetNuclearAudioBackendPlugin` with the structure in `AudioBackendPlugin.h`. Keep its name equal to the suffix in `Nuclear.Audio.<name>.dll`, and build against the matching engine configuration.
+- Add the project to the solution, build it with the engine, and exercise module loading or audio playback in a sample with the selected backend.
+
 ## Add or change an ECS component/system
 
 - Use `include/Components` and `Source/Components` for component declarations/implementation; system counterparts live in `include/Systems` and `Source/Systems`.
@@ -24,13 +33,13 @@ Use these as change-impact maps, then read the current implementation. They do n
 Keep these pieces consistent:
 
 1. Public C# wrapper and `delegate* unmanaged[Cdecl]` fields in `Nuclear.ScriptCore/NativeCalls.cs`.
-2. C++ declarations in `ScriptingBindings.h` and implementation in `ScriptingBindings.cpp`.
-3. Exact `Nuclear.NativeCalls` field names registered through Nuclear.Managed in `ScriptingModule::InitBindings`.
+2. C++ declarations in `Plugins/Scripting.CSharp/Public/ScriptingBindings.h` and implementation in `Plugins/Scripting.CSharp/Source/ScriptingBindings.cpp`.
+3. Exact `Nuclear.NativeCalls` field names registered through Nuclear.Managed in `CSharpScriptingBackend::InitBindings`.
 4. For component add/has support, matching managed type names and `ScriptingRegistry::RegisterEngineComponents` entries.
 5. Native/managed value widths, struct layout, argument passing (`ref`/`out` versus pointers/value parameters), object lifetime, and entity validity.
 6. Explicit managed project compile entries, then rebuild ScriptCore and SamplesScripts and verify the DLLs in the runtime working directory are current.
 
-Use 32-bit integers for boolean callback results, dispose temporary Nuclear.Managed strings on the allocating side, and keep scalar/pointer parameters consistent. Light intensity is passed by value; colors use pointers to four sequential floats. Run `BuildSupport/TestScripting.ps1` after interop changes. Scripts override `Entity.OnStart()` and `Entity.OnUpdate(float)`.
+Use 32-bit integers for boolean callback results, dispose temporary Nuclear.Managed strings on the allocating side, and keep scalar/pointer parameters consistent. Light intensity is passed by value; colors use pointers to four sequential floats. Build ScriptCore and the C# backend after interop changes, then exercise the affected calls in a sample. Scripts override `Entity.OnStart()` and `Entity.OnUpdate(float)`.
 
 ## Change asset import/load behavior
 

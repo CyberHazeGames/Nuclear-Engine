@@ -28,7 +28,11 @@ namespace Nuclear
 		}
 		void Window::Destroy()
 		{
-			SDL_DestroyWindow(pWindow);
+			if (pWindow)
+			{
+				SDL_DestroyWindow(pWindow);
+				pWindow = nullptr;
+			}
 		}
 
 		void Window::Display(bool show)

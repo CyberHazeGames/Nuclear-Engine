@@ -517,7 +517,7 @@ namespace Nuclear
 			std::string fullname = "";
 			if (desc.mClassNameFromPath)
 			{
-				fullname = Scripting::ScriptingModule::Get().GetClientAssembly()->GetNamespaceName() + '.' + Path.GetFilename(true);
+				fullname = Scripting::ScriptingModule::Get().GetClientNamespace() + '.' + Path.GetFilename(true);
 			}
 			else
 			{

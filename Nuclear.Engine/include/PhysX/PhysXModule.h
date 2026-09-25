@@ -24,10 +24,11 @@ namespace Nuclear
 
 		};
 
-		class NEAPI PhysXModule : public Core::EngineModule<PhysXModule>
+		class NEAPI PhysXModule : public Core::EngineModule
 		{
-			friend class Core::EngineModule<PhysXModule>;
 		public:	
+			static PhysXModule& Get();
+			bool OnInitialize() override;
 
 			bool Initialize(const PhysXModuleDesc& desc);
 			void Shutdown() override;

@@ -1,0 +1,7 @@
+{
+  "Name": "Audio.OpenAL",
+  "Version": "0.1.0",
+  "Modules": [{ "Name": "Audio.OpenAL", "Type": "Runtime" }],
+  "Dependencies": ["Audio"],
+  "Binary": "Nuclear.Audio.OpenAL.dll"
+}

@@ -49,6 +49,8 @@ namespace Nuclear
 			};
 
 		}
+		GraphicsModule& GraphicsModule::Get() { static GraphicsModule instance; return instance; }
+		bool GraphicsModule::OnInitialize() { return Initialize(mStartupDesc); }
 		bool GraphicsModule::Initialize(const GraphicsModuleDesc& GraphicsDesc)
 		{
 			//Initialize Context

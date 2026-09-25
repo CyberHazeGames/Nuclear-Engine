@@ -26,6 +26,8 @@ namespace Nuclear
 			}
 		}gErrorCallback;
 
+		PhysXModule& PhysXModule::Get() { static PhysXModule instance; return instance; }
+		bool PhysXModule::OnInitialize() { return Initialize({}); }
 		PhysXModule::PhysXModule()
 		{
 

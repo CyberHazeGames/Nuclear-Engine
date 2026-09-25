@@ -18,6 +18,7 @@ namespace Nuclear
 		class NEAPI AudioBackend
 		{
 		public:
+			virtual ~AudioBackend() = default;
 			virtual bool Initialize() = 0;
 
 			virtual void Shutdown() = 0;

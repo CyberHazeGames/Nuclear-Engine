@@ -1,54 +1,34 @@
 #pragma once
 #include <Core/EngineModule.h>
-#include <Scripting/ScriptingAssembly.h>
-#include <Scripting/ScriptingClass.h>
-#include <Scripting/ScriptingObject.h>
-#include <Scripting/ScriptingRegistry.h>
+#include <Scripting/IScriptingBackend.h>
 #include <Assets/Script.h>
-#include <Core/Path.h>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-namespace Nuclear
+namespace Nuclear::Scripting
 {
-	namespace Scripting
+	class NEAPI ScriptingModule : public Core::EngineModule
 	{
-		struct ScriptingAssemblyCreationDesc
-		{
-			std::string mNamespaceName;
-			Core::Path mPath;
-		};
-		struct ScriptingModuleDesc
-		{
-			// Directory containing ScriptCore and the Nuclear.Managed runtime files.
-			Core::Path mScriptingCoreAssemblyDir;
-			std::string mClientNamespace = "ClientScripts";
-			Core::Path mClientAssemblyPath;
-			bool mAutoInitClientAssembly = true;
-		};
-		class NEAPI ScriptingModule : public Core::EngineModule<ScriptingModule>
-		{
-			friend class Core::EngineModule<ScriptingModule>;
-			friend class ScriptingClass;
-		public:
-			~ScriptingModule();
-			bool Initialize(const ScriptingModuleDesc& desc);
-			void Shutdown() override;
-			bool IsInitialized() const;
-			bool CreateScriptAsset(Assets::Script* script, const std::string& scriptclassname);
-			ScriptingClass CreateScriptClass(ScriptingAssembly* assembly, const ScriptingClassCreationDesc& desc);
-			bool CreateScriptingAssembly(ScriptingAssembly* assembly, const ScriptingAssemblyCreationDesc& desc);
-			ScriptingAssembly* GetCoreAssembly();
-			ScriptingAssembly* GetClientAssembly();
-			ScriptingRegistry& GetRegistry();
-		private:
-			ScriptingModule();
-			void InitBindings();
-			void TrackObject(const std::shared_ptr<Nuclear::Managed::ManagedObject>& object);
-			struct Runtime;
-			std::unique_ptr<Runtime> pRuntime;
-			ScriptingAssembly mCoreAssembly;
-			ScriptingAssembly mClientAssembly;
-			ScriptingRegistry mRegistry;
-		};
-	}
+	public:
+		static ScriptingModule& Get();
+		void SetStartupDesc(const ScriptingModuleDesc& desc) { mStartupDesc = desc; }
+		bool OnInitialize() override;
+		~ScriptingModule();
+		bool RegisterBackend(std::unique_ptr<IScriptingBackend> backend);
+		bool UnregisterBackend(std::string_view name);
+		IScriptingBackend* FindBackend(std::string_view name) const;
+		std::vector<std::string> GetBackendNames() const;
+		bool Initialize(const ScriptingModuleDesc& desc);
+		void Shutdown() override;
+		bool IsInitialized() const;
+		bool CreateScriptAsset(Assets::Script* script, const std::string& scriptclassname);
+		const std::string& GetClientNamespace() const;
+	private:
+		ScriptingModule() = default;
+		ScriptingModuleDesc mStartupDesc{};
+		std::unordered_map<std::string, std::unique_ptr<IScriptingBackend>> mBackends;
+		IScriptingBackend* pActiveBackend = nullptr;
+	};
 }

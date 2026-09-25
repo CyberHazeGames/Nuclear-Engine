@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{44F36FE4-4FFE-4C8D-9948-92BD43F94C93}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Nuclear.Scripting.CSharp</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries><PlatformToolset>v145</PlatformToolset><CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v145</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>..\..\Bin\$(Configuration)X64\</OutDir>
+    <IntDir>Build\$(Configuration)X64\</IntDir>
+    <TargetName>Nuclear.Scripting.CSharp</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader><WarningLevel>Level3</WarningLevel><LanguageStandard>stdcpp20</LanguageStandard><RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Public;..\..\Nuclear.Engine\include;..\..\Nuclear.Managed.Native\include;..\..\External\;..\..\External\Assimp\include;..\..\External\CmakeProjects\Assimp\include;..\..\External\PhysX\;..\..\External\PhysX\pxshared\include;..\..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4103;4251</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader><WarningLevel>Level3</WarningLevel><LanguageStandard>stdcpp20</LanguageStandard><RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;WIN32;NDEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Public;..\..\Nuclear.Engine\include;..\..\Nuclear.Managed.Native\include;..\..\External\;..\..\External\Assimp\include;..\..\External\CmakeProjects\Assimp\include;..\..\External\PhysX\;..\..\External\PhysX\pxshared\include;..\..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4103;4251</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\CSharpScriptingBackend.h" />
+    <ClInclude Include="Public\ScriptingAssembly.h" />
+    <ClInclude Include="Public\ScriptingBindings.h" />
+    <ClInclude Include="Public\ScriptingRegistry.h" />
+    <ClInclude Include="Source\ManagedRuntime.h" />
+    <ClCompile Include="Source\CSharpScriptingBackend.cpp" />
+    <ClCompile Include="Source\ScriptingAssembly.cpp" />
+    <ClCompile Include="Source\ScriptingBindings.cpp" />
+    <ClCompile Include="Source\ScriptingRegistry.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

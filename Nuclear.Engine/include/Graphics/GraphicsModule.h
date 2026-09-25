@@ -28,10 +28,12 @@ namespace Nuclear
 	}
 	namespace Graphics
 	{
-		class NEAPI GraphicsModule : public Core::EngineModule<GraphicsModule>
+		class NEAPI GraphicsModule : public Core::EngineModule
 		{
-			friend class Core::EngineModule<GraphicsModule>;
 		public:
+			static GraphicsModule& Get();
+			void SetStartupDesc(const GraphicsModuleDesc& desc) { mStartupDesc = desc; }
+			bool OnInitialize() override;
 			bool Initialize(const GraphicsModuleDesc& desc);
 			void Shutdown() override;
 
@@ -116,6 +118,7 @@ namespace Nuclear
 			GraphicsModule();
 
 		private:
+			GraphicsModuleDesc mStartupDesc{};
 			Diligent::IRenderDevice* pDevice;
 			Diligent::IDeviceContext* pContext;
 			Diligent::ISwapChain* pSwapChain;

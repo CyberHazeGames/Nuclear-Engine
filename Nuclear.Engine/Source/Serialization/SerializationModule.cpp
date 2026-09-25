@@ -34,6 +34,7 @@ namespace Nuclear
 
 			return "false";
 		}
+		SerializationModule& SerializationModule::Get() { static SerializationModule instance; return instance; }
 		void SerializationModule::Shutdown()
 		{
 		}

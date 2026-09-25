@@ -9,7 +9,7 @@ namespace Nuclear
 	namespace Audio
 	{
 
-		class NEAPI OpenALBackend : public AudioBackend
+		class OpenALBackend : public AudioBackend
 		{
 		public:
 			OpenALBackend();

@@ -55,6 +55,8 @@ namespace Nuclear
                 if (pMasterContext != NULL)
                     alcDestroyContext(pMasterContext);
                 alcCloseDevice(pDevice);
+                pMasterContext = nullptr;
+                pDevice = nullptr;
 
                 NUCLEAR_ERROR("[OpenALBackend] Could not set a context!");
                 return false;
@@ -75,18 +77,18 @@ namespace Nuclear
 		}
         void OpenALBackend::Shutdown()
         {
-            ALCdevice* device;
-            ALCcontext* ctx;
-
-            ctx = alcGetCurrentContext();
-            if (ctx == NULL)
-                return;
-
-            device = alcGetContextsDevice(ctx);
-
-            alcMakeContextCurrent(NULL);
-            alcDestroyContext(ctx);
-            alcCloseDevice(device);
+            if (pMasterContext)
+            {
+                if (alcGetCurrentContext() == pMasterContext)
+                    alcMakeContextCurrent(NULL);
+                alcDestroyContext(pMasterContext);
+                pMasterContext = nullptr;
+            }
+            if (pDevice)
+            {
+                alcCloseDevice(pDevice);
+                pDevice = nullptr;
+            }
         }
 
         ALenum GetFormat(Uint32 channels, Uint32 bits)

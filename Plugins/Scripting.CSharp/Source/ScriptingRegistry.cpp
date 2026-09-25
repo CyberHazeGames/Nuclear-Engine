@@ -1,6 +1,6 @@
 #include "ManagedRuntime.h"
-#include <Scripting/ScriptingRegistry.h>
-#include <Scripting/ScriptingAssembly.h>
+#include "../Public/ScriptingRegistry.h"
+#include "../Public/ScriptingAssembly.h"
 #include <Components/EntityInfoComponent.h>
 #include <Components/LightComponent.h>
 #include <Nuclear/Managed/Assembly.hpp>

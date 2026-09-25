@@ -21,10 +21,10 @@ namespace Nuclear
 			return Assets::AssetType::Unknown;
 		}*/
 
-		class NEAPI SerializationModule : public Core::EngineModule<SerializationModule>
+		class NEAPI SerializationModule : public Core::EngineModule
 		{
-			friend class Core::EngineModule<SerializationModule>;
 		public:
+			static SerializationModule& Get();
 			void Shutdown() override;
 
 			SerializationModule(const SerializationModule&) = delete;

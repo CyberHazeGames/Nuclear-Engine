@@ -8,6 +8,7 @@ Start with the owning row, read the declaration and implementation, then search 
 | --- | --- | --- |
 | Public engine API | [NuclearEngine.h](../Nuclear.Engine/include/NuclearEngine.h), [NE_Common.h](../Nuclear.Engine/include/NE_Common.h), [NE_Compiler.h](../Nuclear.Engine/include/NE_Compiler.h) | Aggregate includes, integer aliases, coordinate flags, `NEAPI` |
 | Engine lifecycle | [Engine.h](../Nuclear.Engine/include/Core/Engine.h), [Engine.cpp](../Nuclear.Engine/Source/Core/Engine.cpp) | `EngineStartupDesc`, `Start`, `LoadClient`, `MainLoop`, `EndClient`, `Shutdown` |
+| Module lifecycle and DLLs | [EngineModule.h](../Nuclear.Engine/include/Core/EngineModule.h), [EngineModulePlugin.h](../Nuclear.Engine/include/Core/EngineModulePlugin.h), [ModuleManager.h](../Nuclear.Engine/include/Core/ModuleManager.h), [ModuleManager.cpp](../Nuclear.Engine/Source/Core/ModuleManager.cpp) | Shared base, owned/borrowed/DLL registration, dependency resolution, phased startup, reverse shutdown and DLL unloading |
 | Client extension point | [Client.h](../Nuclear.Engine/include/Core/Client.h), [Client.cpp](../Nuclear.Engine/Source/Core/Client.cpp), [SampleBase.h](../Samples/SampleBase.h) | Lifecycle, input/resize callbacks, shared scene/asset access |
 | Sample executable | [Main.cpp](../Samples/Main.cpp), [SampleSelector.h](../Samples/SampleSelector.h) | Startup paths, managed assembly name, sample selection, asset-library import buttons |
 | Scene and persistence | [Scene.h](../Nuclear.Engine/include/Core/Scene.h), [Scene.cpp](../Nuclear.Engine/Source/Core/Scene.cpp) | Entity helpers, registry, main camera, `SaveScene` / `LoadScene` |
@@ -51,13 +52,14 @@ Start with the owning row, read the declaration and implementation, then search 
 
 | Topic | Primary source | Follow-up |
 | --- | --- | --- |
-| .NET hosting | [ScriptingModule.cpp](../Nuclear.Engine/Source/Scripting/ScriptingModule.cpp), [ScriptingAssembly.cpp](../Nuclear.Engine/Source/Scripting/ScriptingAssembly.cpp), [Nuclear.Managed.Native build](../Nuclear.Managed.Native/Nuclear.Managed.Native.vcxproj) | Nuclear.Managed host/context, `Initialize`, `CreateScriptingAssembly`, `InitBindings`, managed handle cleanup |
+| Scripting extension point | [IScriptingBackend.h](../Nuclear.Engine/include/Scripting/IScriptingBackend.h), [ScriptingModule.cpp](../Nuclear.Engine/Source/Scripting/ScriptingModule.cpp), [C# project](../Plugins/Scripting.CSharp/Nuclear.Scripting.CSharp.vcxproj), [Lua scaffold](../Plugins/Scripting.Lua/README.md) | Backend registration/selection, generic script handles, static C# link; Lua is not registered |
+| .NET hosting | [CSharpScriptingBackend.cpp](../Plugins/Scripting.CSharp/Source/CSharpScriptingBackend.cpp), [ScriptingAssembly.cpp](../Plugins/Scripting.CSharp/Source/ScriptingAssembly.cpp), [Nuclear.Managed.Native build](../Nuclear.Managed.Native/Nuclear.Managed.Native.vcxproj) | Nuclear.Managed host/context, `Initialize`, assembly loading, `InitBindings`, managed handle cleanup |
 | .NET bridge fork | [HostInstance.hpp](../Nuclear.Managed.Native/include/Nuclear/Managed/HostInstance.hpp), [HostInstance.cpp](../Nuclear.Managed.Native/Source/HostInstance.cpp), [HostFXRDiscovery.hpp](../Nuclear.Managed.Native/Source/HostFXRDiscovery.hpp), [ManagedHost.cs](../Nuclear.Managed/Source/ManagedHost.cs) | .NET 10 host discovery, `Nuclear.Managed` assembly loading, `Nuclear::Managed` native API; [provenance](../Nuclear.Managed/README.md) |
-| Native bindings | [ScriptingBindings.h](../Nuclear.Engine/include/Scripting/ScriptingBindings.h), [ScriptingBindings.cpp](../Nuclear.Engine/Source/Scripting/ScriptingBindings.cpp), [ScriptingRegistry.cpp](../Nuclear.Engine/Source/Scripting/ScriptingRegistry.cpp) | Internal-call implementations and component type maps |
+| Native bindings | [ScriptingBindings.h](../Plugins/Scripting.CSharp/Public/ScriptingBindings.h), [ScriptingBindings.cpp](../Plugins/Scripting.CSharp/Source/ScriptingBindings.cpp), [ScriptingRegistry.cpp](../Plugins/Scripting.CSharp/Source/ScriptingRegistry.cpp) | C# internal-call implementations and component type maps |
 | Script lifecycle | [ScriptingSystem.cpp](../Nuclear.Engine/Source/Systems/ScriptingSystem.cpp), [ScriptComponent.cpp](../Nuclear.Engine/Source/Components/ScriptComponent.cpp), [Script.cpp](../Nuclear.Engine/Source/Assets/Script.cpp), [ScriptingObject.cpp](../Nuclear.Engine/Source/Scripting/ScriptingObject.cpp) | Construction/start/update callbacks, object invocation |
 | Managed API | [Entity.cs](../Nuclear.ScriptCore/ECS/Entity.cs), [LightComponent.cs](../Nuclear.ScriptCore/Components/LightComponent.cs), [Input.cs](../Nuclear.ScriptCore/Platform/Input.cs), [Sample3.cs](../SamplesScripts/Sample3.cs) | Managed entity/component API, internal calls, example behavior |
 | Physics | [PhysXModule.cpp](../Nuclear.Engine/Source/PhysX/PhysXModule.cpp), [PhysXSystem.cpp](../Nuclear.Engine/Source/Systems/PhysXSystem.cpp), [ColliderComponent.cpp](../Nuclear.Engine/Source/Components/ColliderComponent.cpp), [RigidBodyComponent.cpp](../Nuclear.Engine/Source/Components/RigidBodyComponent.cpp) | SDK objects, simulation scene, actor/shape setup and transform sync |
-| Audio | [AudioModule.cpp](../Nuclear.Engine/Source/Audio/AudioModule.cpp), [AudioSystem.cpp](../Nuclear.Engine/Source/Systems/AudioSystem.cpp), [AudioBackend.h](../Nuclear.Engine/include/Audio/AudioBackend.h), [XAudio backend](../Nuclear.Engine/Source/Audio/XAudio/XAudioBackend.cpp), [OpenAL backend](../Nuclear.Engine/Source/Audio/OpenAL/OpenALBackend.cpp) | Backend selection, listener/source updates, audio resources |
+| Audio | [AudioModule.cpp](../Nuclear.Engine/Source/Audio/AudioModule.cpp), [AudioBackendPlugin.h](../Nuclear.Engine/include/Audio/AudioBackendPlugin.h), [AudioSystem.cpp](../Nuclear.Engine/Source/Systems/AudioSystem.cpp), [AudioBackend.h](../Nuclear.Engine/include/Audio/AudioBackend.h), [XAudio2 plugin](../Plugins/Audio.XAudio2/Source/Plugin.cpp), [OpenAL plugin](../Plugins/Audio.OpenAL/Source/Plugin.cpp) | Runtime DLL selection/ABI, listener/source updates, audio resources |
 | Editor entry/client | [Nuclear.Editor.cpp](../Nuclear.Editor/source/Nuclear.Editor.cpp), [Nuclear.Editor.h](../Nuclear.Editor/include/Nuclear.Editor.h), [Project.cpp](../Nuclear.Editor/source/Project.cpp) | Editor startup, engine client, project handling |
 | Editor UI | [EditorUI.cpp](../Nuclear.Editor/source/EditorUI.cpp), [EntityEditor.cpp](../Nuclear.Editor/source/EntityEditor.cpp), [AssetLibraryViewer.cpp](../Nuclear.Editor/source/AssetLibraryViewer.cpp), [LoggerView.cpp](../Nuclear.Editor/source/UILayers/LoggerView.cpp) | Panels, component inspection, asset browsing, logs |
 
@@ -68,11 +70,11 @@ Run from the repository root. Narrow the directory once you know the subsystem; 
 ```powershell
 rg -n 'LoadClient|ExecuteMainThreadTasks|EndClient' Nuclear.Engine/Source/Core/Engine.cpp
 rg -n 'RegisterShader|AddRenderPass|Bake\(' Samples Nuclear.Engine/Source/Systems
-rg -n 'REGISTER_CALL|RegisterComponent' Nuclear.Engine/Source/Scripting
+rg -n 'REGISTER_CALL|RegisterComponent' Plugins/Scripting.CSharp/Source
 rg -n 'NativeCalls|delegate\* unmanaged' Nuclear.ScriptCore
 rg -n 'NEStatic_Camera|NEMat_Diffuse1' Nuclear.Engine/Source Assets/NuclearEngine/Shaders
 rg -n '#pragma comment\(lib' Nuclear.Engine/Source -g '!ThirdParty/**' -g '!Graphics/ImGUI/**'
-git ls-files Tests Programs .github
+git ls-files Programs .github
 ```
 
 For a full first-party file listing, exclude bundled libraries explicitly:

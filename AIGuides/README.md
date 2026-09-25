@@ -17,6 +17,8 @@ Read the root [AGENTS.md](../AGENTS.md) first. For a small task, follow the rele
 | Location | Role |
 | --- | --- |
 | `Nuclear.Engine/` | Native engine DLL, public headers, implementations, and some bundled libraries |
+| `Plugins/Scripting.CSharp/`, `Plugins/Scripting.Lua/` | Static C# scripting backend and unregistered Lua scaffold |
+| `Plugins/Audio.XAudio2/`, `Plugins/Audio.OpenAL/` | Runtime loaded audio backend DLLs |
 | `Nuclear.Editor/` | Native ImGui editor application; still work in progress |
 | `Nuclear.Managed/`, `Nuclear.Managed.Native/` | Included .NET 10 bridge source fork; C# assembly and native host library |
 | `Nuclear.ScriptCore/` | C# engine-facing API, targeting .NET 10 through Nuclear.Managed |
@@ -26,7 +28,7 @@ Read the root [AGENTS.md](../AGENTS.md) first. For a small task, follow the rele
 | `Assets/Common/` | Sample content; substantial model/texture content is ignored or supplied locally |
 | `External/` | Git submodules, local SDKs, and ignored dependency build trees |
 | `Bin/`, `Build/`, `.vs/` | Local output or IDE state; not source of truth |
-| `BuildSupport/`, `Tests/ScriptingSmoke/` | Build runners and a focused native/managed scripting smoke check |
+| `BuildSupport/` | Full solution build runner |
 
 ## Keeping this reference useful
 

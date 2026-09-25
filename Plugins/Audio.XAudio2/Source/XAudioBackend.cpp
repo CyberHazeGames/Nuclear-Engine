@@ -100,7 +100,7 @@ namespace Nuclear
 
 			if (pMatrixCoefficients)
 			{
-				delete pMatrixCoefficients;
+				delete[] pMatrixCoefficients;
 				pMatrixCoefficients = nullptr;
 			}
 		}

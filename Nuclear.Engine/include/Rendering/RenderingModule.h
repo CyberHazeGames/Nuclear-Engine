@@ -17,10 +17,12 @@ namespace Nuclear
 
 		};
 
-		class NEAPI RenderingModule : public Core::EngineModule<RenderingModule>
+		class NEAPI RenderingModule : public Core::EngineModule
 		{
-			friend class Core::EngineModule<RenderingModule>;
 		public:
+			static RenderingModule& Get();
+			void SetStartupDesc(const RenderingModuleDesc& desc) { mStartupDesc = desc; }
+			bool OnInitialize() override;
 			bool Initialize(const RenderingModuleDesc& desc);
 
 			void Shutdown() override;
@@ -54,6 +56,7 @@ namespace Nuclear
 			bool InitSceneToScreenPSO();
 
 		private:
+			RenderingModuleDesc mStartupDesc{};
 			RenderingModule();
 		};
 

@@ -1,0 +1,9 @@
+{
+  "Name": "Scripting.CSharp",
+  "Version": "0.1.0",
+  "Modules": [
+    { "Name": "Scripting.CSharp", "Type": "Runtime" }
+  ],
+  "Dependencies": ["Scripting", "ECS", "Assets"],
+  "Integration": "Static library linked into Nuclear.Engine until a plugin loader is available"
+}

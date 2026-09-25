@@ -7,10 +7,11 @@ namespace Nuclear
 {
     namespace Threading
     {
-        class NEAPI ThreadingModule : public Core::EngineModule<ThreadingModule>
+        class NEAPI ThreadingModule : public Core::EngineModule
         {
-            friend class Core::EngineModule<ThreadingModule>;
         public:
+            static ThreadingModule& Get();
+            bool OnInitialize() override;
             bool Initialize();
 
             void Shutdown() override;

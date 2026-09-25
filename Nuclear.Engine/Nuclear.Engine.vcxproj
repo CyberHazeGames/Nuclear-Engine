@@ -66,7 +66,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Plugins\Scripting.CSharp\Public;..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
@@ -91,7 +91,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;WIN32;NDEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;PLATFORM_WIN32;NUCLEARENGINE_EXPORTS;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Plugins\Scripting.CSharp\Public;..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <DebugInformationFormat>None</DebugInformationFormat>
@@ -128,10 +128,13 @@
     <ClInclude Include="include\Assets\Tasks\TextureLoadTask.h" />
     <ClInclude Include="include\Assets\TextureTypes.h" />
     <ClInclude Include="include\Audio\AudioBackend.h" />
+    <ClInclude Include="include\Audio\AudioBackendPlugin.h" />
     <ClInclude Include="include\Audio\AudioFile.h" />
     <ClInclude Include="include\Audio\AudioDevice.h" />
     <ClInclude Include="include\Audio\config.h" />
     <ClInclude Include="include\Core\EngineModule.h" />
+    <ClInclude Include="include\Core\EngineModulePlugin.h" />
+    <ClInclude Include="include\Core\ModuleManager.h" />
     <ClInclude Include="include\NE_Compiler.h" />
     <ClInclude Include="include\Components\AudioListenerComponent.h" />
     <ClInclude Include="include\Components\ShaderStructs.h" />
@@ -173,10 +176,8 @@
     <ClInclude Include="include\Platform\Input.h" />
     <ClInclude Include="include\Utilities\DataBlob.h" />
     <ClInclude Include="include\Utilities\Logger.h" />
-    <ClInclude Include="Source\Scripting\ManagedRuntime.h" />
-    <ClInclude Include="include\Scripting\ScriptingBindings.h" />
     <ClInclude Include="include\Scripting\ScriptingClass.h" />
-    <ClInclude Include="include\Scripting\ScriptingRegistry.h" />
+    <ClInclude Include="include\Scripting\IScriptingBackend.h" />
     <ClInclude Include="include\Math\glm\common.hpp" />
     <ClInclude Include="include\Math\glm\detail\compute_vector_relational.hpp" />
     <ClInclude Include="include\Math\glm\detail\qualifier.hpp" />
@@ -427,7 +428,6 @@
     <ClInclude Include="include\PhysX\RaycastHit.h" />
     <ClInclude Include="include\Scripting\Scripting.h" />
     <ClInclude Include="include\Scripting\ScriptingModule.h" />
-    <ClInclude Include="include\Scripting\ScriptingAssembly.h" />
     <ClInclude Include="include\ECS\System.h" />
     <ClInclude Include="include\PhysX\Geometry.h" />
     <ClInclude Include="include\PhysX\PhysXMaterial.h" />
@@ -444,8 +444,6 @@
     <ClInclude Include="Source\Assets\Importers\AssimpImporter.h" />
     <ClInclude Include="include\Audio\NullAudioBackend.h" />
     <ClInclude Include="Source\Audio\AudioConverter.h" />
-    <ClInclude Include="Source\Audio\OpenAL\OpenALBackend.h" />
-    <ClInclude Include="Source\Audio\XAudio\XAudioBackend.h" />
     <ClInclude Include="Source\Graphics\ImGUI\imgui_freetype.h" />
     <ClInclude Include="Source\Graphics\ImGUI\imgui_impl_sdl.h" />
     <ClInclude Include="Source\Assets\Importers\AssimpGLMHelpers.h" />
@@ -498,8 +496,6 @@
     <ClCompile Include="Source\Assets\Importer.cpp" />
     <ClCompile Include="Source\Assets\Importers\AssimpManager.cpp" />
     <ClCompile Include="Source\Assets\Loader.cpp" />
-    <ClCompile Include="Source\Audio\OpenAL\OpenALBackend.cpp" />
-    <ClCompile Include="Source\Audio\XAudio\XAudioBackend.cpp" />
     <ClCompile Include="Source\Components\AudioListenerComponent.cpp" />
     <ClCompile Include="Source\Components\LightComponent.cpp" />
     <ClCompile Include="Source\Components\SpriteRenderer.cpp" />
@@ -515,7 +511,6 @@
     <ClCompile Include="Source\Rendering\RenderingModule.cpp" />
     <ClCompile Include="Source\Rendering\RenderPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="Source\Rendering\RenderPasses\XeGTAO\GTAO.cpp" />
-    <ClCompile Include="Source\Scripting\ScriptingBindings.cpp" />
     <ClCompile Include="Source\Scripting\ScriptingClass.cpp" />
     <ClCompile Include="Source\Platform\FileSystem.cpp" />
     <ClCompile Include="Source\Serialization\SerializationModule.cpp" />
@@ -557,6 +552,7 @@
     <ClCompile Include="Source\Rendering\RenderPasses\PostProcessingPass.cpp" />
     <ClCompile Include="Source\Graphics\ShaderPipelineSwitch.cpp" />
     <ClCompile Include="Source\Audio\AudioModule.cpp" />
+    <ClCompile Include="Source\Core\ModuleManager.cpp" />
     <ClCompile Include="Source\Components\ColliderComponent.cpp" />
     <ClCompile Include="Source\Components\RigidBodyComponent.cpp" />
     <ClCompile Include="Source\Components\ScriptComponent.cpp" />
@@ -574,10 +570,8 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="Source\Rendering\RenderPasses\ShadowPass.cpp" />
-    <ClCompile Include="Source\Scripting\ScriptingAssembly.cpp" />
     <ClCompile Include="Source\Scripting\ScriptingModule.cpp" />
     <ClCompile Include="Source\Scripting\ScriptingObject.cpp" />
-    <ClCompile Include="Source\Scripting\ScriptingRegistry.cpp" />
     <ClCompile Include="Source\Assets\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\PhysX\PhysXShape.cpp" />
     <ClCompile Include="Source\PhysX\RaycastHit.cpp" />
@@ -743,6 +737,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Nuclear.Managed.Native\Nuclear.Managed.Native.vcxproj">
       <Project>{A41A4632-548E-4E22-844C-4BA4CDA251CF}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Plugins\Scripting.CSharp\Nuclear.Scripting.CSharp.vcxproj">
+      <Project>{44F36FE4-4FFE-4C8D-9948-92BD43F94C93}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

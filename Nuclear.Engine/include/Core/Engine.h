@@ -2,6 +2,10 @@
 #include <Core\Client.h>
 #include <Platform\Window.h>
 #include <Diligent/Graphics/GraphicsEngine/interface/GraphicsTypes.h>
+#include <filesystem>
+#include <memory>
+
+namespace Nuclear::Core { class ModuleManager; }
 
 namespace Nuclear
 {
@@ -23,6 +27,9 @@ namespace Nuclear
 			bool AutoInitRenderingModule = true;
 			bool AutoInitThreadingModule = true;
 			bool AutoInitFallbacksModule = true;
+			std::string mAudioBackendName = "XAudio2";
+			std::filesystem::path mAudioPluginDirectory;
+			std::filesystem::path mModulePluginDirectory;
 
 			std::string mScriptingClientDllName = "ClientScripts.dll";
 			std::string mScriptingAssemblyNamespace = "ClientScripts";
@@ -39,12 +46,14 @@ namespace Nuclear
 			void operator=(Engine const&) = delete;
 
 			static Engine& Get();
+			~Engine();
 
 			enum class State { Initializing, Loading, Rendering, ExitingRendering, Shuttingdown };
 
 			bool Start(const EngineStartupDesc& desc);
 
 			void Shutdown();
+			ModuleManager& GetModuleManager();
 
 			void BeginFrame();
 
@@ -78,6 +87,8 @@ namespace Nuclear
 			Engine::State Engine_State;
 			bool gisDebug = DEBUG_TRUE_BOOL;
 			bool mShouldClose = false;
+			bool mThreadingEnabled = false;
+			std::unique_ptr<ModuleManager> pModules;
 			void MainLoop();
 		};
 	}

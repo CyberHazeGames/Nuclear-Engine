@@ -2,12 +2,12 @@
 
 ## What the repository currently specifies
 
-Use [Nuclear Engine.sln](../Nuclear%20Engine.sln) as the concrete Windows build entry point. It includes the engine DLL, Samples, editor, ScriptCore, SamplesScripts, and Nuclear.Managed. Engine native projects use C++20 and Debug/Release x64 configurations; Nuclear.Managed.Native uses C++17. Managed projects target .NET 10 and map to Any CPU in the solution; the native host and installed runtime must be x64.
+Use [Nuclear Engine.sln](../Nuclear%20Engine.sln) as the concrete Windows build entry point. It includes the engine DLL, the C# scripting static library, the buildable Lua scaffold static library, XAudio2 and OpenAL audio DLL projects, Samples, editor, ScriptCore, SamplesScripts, and Nuclear.Managed. Engine native projects use C++20 and Debug/Release x64 configurations; Nuclear.Managed.Native uses C++17. Managed projects target .NET 10 and map to Any CPU in the solution; the native host and installed runtime must be x64. Nuclear.Engine links the C# backend through a project reference; the Lua scaffold is not linked or registered. Audio DLLs link against the engine import library and are loaded by name at runtime.
 
 Toolset details are not uniform:
 
 - [RunCmakeForDependencies.bat](../RunCmakeForDependencies.bat) selects `Visual Studio 18 2026` and x64 for Assimp, Diligent, and OpenAL. Diligent and OpenAL also receive `CMAKE_POLICY_VERSION_MINIMUM=3.5`.
-- The solution and first-party native projects (engine, editor, samples, Nuclear.Managed.Native, and scripting smoke fixture) target Visual Studio 18 / **v145** for x64 Debug and Release. The installed MSVC toolset inspected on 2026-09-23 was 14.51.36231.
+- The solution and first-party native projects (engine, editor, samples, scripting plugin libraries, audio plugin DLLs, and Nuclear.Managed.Native) target Visual Studio 18 / **v145** for x64 Debug and Release. The installed MSVC toolset inspected on 2026-09-23 was 14.51.36231.
 - Dependency copy paths and `#pragma comment(lib, ...)` directives include older toolset-specific names such as `assimp-vc143-mt` and PhysX `vc142` output directories.
 
 Inspect installed toolsets and generated filenames before deciding whether to adjust anything. A generator update alone does not update import-library names, dependency output paths, or all native projects.
@@ -50,7 +50,17 @@ msbuild Nuclear.Engine/Nuclear.Engine.vcxproj /m:1 /p:Configuration=Debug /p:Pla
 
 The engine resolves native library directories relative to its project, so standalone builds do not require `SolutionDir`. Diligent GraphicsTools also requires `Diligent-GraphicsEngineD3DBase.lib`, `Diligent-GraphicsEngineOpenGL-static.lib`, and `Diligent-GraphicsEngineVk-static.lib`; the engine links them and the dependency copy script includes them for both configurations.
 
-The solution build includes managed project dependencies and their post-build copying into `Samples/`. Native and managed build outputs go to `Bin/DebugX64/` or `Bin/ReleaseX64/`. Engine native intermediates are under project-local `Build/` folders; Nuclear.Managed.Native and scripting smoke intermediates are under the root `Build/`.
+The solution build includes managed project dependencies and their post-build copying into `Samples/`. Native and managed build outputs go to `Bin/DebugX64/` or `Bin/ReleaseX64/`; both audio DLLs are beside the engine and sample executables. Engine and audio plugin intermediates are under project-local `Build/` folders; Nuclear.Managed.Native intermediates are under the root `Build/`.
+
+### Module manager and audio plugins
+
+`Engine::GetModuleManager()` accepts owned `EngineModule` instances, references to longer-lived singleton modules, and external DLL modules before `Start`. Built-in modules register directly and initialize in dependency order; only the asset manager uses a callback adapter. The manager rejects missing dependencies and cycles, and reverses completed phases on failure or shutdown. `AssetLibrary` path setup and SDL/window creation remain outside the manager.
+
+To load one external module DLL before startup, call `Engine::Get().GetModuleManager().LoadPlugin(path)`. To scan a directory at engine startup, set `EngineStartupDesc.mModulePluginDirectory`; `LoadPlugins(directory)` loads `Nuclear.Module.*.dll` files in sorted order. Each DLL exports `GetNuclearEngineModulePlugin` with the size/version and factory table in [EngineModulePlugin.h](../Nuclear.Engine/include/Core/EngineModulePlugin.h). A factory can declare dependencies on built-in or other DLL modules. The DLL and engine must use compatible C++ ABI, architecture, and runtime configuration. The manager calls plugin destroy functions before `FreeLibrary`; loading while modules run and hot reload are not supported.
+
+Set `EngineStartupDesc.mAudioBackendName` to `"XAudio2"` (default) or `"OpenAL"`. `AudioModule` loads `Nuclear.Audio.<name>.dll` from the executable directory, or from `EngineStartupDesc.mAudioPluginDirectory` when supplied. It validates the exported plugin ABI, initializes the selected backend, and unloads the DLL during shutdown. Both audio projects must be built for the same configuration as the engine. Backend initialization failure now fails engine startup; a usable audio device is needed when audio auto initialization is enabled.
+
+After the external module DLL loader was added on 2026-09-25, the full `BuildSupport/Build.ps1 -Configuration Debug` solution build passed. Engine startup with `mModulePluginDirectory` has not been launched in a graphical sample.
 
 ### .NET scripting dependencies and checks
 
@@ -58,17 +68,11 @@ The solution build includes managed project dependencies and their post-build co
 
 ```powershell
 dotnet build SamplesScripts/SamplesScripts.csproj -c Debug /m:1 /nr:false
-./BuildSupport/TestScripting.ps1 -Configuration Debug
-./BuildSupport/TestScripting.ps1 -Configuration Release
 ```
 
 ScriptCore's build copies `Nuclear.Managed.dll`, its runtime configuration/dependency manifests, and ScriptCore's runtime files into `Samples/`; SamplesScripts copies its own assembly and dependency manifest there. No separate runtime-directory discovery or legacy .NET Framework targeting pack is required.
 
-The smoke check uses real Nuclear.Managed hosting and ScriptCore with a small native callback fixture, without graphics or asset dependencies. It verifies .NET 10 runtime and Nuclear.Managed assembly identity, host version parsing, entity IDs before startup, managed/native strings, component type IDs, colors, intensity, input results, update arguments, garbage collection, exception reporting, and unloading/reloading the assembly context. It does not validate the engine's ECS callbacks or a rendered sample.
-
-Nuclear.Managed/.NET 10 validation on 2026-09-23: `BuildSupport/TestScripting.ps1` passed in Debug and Release, and `BuildSupport/Build.ps1 -Configuration Debug` built the full solution. The smoke runner uses one worker for both managed and native builds, the 64-bit Visual Studio MSBuild, and normalized process Path entries. Existing compiler and native dependency warnings remain; a full Release solution build has not been verified.
-
-Before the Nuclear.Managed/.NET 10 migration, validation on 2026-09-22: managed Debug/Release builds and native Debug/Release smoke checks passed. On 2026-09-23, Assimp Release built with MSVC 14.51. After fixing the engine library search path and Diligent format-conversion dependencies, `BuildSupport/Build.ps1 -Configuration Debug` built the full solution successfully, including the engine DLL, Samples, editor, and managed assemblies. Existing compiler warnings and native dependency debug-symbol/runtime-library warnings remain. A full Release engine build has not been verified.
+After the module manager and audio plugin split on 2026-09-25, `BuildSupport/Build.ps1 -Configuration Debug` built the full solution, including both scripting libraries and both audio DLLs. A graphical sample launch and audio-device initialization were not part of that build. A full Release solution build has not been verified.
 
 The root CMake setup is unfinished: it contains `set(CMAKE_MODULE_PATH "${/cmake")`, sparse dependency wiring, and a sample entry `main.cpp` while the actual file is `Main.cpp`. Do not document `cmake -S . -B ...` as a verified alternative without explicitly repairing and validating that build path.
 
@@ -119,14 +123,15 @@ Sample1 and the selector import the supplied vampire Collada model as `dancing_v
 
 ## Choosing validation
 
-The focused first-party scripting smoke check is under `Tests/ScriptingSmoke/` and is run through `BuildSupport/TestScripting.ps1`; it is separate from the main solution. There is no general engine test suite or tracked CI workflow. Do not use third-party test counts as evidence that engine behavior was tested.
+There is no first-party smoke suite, general engine test suite, or tracked CI workflow. Build the affected projects and exercise relevant behavior in a sample. Do not use third-party test counts as evidence that engine behavior was tested.
 
 | Change | Useful check after the relevant build |
 | --- | --- |
 | Core/client lifecycle | Open selector, enter/exit a sample, close application, inspect shutdown log |
+| Module manager or audio loading | Build the engine and relevant DLL, then launch a sample with the selected module or audio backend; exercise playback for audio changes |
 | Basic mesh/animation | Sample1, subject to local model availability |
 | Shaders, PBR, render paths | Sample2; exercise affected rendering toggles and inspect shader diagnostics |
-| Physics or scripts | Run the scripting smoke check for interop, then Sample3 after verifying content and managed assemblies |
+| Physics or scripts | Build the engine, ScriptCore, and SamplesScripts, then exercise Sample3 after verifying content and managed assemblies |
 | Camera/render-target sizing | Sample4 and window resizing; inspect both camera outputs |
 | Async assets | Sample5 with prepared imported textures; verify completion and resource readiness |
 | Editor panels | Build editor, then exercise the specific panel if its runtime prerequisites exist |

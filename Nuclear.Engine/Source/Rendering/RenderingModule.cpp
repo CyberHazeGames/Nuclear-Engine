@@ -14,10 +14,30 @@ namespace Nuclear
 	{
 		using namespace Diligent;
 
+		RenderingModule& RenderingModule::Get() { static RenderingModule instance; return instance; }
+		bool RenderingModule::OnInitialize() { return Initialize(mStartupDesc); }
 		bool RenderingModule::Initialize(const RenderingModuleDesc& desc)
 		{
 			mDesc = desc;
+			{
+				BufferDesc CBDesc;
+				CBDesc.Name = "AnimationCB";
+				CBDesc.Size = sizeof(Math::Matrix4) * 100;
+				CBDesc.Usage = USAGE_DYNAMIC;
+				CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
+				CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
+				Graphics::GraphicsModule::Get().GetDevice()->CreateBuffer(CBDesc, nullptr, &mAnimationCB);
+			}
 
+			{
+				BufferDesc CBDesc;
+				CBDesc.Name = "CameraCB";
+				CBDesc.Size = sizeof(Components::CameraBuffer);
+				CBDesc.Usage = USAGE_DYNAMIC;
+				CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
+				CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
+				Graphics::GraphicsModule::Get().GetDevice()->CreateBuffer(CBDesc, nullptr, &mCameraCB);
+			}
 			if (!InitSceneToScreenPSO())
 			{
 				NUCLEAR_ERROR("[RenderingModule] Initialization Failed : InitSceneToScreenPSO() failed!");
@@ -171,25 +191,7 @@ namespace Nuclear
 		}
 		RenderingModule::RenderingModule()
 		{
-			{
-				BufferDesc CBDesc;
-				CBDesc.Name = "AnimationCB";
-				CBDesc.Size = sizeof(Math::Matrix4) * 100;
-				CBDesc.Usage = USAGE_DYNAMIC;
-				CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
-				CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-				Graphics::GraphicsModule::Get().GetDevice()->CreateBuffer(CBDesc, nullptr, &mAnimationCB);
-			}
 
-			{
-				BufferDesc CBDesc;
-				CBDesc.Name = "CameraCB";
-				CBDesc.Size = sizeof(Components::CameraBuffer);
-				CBDesc.Usage = USAGE_DYNAMIC;
-				CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
-				CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-				Graphics::GraphicsModule::Get().GetDevice()->CreateBuffer(CBDesc, nullptr, &mCameraCB);
-			}
 		}
 	}
 }

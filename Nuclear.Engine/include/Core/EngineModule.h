@@ -1,28 +1,24 @@
 #pragma once
 #include <NE_Common.h>
-
-namespace Nuclear
+namespace Nuclear::Core
 {
-	namespace Core
+	// Common lifecycle for owned modules and engine subsystem singletons.
+	class NEAPI EngineModule
 	{
-		template < typename T >
-		class NEAPI EngineModule
-		{
-		public:
-			FORCE_INLINE static T& Get()
-			{
-				static T instance;
-				return instance;
-			}
+	public:
+		virtual ~EngineModule() = default;
+		EngineModule(const EngineModule&) = delete;
+		EngineModule& operator=(const EngineModule&) = delete;
 
-			virtual void Shutdown() = 0;
+		virtual bool OnLoad() { return true; }
+		virtual bool OnInitialize() { return true; }
+		virtual bool OnStart() { return true; }
+		virtual void OnUpdate(float) {}
+		virtual void OnStop() {}
+		virtual void OnUnload() {}
+		virtual void Shutdown() = 0;
 
-			EngineModule(const EngineModule&) = delete;
-			EngineModule& operator= (const EngineModule) = delete;
-
-		protected:
-			EngineModule() { };
-			virtual ~EngineModule() { }
-		};
-	}
+	protected:
+		EngineModule() = default;
+	};
 }

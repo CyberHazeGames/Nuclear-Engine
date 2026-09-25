@@ -1,0 +1,7 @@
+{
+  "Name": "Audio.XAudio2",
+  "Version": "0.1.0",
+  "Modules": [{ "Name": "Audio.XAudio2", "Type": "Runtime" }],
+  "Dependencies": ["Audio"],
+  "Binary": "Nuclear.Audio.XAudio2.dll"
+}

@@ -36,6 +36,7 @@
 /Samples/Assets/Common/Models/CrytekCyborg
 /Samples/Build/DebugX64
 /Nuclear.Engine/Build/
+/Plugins/*/Build/
 /Nuclear.Core/Build/
 /External/FMOD
 /External/PhysX/include
@@ -51,7 +52,6 @@
 /Nuclear.ScriptCore/obj/
 /Nuclear.Managed/obj/
 /BuildSupport/obj/
-/Tests/ScriptingSmoke/Managed/obj/
 /Assets/Common/Textures/
 /Assets/Common/Models
 /Samples/Nuclear.ScriptCore.dll

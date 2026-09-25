@@ -1,4 +1,5 @@
 #include <Core/Engine.h>
+#include <Core/ModuleManager.h>
 #include <Utilities\Timer.h>
 #include <Platform\Window.h>
 #include <Platform\Input.h>
@@ -20,6 +21,7 @@
 #include <Graphics\GraphicsModule.h>
 #include <PhysX\PhysXModule.h>
 #include <Scripting/ScriptingModule.h>
+#include <CSharpScriptingBackend.h>
 #include <Rendering\RenderingModule.h>
 #include <Threading/ThreadingModule.h>
 #include <Threading/DelegateTask.h>
@@ -85,6 +87,7 @@ namespace Nuclear
 		bool Engine::Start(const EngineStartupDesc& desc)
 		{
 			PrintIntroLog();
+			auto failStartup = [this]() { Shutdown(); return false; };
 			Assets::AssetLibrary::Get().Initialize(desc.mAssetsLibraryPath);
 			Core::Path::mReservedPaths["@Assets@"] = Assets::AssetLibrary::Get().GetPath();
 			Core::Path::mReservedPaths["@NuclearAssets@"] = Assets::AssetLibrary::Get().GetPath() + "NuclearEngine";
@@ -94,91 +97,119 @@ namespace Nuclear
 			if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 			{
 				NUCLEAR_FATAL("[Engine] SDL could not initialize! SDL_Error: {0}", SDL_GetError());
-				return false;
+				return failStartup();
 			}
 
 			if (!MainWindow.Create(desc.mEngineWindowDesc))
 			{
 				NUCLEAR_FATAL("[Engine] Failed To Create Window...");
+				return failStartup();
 			}
 
 			Platform::Input::Get().SetMouseInputMode(Platform::Input::MouseInputMode::Normal);
 
+			auto& modules = GetModuleManager();
+			std::vector<std::string> assetDependencies;
+			auto registerRuntime = [&](const char* name, std::vector<std::string> dependencies,
+				EngineModule& module)
+			{
+				assetDependencies.emplace_back(name);
+				return modules.RegisterModule({ name, ModuleType::Runtime, std::move(dependencies) }, module);
+			};
 			if (desc.AutoInitGraphicsModule)
 			{
-				Graphics::GraphicsModuleDesc GraphicsModuleDesc;
-				GraphicsModuleDesc.pWindowHandle = GetMainWindow()->GetSDLWindowPtr();
-				if (!Graphics::GraphicsModule::Get().Initialize(GraphicsModuleDesc))
+				Graphics::GraphicsModuleDesc graphicsDesc;
+				graphicsDesc.pWindowHandle = GetMainWindow()->GetSDLWindowPtr();
+				Graphics::GraphicsModule::Get().SetStartupDesc(graphicsDesc);
+				if (!registerRuntime("Graphics", {}, Graphics::GraphicsModule::Get()))
 				{
-					NUCLEAR_FATAL("[Engine] Failed to initalize GraphicsModule...");
-					return false;
+					NUCLEAR_FATAL("[Engine] Failed to register Graphics module.");
+					return failStartup();
 				}
 			}
 
 			if (desc.AutoInitAudioModule)
 			{
-				Audio::AudioModuleDesc desc;
-				desc.mRequestedBackend = Audio::AudioModuleDesc::AudioBackendType::XAudio2;
-
-				if (!Audio::AudioModule::Get().Initialize(desc))
+				Audio::AudioModuleDesc audioDesc;
+				audioDesc.mBackendName = desc.mAudioBackendName;
+				audioDesc.mPluginDirectory = desc.mAudioPluginDirectory;
+				Audio::AudioModule::Get().SetStartupDesc(audioDesc);
+				if (!registerRuntime("Audio", {}, Audio::AudioModule::Get()))
 				{
-					NUCLEAR_FATAL("[Engine] Failed to initalize AudioModule...");
+					NUCLEAR_FATAL("[Engine] Failed to register Audio module.");
+					return failStartup();
 				}
 			}
 			if (desc.AutoInitScriptingModule)
 			{
-				Scripting::ScriptingModuleDesc scdesc;
-				scdesc.mScriptingCoreAssemblyDir = std::filesystem::current_path().string();
-				scdesc.mClientAssemblyPath = std::filesystem::current_path().string() + "/" + desc.mScriptingClientDllName;
-				scdesc.mClientNamespace = desc.mScriptingAssemblyNamespace;
-				if (!Scripting::ScriptingModule::Get().Initialize(scdesc))
+				Scripting::CSharp::CSharpBackendDesc scriptingDesc;
+				scriptingDesc.mScriptingCoreAssemblyDir = std::filesystem::current_path().string();
+				scriptingDesc.mClientAssemblyPath = std::filesystem::current_path().string() + "/" + desc.mScriptingClientDllName;
+				scriptingDesc.mClientNamespace = desc.mScriptingAssemblyNamespace;
+				if (!Scripting::CSharp::RegisterCSharpBackend(std::move(scriptingDesc))) return failStartup();
+				Scripting::ScriptingModule::Get().SetStartupDesc({ "CSharp" });
+				if (!registerRuntime("Scripting", {}, Scripting::ScriptingModule::Get()))
 				{
-					NUCLEAR_FATAL("[Engine] Failed to initalize ScriptingModule...");
+					NUCLEAR_FATAL("[Engine] Failed to register Scripting module.");
+					return failStartup();
 				}
 			}
 
 			if (desc.AutoInitPhysXModule)
 			{
-				PhysX::PhysXModuleDesc pxdesc;
-
-				if (!PhysX::PhysXModule::Get().Initialize(pxdesc))
+				if (!registerRuntime("Physics", {}, PhysX::PhysXModule::Get()))
 				{
-					NUCLEAR_FATAL("[Engine] Failed to initalize PhysXModule...");
+					NUCLEAR_FATAL("[Engine] Failed to register Physics module.");
+					return failStartup();
 				}
 			}
 
 			if (desc.AutoInitRenderingModule)
 			{
-				Rendering::RenderingModuleDesc redesc;
-				redesc.RTWidth = desc.mEngineWindowDesc.WindowWidth;
-				redesc.RTHeight = desc.mEngineWindowDesc.WindowHeight;;
-									
-				if (!Rendering::RenderingModule::Get().Initialize(redesc))
+				Rendering::RenderingModuleDesc renderDesc;
+				renderDesc.RTWidth = desc.mEngineWindowDesc.WindowWidth;
+				renderDesc.RTHeight = desc.mEngineWindowDesc.WindowHeight;
+				Rendering::RenderingModule::Get().SetStartupDesc(renderDesc);
+				if (!registerRuntime("Rendering", { "Graphics" }, Rendering::RenderingModule::Get()))
 				{
-					NUCLEAR_FATAL("[Engine] Failed to initalize RenderingModule...");
+					NUCLEAR_FATAL("[Engine] Failed to register Rendering module.");
+					return failStartup();
 				}			
 			}
 
 			if (desc.AutoInitThreadingModule)
 			{
-				if (!Threading::ThreadingModule::Get().Initialize())
+				if (!registerRuntime("Threading", {}, Threading::ThreadingModule::Get()))
 				{
-					NUCLEAR_FATAL("[Module] Failed to initalize ThreadingModule...");
+					NUCLEAR_FATAL("[Engine] Failed to register Threading module.");
+					return failStartup();
 				}
 			}
 
 			if (desc.AutoInitFallbacksModule)
 			{
-				if (!Fallbacks::FallbacksModule::Get().Initialize())
+				if (!registerRuntime("Fallbacks", { "Graphics" }, Fallbacks::FallbacksModule::Get()))
 				{
-					NUCLEAR_FATAL("[Module] Failed to initalize FallbacksModule...");
+					NUCLEAR_FATAL("[Engine] Failed to register Fallbacks module.");
+					return failStartup();
 				}
 			}
 
-
+			if (!modules.RegisterModule({ "Assets", ModuleType::Runtime, std::move(assetDependencies) },
+				std::make_unique<CallbackModule>([]() { Assets::AssetManager::Get().Initialize(); return true; }, []() {})))
+				return failStartup();
+			if (!desc.mModulePluginDirectory.empty() && !modules.LoadPlugins(desc.mModulePluginDirectory))
+			{
+				NUCLEAR_FATAL("[Engine] Module plugin loading failed: {0}", modules.GetLastError());
+				return failStartup();
+			}
+			if (!modules.StartModules())
+			{
+				NUCLEAR_FATAL("[Engine] Module startup failed: {0}", modules.GetLastError());
+				return failStartup();
+			}
+			mThreadingEnabled = desc.AutoInitThreadingModule;
 			gisDebug = desc.Debug;
-
-			Assets::AssetManager::Get().Initialize();
 
 			NUCLEAR_INFO("[Engine] Nuclear Engine has been initialized successfully!");
 			return true;
@@ -194,14 +225,11 @@ namespace Nuclear
 		void Engine::Shutdown()
 		{
 			NUCLEAR_INFO("[Engine] Shutting Down Engine.");
-			Scripting::ScriptingModule::Get().Shutdown();
 			Assets::AssetLibrary::Get().Clear();
 			pClient = nullptr;
-			Threading::ThreadingModule::Get().Shutdown();
-			Rendering::RenderingModule::Get().Shutdown();
-			Audio::AudioModule::Get().Shutdown();
-			PhysX::PhysXModule::Get().Shutdown();
-			Graphics::GraphicsModule::Get().Shutdown();
+			if (pModules) pModules->ShutdownModules();
+			pModules.reset();
+			mThreadingEnabled = false;
 			MainWindow.Destroy();
 			//Graphics::ImGui_Renderer::Shutdown();
 			SDL_Quit();
@@ -278,6 +306,13 @@ namespace Nuclear
 		{
 
 		}
+		Engine::~Engine() = default;
+
+		ModuleManager& Engine::GetModuleManager()
+		{
+			if (!pModules) pModules = std::make_unique<ModuleManager>();
+			return *pModules;
+		}
 
 		void Engine::MainLoop()
 		{
@@ -321,7 +356,7 @@ namespace Nuclear
 				}
 
 				//Process MainThread tasks
-				Threading::ThreadingModule::Get().ExecuteMainThreadTasks(1);
+				if (mThreadingEnabled) Threading::ThreadingModule::Get().ExecuteMainThreadTasks(1);
 					
 				//Render
 				Platform::Input::Get().Update();
@@ -331,6 +366,7 @@ namespace Nuclear
 				pClient->DeltaTime = currentFrame - pClient->LastFrame;
 				pClient->LastFrame = currentFrame;
 				pClient->ClockTime = static_cast<float>(timer.GetElapsedTimeInSeconds());
+				if (pModules) pModules->UpdateModules(pClient->DeltaTime);
 
 				BeginFrame();
 

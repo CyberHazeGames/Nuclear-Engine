@@ -1,33 +1,19 @@
-#include "ManagedRuntime.h"
 #include <Scripting/ScriptingClass.h>
-#include <Scripting/ScriptingModule.h>
-#include <Nuclear/Managed/Type.hpp>
-#include <Utilities/Logger.h>
+#include <Scripting/IScriptingBackend.h>
 
-namespace Nuclear
+namespace Nuclear::Scripting
 {
-	namespace Scripting
+	ScriptingObject ScriptingClass::CreateObject(Uint32 entityID) const
 	{
-		ScriptingObject ScriptingClass::CreateObject(Uint32 entityID)
+		ScriptingObject result;
+		if (pClass)
 		{
-			ScriptingObject result;
-			if (mRuntimeLifetime.expired() || !ScriptingModule::Get().IsInitialized() || !pClass || !*pClass)
-				return result;
-
-			result.pObject = std::make_shared<Nuclear::Managed::ManagedObject>(pClass->CreateInstance());
-			if (!result.pObject->IsValid())
-			{
-				NUCLEAR_ERROR("[ScriptingClass] Failed to construct {0}", mDesc.mFullName);
-				return {};
-			}
-			result.pParent = this;
-			ScriptingModule::Get().TrackObject(result.pObject);
-			result.pObject->InvokeMethod("BindEntity", entityID);
-			return result;
+			result.pObject = pClass->CreateObject(entityID);
+			if (result.pObject)
+				result.pParent = const_cast<ScriptingClass*>(this);
 		}
-		Nuclear::Managed::Type* ScriptingClass::GetClassPtr()
-		{
-			return mRuntimeLifetime.expired() ? nullptr : pClass;
-		}
+		return result;
 	}
+
+	bool ScriptingClass::IsValid() const { return pClass != nullptr; }
 }

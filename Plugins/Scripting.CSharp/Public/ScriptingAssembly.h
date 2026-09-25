@@ -3,6 +3,7 @@
 #include <string>
 
 namespace Nuclear::Managed { class ManagedAssembly; }
+namespace Nuclear::Scripting::CSharp { class CSharpScriptingBackend; }
 
 namespace Nuclear
 {
@@ -14,7 +15,7 @@ namespace Nuclear
 			const std::string& GetNamespaceName() const;
 			Nuclear::Managed::ManagedAssembly* GetAssembly();
 		private:
-			friend class ScriptingModule;
+			friend class CSharp::CSharpScriptingBackend;
 			Nuclear::Managed::ManagedAssembly* pAssembly = nullptr;
 			std::string mNamespaceName;
 		};

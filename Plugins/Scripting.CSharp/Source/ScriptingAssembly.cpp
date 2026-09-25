@@ -1,4 +1,4 @@
-#include <Scripting/ScriptingAssembly.h>
+#include "../Public/ScriptingAssembly.h"
 
 namespace Nuclear
 {

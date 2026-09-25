@@ -27,7 +27,7 @@ This is Nuclear Engine: a work-in-progress C++20 3D engine with an EnTT-based EC
 
 ## Validation and handoff
 
-- Use the smallest meaningful build and sample smoke check for the change. Scripting has a focused smoke check in `BuildSupport/TestScripting.ps1`; vendor test suites are separate.
+- Use the smallest meaningful build and sample launch for the change; vendor test suites are separate.
 - Documentation-only changes need link/path and diff checks, not a dependency rebuild.
 - Distinguish verified results, source-derived expectations, and environment blockers. Never report a successful engine build or launch without running it.
 - Update the relevant `AIGuides` page when changing architecture, build commands, public source locations, or a documented limitation. Keep this file short and put details in the guides.

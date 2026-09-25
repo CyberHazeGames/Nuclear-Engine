@@ -1,5 +1,6 @@
 #include "ManagedRuntime.h"
-#include <Scripting/ScriptingBindings.h>
+#include "../Public/ScriptingBindings.h"
+#include "../Public/CSharpScriptingBackend.h"
 #include <Scripting/ScriptingModule.h>
 #include <Core/Scene.h>
 #include <Utilities/Logger.h>
@@ -21,7 +22,9 @@ namespace Nuclear
 			Uint32 ECS_Entity_AddComponent(Uint32 id, Nuclear::Managed::ReflectionType type)
 			{
 				auto& registry = Core::Scene::Get().GetRegistry();
-				auto& functions = ScriptingModule::Get().GetRegistry().mAddComponentFuncs;
+				auto* backend = static_cast<CSharp::CSharpScriptingBackend*>(ScriptingModule::Get().FindBackend("CSharp"));
+				if (!backend) return false;
+				auto& functions = backend->GetRegistry().mAddComponentFuncs;
 				auto function = functions.find(type.m_TypeID);
 				if (!registry.valid(static_cast<entt::entity>(id)) || function == functions.end())
 					return false;
@@ -32,7 +35,9 @@ namespace Nuclear
 			Uint32 ECS_Entity_HasComponent(Uint32 id, Nuclear::Managed::ReflectionType type)
 			{
 				auto& registry = Core::Scene::Get().GetRegistry();
-				auto& functions = ScriptingModule::Get().GetRegistry().mHasComponentFuncs;
+				auto* backend = static_cast<CSharp::CSharpScriptingBackend*>(ScriptingModule::Get().FindBackend("CSharp"));
+				if (!backend) return false;
+				auto& functions = backend->GetRegistry().mHasComponentFuncs;
 				auto function = functions.find(type.m_TypeID);
 				if (!registry.valid(static_cast<entt::entity>(id)) || function == functions.end())
 					return false;

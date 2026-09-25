@@ -52,7 +52,7 @@ namespace Nuclear
 			bool mLoop = false;
 		};
 
-		class NEAPI XAudioBackend : public AudioBackend
+		class XAudioBackend : public AudioBackend
 		{
 		public:
 			XAudioBackend();
@@ -101,9 +101,9 @@ namespace Nuclear
 			//XAudioBuffer* GetBufferPtr(const Uint32 clip);
 
 			UINT32 mChannels = 0;
-			FLOAT32* pMatrixCoefficients;
-			IXAudio2* pXAudio2;
-			IXAudio2MasteringVoice* pMasterVoice;
+			FLOAT32* pMatrixCoefficients = nullptr;
+			IXAudio2* pXAudio2 = nullptr;
+			IXAudio2MasteringVoice* pMasterVoice = nullptr;
 			X3DAUDIO_HANDLE X3DInstance;
 			X3DAUDIO_LISTENER m3DListener;
 

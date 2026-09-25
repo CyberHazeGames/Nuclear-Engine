@@ -4,6 +4,8 @@ namespace Nuclear
 {
     namespace Threading
     {
+        ThreadingModule& ThreadingModule::Get() { static ThreadingModule instance; return instance; }
+        bool ThreadingModule::OnInitialize() { return Initialize(); }
         ThreadingModule::ThreadingModule()
         {
 

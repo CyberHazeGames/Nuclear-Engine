@@ -1,0 +1,9 @@
+{
+  "Name": "Scripting.Lua",
+  "Version": "0.1.0",
+  "Modules": [
+    { "Name": "Scripting.Lua", "Type": "Runtime" }
+  ],
+  "Dependencies": ["Scripting", "ECS", "Assets"],
+  "Status": "Scaffold only; no Lua runtime or registration"
+}

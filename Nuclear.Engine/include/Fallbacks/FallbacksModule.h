@@ -6,10 +6,11 @@ namespace Nuclear
 {
 	namespace Fallbacks
 	{
-		class NEAPI FallbacksModule : public Core::EngineModule<FallbacksModule>
+		class NEAPI FallbacksModule : public Core::EngineModule
 		{
-			friend class Core::EngineModule<FallbacksModule>;	
 		public:
+			static FallbacksModule& Get();
+			bool OnInitialize() override;
 			bool Initialize();
 			void Shutdown() override;
 
