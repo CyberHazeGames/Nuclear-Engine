@@ -8,6 +8,7 @@ These notes help future agents navigate and change this repository without repea
 | [BuildAndValidation.md](BuildAndValidation.md) | Configuring dependencies, building, launching samples, or diagnosing setup failures |
 | [ChangeWorkflows.md](ChangeWorkflows.md) | Adding components, script bindings, assets, shaders, or source files |
 | [SourceReference.md](SourceReference.md) | Finding a subsystem's files, entry points, or related implementation |
+| [KnowledgeGraph.md](KnowledgeGraph.md) | Exploring the Graphify graph, querying relationships, or refreshing the local index |
 | [KnownLimitations.md](KnownLimitations.md) | Checking source-observed gaps and avoiding stale assumptions |
 
 Read the root [AGENTS.md](../AGENTS.md) first. For a small task, follow the relevant source-reference row and workflow rather than reading every guide.

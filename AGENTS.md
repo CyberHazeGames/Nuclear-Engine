@@ -14,6 +14,7 @@ This is Nuclear Engine: a work-in-progress C++20 3D engine with an EnTT-based EC
 - Tool calls MUST use at least a 10-minute timeout where an execution-timeout parameter is available.
 - `wait_agent` calls are non-blocking and are interrupted when a subagent responds or a new user message arrives; they do not count as blocking waits.
 - Keep changes focused on the requested behavior. Do not retarget toolsets, update dependencies, rename existing APIs, or reformat unrelated files as incidental cleanup.
+- For architecture and cross-file dependency questions, query the existing Graphify graph with bounded output (start with `--budget 1500`), then verify the relevant implementation and callers. Use scoped `rg` for simple symbol lookups. Follow [KnowledgeGraph.md](AIGuides/KnowledgeGraph.md#when-to-use-the-graph) for freshness checks and source-search fallbacks; keep the full graph JSON and report out of routine context.
 - Public engine headers live in `Nuclear.Engine/include/`; implementations live in `Nuclear.Engine/Source/`. Preserve the existing directory and filename casing.
 - Match nearby C++ style: `Nuclear` subsystem namespaces, PascalCase types/methods, commonly `m` members and `p` pointer members, `#pragma once`, and `NEAPI` for exported interfaces. Formatting varies; follow the file being edited.
 - Native `.vcxproj` and managed `.csproj` files explicitly enumerate source files. Add new compilation units to the appropriate project. CMake is incomplete and is not a replacement for these project files.
@@ -30,4 +31,5 @@ This is Nuclear Engine: a work-in-progress C++20 3D engine with an EnTT-based EC
 - Use the smallest meaningful build and sample launch for the change; vendor test suites are separate.
 - Documentation-only changes need link/path and diff checks, not a dependency rebuild.
 - Distinguish verified results, source-derived expectations, and environment blockers. Never report a successful engine build or launch without running it.
-- Update the relevant `AIGuides` page when changing architecture, build commands, public source locations, or a documented limitation. Keep this file short and put details in the guides.
+- Before handoff, update the relevant `AIGuides` pages when changing architecture, build commands, public source locations, documented behavior, or limitations. Keep this file short and put details in the guides.
+- After adding, modifying, or removing indexed code, refresh the existing Graphify graph before handoff, including a semantic pass for affected guides or architecture documents changed with the code. Follow [KnowledgeGraph.md](AIGuides/KnowledgeGraph.md#query-and-refresh), verify a scoped query against the changed area, and report what was refreshed. If refresh is unavailable or fails, explicitly report that the graph is stale and why; do not claim it is current.

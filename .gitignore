@@ -69,3 +69,10 @@
 /Assets/Shaders
 /Assets/Meshes
 /Assets/AudioClips
+
+# Graphify caches and machine/session metadata; graph outputs remain shareable.
+/graphify-out/cache/
+/graphify-out/.graphify*
+/graphify-out/cost.json
+/graphify-out/manifest.json
+/graphify-out/build_config.json

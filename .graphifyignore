@@ -1,0 +1,20 @@
+# Index first-party engine, editor, plugins, managed bridge, samples, and guides.
+# External SDKs, bundled libraries, generated files, and sample media add noise.
+External/
+Bin/
+Build/
+.vs/
+**/ThirdParty/
+**/glm/
+**/entt/
+**/spdlog/
+**/ImGUI/
+**/Parsers/impl/
+# Bundled vendor headers outside the vendor directories above.
+Nuclear.Engine/include/Graphics/ImGui.h
+Nuclear.Engine/include/Parsers/toml.h
+Nuclear.Engine/Source/Rendering/RenderPasses/XeGTAO/XeGTAO.h
+**/obj/
+**/bin/
+**/Build/
+Sample2.gif
