@@ -33,7 +33,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader><WarningLevel>Level3</WarningLevel><LanguageStandard>stdcpp20</LanguageStandard><RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Public;..\..\Nuclear.Engine\include;..\..\Nuclear.Managed.Native\include;..\..\External\;..\..\External\Assimp\include;..\..\External\CmakeProjects\Assimp\include;..\..\External\PhysX\;..\..\External\PhysX\pxshared\include;..\..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Nuclear.Platform\include;Public;..\..\Nuclear.Engine\include;..\..\Nuclear.Managed.Native\include;..\..\External\;..\..\External\Assimp\include;..\..\External\CmakeProjects\Assimp\include;..\..\External\PhysX\;..\..\External\PhysX\pxshared\include;..\..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4103;4251</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -41,7 +41,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader><WarningLevel>Level3</WarningLevel><LanguageStandard>stdcpp20</LanguageStandard><RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;WIN32;NDEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Public;..\..\Nuclear.Engine\include;..\..\Nuclear.Managed.Native\include;..\..\External\;..\..\External\Assimp\include;..\..\External\CmakeProjects\Assimp\include;..\..\External\PhysX\;..\..\External\PhysX\pxshared\include;..\..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Nuclear.Platform\include;Public;..\..\Nuclear.Engine\include;..\..\Nuclear.Managed.Native\include;..\..\External\;..\..\External\Assimp\include;..\..\External\CmakeProjects\Assimp\include;..\..\External\PhysX\;..\..\External\PhysX\pxshared\include;..\..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4103;4251</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>

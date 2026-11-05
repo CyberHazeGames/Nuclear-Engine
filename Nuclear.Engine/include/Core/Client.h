@@ -44,8 +44,12 @@ namespace Nuclear
 			virtual void ExitRendering(); // Exit Rendering
 			virtual void Shutdown();      // At Shutdown
 
+			/// Receives horizontal/vertical wheel steps, positive right/up respectively.
 			virtual void OnMouseScroll(double xpos, double ypos);
+			/// Receives accumulated relative mouse coordinates, initially at the window center.
+			/// These virtual coordinates remain continuous when the cursor is locked/unlocked.
 			virtual void OnMouseMovement(int xpos, int ypos);
+			/// Receives nonzero client dimensions in pixels; minimized sizes are skipped.
 			virtual void OnWindowResize(int width, int height);
 
 			// Helper Functions

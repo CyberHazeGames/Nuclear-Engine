@@ -7,6 +7,7 @@ These notes help future agents navigate and change this repository without repea
 | [Architecture.md](Architecture.md) | Understanding startup, ECS, rendering, assets, and runtime boundaries |
 | [BuildAndValidation.md](BuildAndValidation.md) | Configuring dependencies, building, launching samples, or diagnosing setup failures |
 | [ChangeWorkflows.md](ChangeWorkflows.md) | Adding components, script bindings, assets, shaders, or source files |
+| [Platform.md](Platform.md) | Native windows, events, input, clipboard, DLL loading, or future platform backends |
 | [SourceReference.md](SourceReference.md) | Finding a subsystem's files, entry points, or related implementation |
 | [KnowledgeGraph.md](KnowledgeGraph.md) | Exploring the Graphify graph, querying relationships, or refreshing the local index |
 | [KnownLimitations.md](KnownLimitations.md) | Checking source-observed gaps and avoiding stale assumptions |
@@ -18,6 +19,7 @@ Read the root [AGENTS.md](../AGENTS.md) first. For a small task, follow the rele
 | Location | Role |
 | --- | --- |
 | `Nuclear.Engine/` | Native engine DLL, public headers, implementations, and some bundled libraries |
+| `Nuclear.Platform/` | Independent native platform foundation DLL, currently Windows x64 only |
 | `Plugins/Scripting.CSharp/`, `Plugins/Scripting.Lua/` | Static C# scripting backend and unregistered Lua scaffold |
 | `Plugins/Audio.XAudio2/`, `Plugins/Audio.OpenAL/` | Runtime loaded audio backend DLLs |
 | `Nuclear.Editor/` | Native ImGui editor application; still work in progress |

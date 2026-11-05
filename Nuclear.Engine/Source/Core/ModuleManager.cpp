@@ -1,5 +1,5 @@
 #include <Core/ModuleManager.h>
-#include <Windows.h>
+#include <Nuclear.Platform/Platform.h>
 #include <algorithm>
 #include <unordered_map>
 
@@ -42,14 +42,13 @@ namespace Nuclear::Core
 			mLastError = "Invalid module plugin path: " + libraryPath.string();
 			return false;
 		}
-		auto library = LoadLibraryExW(path.c_str(), nullptr,
-			LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+		auto library = Platform::LoadDynamicLibrary(path);
 		if (!library)
 		{
-			mLastError = "Failed to load module plugin " + path.string() + " (Win32 " + std::to_string(::GetLastError()) + ")";
+			mLastError = "Failed to load module plugin " + path.string() + ": " + Platform::GetLastError();
 			return false;
 		}
-		auto entryPoint = reinterpret_cast<GetEngineModulePlugin>(GetProcAddress(library, EngineModulePluginEntryPoint));
+		auto entryPoint = reinterpret_cast<GetEngineModulePlugin>(Platform::GetDynamicLibrarySymbol(library, EngineModulePluginEntryPoint));
 		const auto* plugin = entryPoint ? entryPoint() : nullptr;
 		std::vector<Entry> pending;
 		auto fail = [&](std::string message)
@@ -57,7 +56,7 @@ namespace Nuclear::Core
 			mLastError = std::move(message);
 			for (auto it = pending.rbegin(); it != pending.rend(); ++it)
 				it->pPluginDestroy(it->pModule);
-			FreeLibrary(library);
+			Platform::UnloadDynamicLibrary(library);
 			return false;
 		};
 		if (!plugin || plugin->mSize != sizeof(EngineModulePlugin) ||
@@ -156,7 +155,7 @@ namespace Nuclear::Core
 			if (belongsToSelection(*it) && it->pModule) it->pPluginDestroy(it->pModule);
 		std::erase_if(mEntries, belongsToSelection);
 		for (size_t i = mPluginLibraries.size(); i > firstPlugin; --i)
-			FreeLibrary(static_cast<HMODULE>(mPluginLibraries[i - 1]));
+			Platform::UnloadDynamicLibrary(mPluginLibraries[i - 1]);
 		mPluginLibraries.resize(firstPlugin);
 		mOrder.clear();
 	}

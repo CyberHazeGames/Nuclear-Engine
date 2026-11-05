@@ -10,6 +10,13 @@ Use these as change-impact maps, then read the current implementation. They do n
 4. Check umbrella headers such as `NuclearEngine.h`, `Components/Components.h`, or `Systems/Systems.h` when the new type belongs in the public aggregate API.
 5. Build the affected project and consumers when public declarations or binary interfaces changed.
 
+## Change native platform services
+
+- Read [Platform.md](Platform.md). Keep native window/input/event/clipboard/library-loading implementations in `Nuclear.Platform/Source/Windows`, behind documented headers in `Nuclear.Platform/include/Nuclear.Platform`.
+- Nuclear.Platform must remain independent of Nuclear.Engine, Diligent, and ImGui. Use standard types and `NPAPI` for its exported interfaces; engine APIs continue to use `NEAPI`.
+- Preserve physical key values shared with C# and event-thread/window lifetime contracts. Route UI input through the engine's `ImGuiPlatform` adapter rather than adding ImGui dependencies to the foundation.
+- Add compilation units to `Nuclear.Platform.vcxproj`, build consumers, and run the independent Windows smoke project. Check physical locked mouse behavior and UI interaction in a sample when affected.
+
 ## Add or change an engine module or audio backend
 
 - Derive from `EngineModule` and register through `Engine::GetModuleManager()` before `Start`; declare dependencies by registered name. The manager owns `unique_ptr` registrations and borrows references to longer-lived singleton modules.

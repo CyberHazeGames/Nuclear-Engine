@@ -2,7 +2,7 @@
 #include <Audio/AudioBackend.h>
 #include <Audio/AudioBackendPlugin.h>
 #include <Utilities/Logger.h>
-#include <Windows.h>
+#include <Nuclear.Platform/Platform.h>
 
 namespace Nuclear::Audio
 {
@@ -25,32 +25,31 @@ namespace Nuclear::Audio
 		std::filesystem::path directory = desc.mPluginDirectory;
 		if (directory.empty())
 		{
-			wchar_t path[32768];
-			const auto length = GetModuleFileNameW(nullptr, path, 32768);
-			if (!length || length >= 32768) return false;
-			directory = std::filesystem::path(path).parent_path();
+			const auto path = Platform::GetExecutablePath();
+			if (path.empty()) return false;
+			directory = path.parent_path();
 		}
 		const auto libraryPath = std::filesystem::absolute(directory / ("Nuclear.Audio." + name + ".dll"));
-		auto library = LoadLibraryW(libraryPath.c_str());
+		auto library = Platform::LoadDynamicLibrary(libraryPath);
 		if (!library)
 		{
-			NUCLEAR_ERROR("[AudioModule] Failed to load audio plugin: {0} (Win32 {1})", libraryPath.string(), GetLastError());
+			NUCLEAR_ERROR("[AudioModule] Failed to load audio plugin: {0} ({1})", libraryPath.string(), Platform::GetLastError());
 			return false;
 		}
-		auto getPlugin = reinterpret_cast<GetAudioBackendPlugin>(GetProcAddress(library, AudioBackendPluginEntryPoint));
+		auto getPlugin = reinterpret_cast<GetAudioBackendPlugin>(Platform::GetDynamicLibrarySymbol(library, AudioBackendPluginEntryPoint));
 		const auto* plugin = getPlugin ? getPlugin() : nullptr;
 		if (!plugin || plugin->mSize != sizeof(AudioBackendPlugin) || plugin->mVersion != AudioBackendPluginVersion ||
 			!plugin->pName || name != plugin->pName || !plugin->pCreate || !plugin->pDestroy)
 		{
 			NUCLEAR_ERROR("[AudioModule] Invalid audio plugin: {0}", libraryPath.string());
-			FreeLibrary(library);
+			Platform::UnloadDynamicLibrary(library);
 			return false;
 		}
 		auto backend = plugin->pCreate();
 		if (!backend)
 		{
 			NUCLEAR_ERROR("[AudioModule] Audio plugin did not create a backend: {0}", name);
-			FreeLibrary(library);
+			Platform::UnloadDynamicLibrary(library);
 			return false;
 		}
 		pLibrary = library;
@@ -89,7 +88,7 @@ namespace Nuclear::Audio
 		mBackendName.clear();
 		if (pLibrary)
 		{
-			FreeLibrary(static_cast<HMODULE>(pLibrary));
+			Platform::UnloadDynamicLibrary(pLibrary);
 			pLibrary = nullptr;
 		}
 	}

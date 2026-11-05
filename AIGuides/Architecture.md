@@ -7,20 +7,24 @@
 [Engine.cpp](../Nuclear.Engine/Source/Core/Engine.cpp) is the central lifecycle implementation:
 
 1. Initialize the asset library and reserved paths.
-2. Initialize SDL video and create the window.
+2. Initialize Nuclear.Platform and create its native window (currently Windows only).
 3. Register enabled engine modules with `ModuleManager`, resolve their dependencies, and run load, initialize, and start phases in dependency order. Initialization failure rolls back loaded modules.
 4. Initialize the asset manager after its enabled module dependencies. The fallback module creates solid black, grey, white, and flat-normal textures synchronously in memory, without external image files.
 5. `LoadClient` calls client `Initialize`, then `Load`, then enters the blocking main loop.
-6. Each frame handles SDL events, executes up to one queued main-thread task when threading is enabled, updates input/timing, updates registered modules, starts ImGui, calls client `Update` and `Render`, then renders ImGui and presents.
+6. Each frame handles portable Nuclear.Platform events, executes up to one queued main-thread task when threading is enabled, updates input/timing, updates registered modules, starts ImGui, calls client `Update` and `Render`, then renders ImGui and presents.
 7. `EndClient` invokes `ExitRendering` and `Shutdown`. Engine shutdown stops, shuts down, and unloads modules in reverse dependency order.
 
 `Core::Client` is the application extension point. Its default callbacks are empty: the engine does not automatically update the scene's systems on behalf of every client. Inspect a sample's `Render`/`Update` methods to see what it drives.
 
 Existing subsystem modules expose singleton `Get()` methods. This is shared process state; repeated client loading does not create an isolated engine instance.
 
-[EngineModule](../Nuclear.Engine/include/Core/EngineModule.h) is the single lifecycle base for built-in and application modules. [ModuleManager](../Nuclear.Engine/include/Core/ModuleManager.h) accepts owned modules, references to longer-lived singleton modules, and external DLL modules through `Engine::GetModuleManager()` before `Start`. Built-in subsystems register their singleton instances directly. `CallbackModule` only adapts the asset manager, which has not been converted to `EngineModule`. Dependency names must refer to registered modules; missing dependencies and cycles fail startup. `AssetLibrary` path setup and SDL/window creation still precede the managed module phases.
+[EngineModule](../Nuclear.Engine/include/Core/EngineModule.h) is the single lifecycle base for built-in and application modules. [ModuleManager](../Nuclear.Engine/include/Core/ModuleManager.h) accepts owned modules, references to longer-lived singleton modules, and external DLL modules through `Engine::GetModuleManager()` before `Start`. Built-in subsystems register their singleton instances directly. `CallbackModule` only adapts the asset manager, which has not been converted to `EngineModule`. Dependency names must refer to registered modules; missing dependencies and cycles fail startup. `AssetLibrary` path setup and Nuclear.Platform/window creation still precede the managed module phases.
 
 An external module DLL exports `GetNuclearEngineModulePlugin` using the versioned [plugin ABI](../Nuclear.Engine/include/Core/EngineModulePlugin.h). Its factory table can contribute multiple modules, each with a name, type, and dependencies. `ModuleManager::LoadPlugin(path)` loads one DLL; `LoadPlugins(directory)` scans `Nuclear.Module.*.dll` files. `EngineStartupDesc.mModulePluginDirectory` optionally scans a directory before module startup. The manager copies descriptor strings, resolves dependencies across built-in and external modules, calls the DLL's destroy functions after shutdown, and then unloads the DLL. Loading and unloading happen at startup/shutdown; running modules are not hot reloaded.
+
+## Platform foundation
+
+[Nuclear.Platform](Platform.md) is a separate native DLL with no engine or renderer dependencies. Its Windows backend owns windows, message translation, physical keyboard state, mouse modes/raw motion, clipboard text, and native library operations. The engine retains forwarding headers for Window/Input, translates platform events into client callbacks, and attaches ImGui through a portable event adapter. Graphics borrows a platform window and adapts its native handle for Diligent. Module/audio plugin policy remains in the engine while native DLL operations go through the foundation. Windows x64 is the only implemented backend.
 
 ## Scene, entities, and systems
 

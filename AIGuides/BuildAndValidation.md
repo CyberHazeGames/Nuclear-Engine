@@ -2,12 +2,12 @@
 
 ## What the repository currently specifies
 
-Use [Nuclear Engine.sln](../Nuclear%20Engine.sln) as the concrete Windows build entry point. It includes the engine DLL, the C# scripting static library, the buildable Lua scaffold static library, XAudio2 and OpenAL audio DLL projects, Samples, editor, ScriptCore, SamplesScripts, and Nuclear.Managed. Engine native projects use C++20 and Debug/Release x64 configurations; Nuclear.Managed.Native uses C++17. Managed projects target .NET 10 and map to Any CPU in the solution; the native host and installed runtime must be x64. Nuclear.Engine links the C# backend through a project reference; the Lua scaffold is not linked or registered. Audio DLLs link against the engine import library and are loaded by name at runtime.
+Use [Nuclear Engine.sln](../Nuclear%20Engine.sln) as the concrete Windows build entry point. It includes the Nuclear.Platform foundation DLL, the engine DLL, the C# scripting static library, the buildable Lua scaffold static library, XAudio2 and OpenAL audio DLL projects, Samples, editor, ScriptCore, SamplesScripts, and Nuclear.Managed. Engine native projects use C++20 and Debug/Release x64 configurations; Nuclear.Managed.Native uses C++17. Managed projects target .NET 10 and map to Any CPU in the solution; the native host and installed runtime must be x64. Nuclear.Engine links the C# backend through a project reference; the Lua scaffold is not linked or registered. Audio DLLs link against the engine import library and are loaded by name at runtime.
 
 Toolset details are not uniform:
 
 - [RunCmakeForDependencies.bat](../RunCmakeForDependencies.bat) selects `Visual Studio 18 2026` and x64 for Assimp, Diligent, and OpenAL. Diligent and OpenAL also receive `CMAKE_POLICY_VERSION_MINIMUM=3.5`.
-- The solution and first-party native projects (engine, editor, samples, scripting plugin libraries, audio plugin DLLs, and Nuclear.Managed.Native) target Visual Studio 18 / **v145** for x64 Debug and Release. The installed MSVC toolset inspected on 2026-09-23 was 14.51.36231.
+- The solution and first-party native projects (platform, engine, editor, samples, scripting plugin libraries, audio plugin DLLs, and Nuclear.Managed.Native) target Visual Studio 18 / **v145** for x64 Debug and Release. The installed MSVC toolset inspected on 2026-09-23 was 14.51.36231.
 - Dependency copy paths and `#pragma comment(lib, ...)` directives include older toolset-specific names such as `assimp-vc143-mt` and PhysX `vc142` output directories.
 
 Inspect installed toolsets and generated filenames before deciding whether to adjust anything. A generator update alone does not update import-library names, dependency output paths, or all native projects.
@@ -19,7 +19,7 @@ The repository does not provide a single complete bootstrap command. For setup w
 1. Inspect `git submodule status` and `.gitmodules`; preserve local submodule changes. If initialization is needed for the task, use `git submodule update --init --recursive` without `--remote` to obtain recorded revisions.
 2. Read the dependency batch scripts before running them. They use repository-relative paths and interactive `pause` statements.
 3. Configure Assimp, Diligent, and OpenAL using the commands in `RunCmakeForDependencies.bat`, then build the required configurations. Configuration alone does not compile the libraries.
-4. Supply/build the remaining dependencies: PhysX, FreeImage, FreeType, msdf-atlas-gen/msdfgen, SDL2, and libsndfile. For scripting, install the x64 .NET 10 runtime and .NET 10 SDK. Nuclear.Managed is included as source; no scripting submodule is required. Inspect project include paths and native library pragmas for the actual expected layout.
+4. Supply/build the remaining dependencies: PhysX, FreeImage, FreeType, msdf-atlas-gen/msdfgen, and libsndfile. SDL headers, import libraries, and runtime DLLs are no longer needed; Nuclear.Platform builds from first-party source. For scripting, install the x64 .NET 10 runtime and .NET 10 SDK. Nuclear.Managed is included as source; no scripting submodule is required. Inspect project include paths and native library pragmas for the actual expected layout.
 5. Review [CopyDependenciesBinaries.bat](../CopyDependenciesBinaries.bat) against the outputs that were actually produced. It copies a subset of prerequisites and always exits with code 0; a successful exit does not prove every copy succeeded.
 
 Example dependency build commands, **after successful configuration**:
@@ -50,11 +50,11 @@ msbuild Nuclear.Engine/Nuclear.Engine.vcxproj /m:1 /p:Configuration=Debug /p:Pla
 
 The engine resolves native library directories relative to its project, so standalone builds do not require `SolutionDir`. Diligent GraphicsTools also requires `Diligent-GraphicsEngineD3DBase.lib`, `Diligent-GraphicsEngineOpenGL-static.lib`, and `Diligent-GraphicsEngineVk-static.lib`; the engine links them and the dependency copy script includes them for both configurations.
 
-The solution build includes managed project dependencies and their post-build copying into `Samples/`. Native and managed build outputs go to `Bin/DebugX64/` or `Bin/ReleaseX64/`; both audio DLLs are beside the engine and sample executables. Engine and audio plugin intermediates are under project-local `Build/` folders; Nuclear.Managed.Native intermediates are under the root `Build/`.
+The solution build includes managed project dependencies and their post-build copying into `Samples/`. Native and managed build outputs go to `Bin/DebugX64/` or `Bin/ReleaseX64/`; Nuclear.Platform.dll and both audio DLLs are beside the engine and sample executables. Engine and audio plugin intermediates are under project-local `Build/` folders; Nuclear.Managed.Native intermediates are under the root `Build/`.
 
 ### Module manager and audio plugins
 
-`Engine::GetModuleManager()` accepts owned `EngineModule` instances, references to longer-lived singleton modules, and external DLL modules before `Start`. Built-in modules register directly and initialize in dependency order; only the asset manager uses a callback adapter. The manager rejects missing dependencies and cycles, and reverses completed phases on failure or shutdown. `AssetLibrary` path setup and SDL/window creation remain outside the manager.
+`Engine::GetModuleManager()` accepts owned `EngineModule` instances, references to longer-lived singleton modules, and external DLL modules before `Start`. Built-in modules register directly and initialize in dependency order; only the asset manager uses a callback adapter. The manager rejects missing dependencies and cycles, and reverses completed phases on failure or shutdown. `AssetLibrary` path setup and Nuclear.Platform/window creation remain outside the manager.
 
 To load one external module DLL before startup, call `Engine::Get().GetModuleManager().LoadPlugin(path)`. To scan a directory at engine startup, set `EngineStartupDesc.mModulePluginDirectory`; `LoadPlugins(directory)` loads `Nuclear.Module.*.dll` files in sorted order. Each DLL exports `GetNuclearEngineModulePlugin` with the size/version and factory table in [EngineModulePlugin.h](../Nuclear.Engine/include/Core/EngineModulePlugin.h). A factory can declare dependencies on built-in or other DLL modules. The DLL and engine must use compatible C++ ABI, architecture, and runtime configuration. The manager calls plugin destroy functions before `FreeLibrary`; loading while modules run and hot reload are not supported.
 
@@ -123,10 +123,13 @@ Sample1 and the selector import the supplied vampire Collada model as `dancing_v
 
 ## Choosing validation
 
-There is no first-party smoke suite, general engine test suite, or tracked CI workflow. Build the affected projects and exercise relevant behavior in a sample. Do not use third-party test counts as evidence that engine behavior was tested.
+After the Nuclear.Platform migration on 2026-11-06, the full Debug x64 solution build passed. The standalone Windows platform smoke project passed in Debug and Release. The separate Debug engine smoke rendered 12 frames through Diligent/ImGui, resized to 960x540, received mouse/scroll callbacks, and shut down with exit code 0, with audio/physics/scripting/threading disabled. The default Samples executable initialized graphics/ImGui but could not complete startup because XAudio failed to create a master voice. See [Platform.md](Platform.md#validation) for the focused test projects and their limits. This does not establish a full Release engine build or physical input/audio playback validation.
+
+There is a focused Windows platform smoke project, but no general engine test suite or tracked CI workflow. Build the affected projects and exercise relevant behavior in a sample. Do not use third-party test counts as evidence that engine behavior was tested.
 
 | Change | Useful check after the relevant build |
 | --- | --- |
+| Native platform services | Build and run `Nuclear.Platform/Nuclear.Platform.Tests.vcxproj` as described in [Platform.md](Platform.md#validation), then exercise window resize/close, keyboard/mouse modes, and ImGui in Samples |
 | Core/client lifecycle | Open selector, enter/exit a sample, close application, inspect shutdown log |
 | Module manager or audio loading | Build the engine and relevant DLL, then launch a sample with the selected module or audio backend; exercise playback for audio changes |
 | Basic mesh/animation | Sample1, subject to local model availability |

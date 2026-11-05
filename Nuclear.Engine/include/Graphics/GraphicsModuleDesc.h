@@ -1,22 +1,27 @@
 #pragma once
 #include <Diligent/Graphics/GraphicsEngine/interface/GraphicsTypes.h>
 
-struct SDL_Window;
+namespace Nuclear::Platform { class Window; }
 
 namespace Nuclear
 {
 	namespace Graphics
 	{
+		/// Device, presentation, and UI settings used when the graphics module starts.
 		struct GraphicsModuleDesc
 		{
+			/// Rendering backend to create; Windows currently defaults to D3D11.
 			Diligent::RENDER_DEVICE_TYPE mRenderAPI = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_D3D11;
 
+			/// Creates an ImGui context and attaches it to the supplied platform window.
 			bool InitImGui = true;
-			SDL_Window* pWindowHandle;
+			/// Borrowed window; must remain alive until the graphics module shuts down.
+			Platform::Window* pWindowHandle = nullptr;
 
+			/// Initial swap-chain settings, including dimensions and buffer formats.
 			Diligent::SwapChainDesc SCDesc;
 
-			//Note: Overrides SCDesc ColorBufferFormat
+			/// Selects an sRGB color buffer, overriding SCDesc.ColorBufferFormat.
 			bool GammaCorrect = false;
 		};
 

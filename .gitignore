@@ -36,6 +36,7 @@
 /Samples/Assets/Common/Models/CrytekCyborg
 /Samples/Build/DebugX64
 /Nuclear.Engine/Build/
+/Nuclear.Platform/Build/
 /Plugins/*/Build/
 /Nuclear.Core/Build/
 /External/FMOD

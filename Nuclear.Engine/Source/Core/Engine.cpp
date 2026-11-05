@@ -9,10 +9,10 @@
 #include <Graphics/GraphicsModule.h>
 #include <Assets\DefaultMeshes.h>
 
-#include "..\Graphics\ImGUI\imgui_impl_sdl.h"
+#include <Graphics/ImGuiPlatform.h>
 #include "..\Graphics\ImGUI\imgui_impl.h"
 
-#include <SDL\include\SDL.h>
+#include <Nuclear.Platform/Platform.h>
 
 #include <filesystem>
 
@@ -62,8 +62,6 @@
 #pragma comment(lib,"Diligent-Win32Platform.lib")
 
 
-#pragma comment(lib,"SDL2.lib")
-#pragma comment(lib,"SDL2Main.lib")
 
 
 namespace Nuclear 
@@ -78,7 +76,7 @@ namespace Nuclear
 
 		void ResizeCallback(int Width, int Height)
 		{
-			if (Width == 0 && Height == 0)
+			if (Width <= 0 || Height <= 0 || !Engine::Get().GetClient())
 			{
 				return;
 			}
@@ -93,16 +91,15 @@ namespace Nuclear
 			Core::Path::mReservedPaths["@NuclearAssets@"] = Assets::AssetLibrary::Get().GetPath() + "NuclearEngine";
 			Core::Path::mReservedPaths["@CurrentPath@"] = std::filesystem::current_path().string();
 
-			//Initialize SDL
-			if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+			if (!Platform::Initialize())
 			{
-				NUCLEAR_FATAL("[Engine] SDL could not initialize! SDL_Error: {0}", SDL_GetError());
+				NUCLEAR_FATAL("[Engine] Platform initialization failed: {0}", Platform::GetLastError());
 				return failStartup();
 			}
 
 			if (!MainWindow.Create(desc.mEngineWindowDesc))
 			{
-				NUCLEAR_FATAL("[Engine] Failed To Create Window...");
+				NUCLEAR_FATAL("[Engine] Failed to create window: {0}", Platform::GetLastError());
 				return failStartup();
 			}
 
@@ -119,7 +116,7 @@ namespace Nuclear
 			if (desc.AutoInitGraphicsModule)
 			{
 				Graphics::GraphicsModuleDesc graphicsDesc;
-				graphicsDesc.pWindowHandle = GetMainWindow()->GetSDLWindowPtr();
+				graphicsDesc.pWindowHandle = GetMainWindow();
 				Graphics::GraphicsModule::Get().SetStartupDesc(graphicsDesc);
 				if (!registerRuntime("Graphics", {}, Graphics::GraphicsModule::Get()))
 				{
@@ -231,23 +228,32 @@ namespace Nuclear
 			pModules.reset();
 			mThreadingEnabled = false;
 			MainWindow.Destroy();
-			//Graphics::ImGui_Renderer::Shutdown();
-			SDL_Quit();
+			Platform::Shutdown();
 			NUCLEAR_INFO("------------------- -Nuclear Engine Has Shutdown- -----------------------");
 		}
 
 		void Engine::BeginFrame()
 		{
+			if (!ImGui::GetCurrentContext())
+			{
+				return;
+			}
 			ImGui_Impl_NewFrame();
-			ImGui_ImplSDL2_NewFrame();
+			Graphics::ImGuiPlatform::NewFrame();
 			ImGui::NewFrame();
 		}
 
 		void Engine::EndFrame()
 		{
-			ImGui::Render();
-			ImGui_Impl_RenderDrawData(ImGui::GetDrawData());
-			Graphics::GraphicsModule::Get().GetSwapChain()->Present(SwapChainSyncInterval);
+			if (ImGui::GetCurrentContext())
+			{
+				ImGui::Render();
+				ImGui_Impl_RenderDrawData(ImGui::GetDrawData());
+			}
+			if (auto* swapChain = Graphics::GraphicsModule::Get().GetSwapChain())
+			{
+				swapChain->Present(SwapChainSyncInterval);
+			}
 		}
 		Platform::Window* Engine::GetMainWindow()
 		{
@@ -322,37 +328,49 @@ namespace Nuclear
 
 			mShouldClose = false;
 
-			//Event handler
-			SDL_Event e;
+			int mouseX = 0;
+			int mouseY = 0;
+			MainWindow.GetSize(mouseX, mouseY);
+			mouseX /= 2;
+			mouseY /= 2;
+
+			Platform::Event event;
 			//Main Client Loop
 			while (!mShouldClose && pClient != nullptr)
 			{
-				while (SDL_PollEvent(&e) != 0)
+				while (pClient && Platform::PollEvent(event))
 				{
-					switch (e.type)
+					Graphics::ImGuiPlatform::ProcessEvent(event);
+					if (event.pWindow && event.pWindow != &MainWindow)
 					{
-					case SDL_QUIT:
+						continue;
+					}
+					switch (event.mType)
+					{
+					case Platform::EventType::Quit:
+					case Platform::EventType::WindowClose:
 						mShouldClose = true;
 						break;
-					case SDL_WINDOWEVENT:
-						if (e.window.event == SDL_WINDOWEVENT_RESIZED)
-						{
-							ResizeCallback(e.window.data1, e.window.data2);
-						}
+					case Platform::EventType::WindowResize:
+						ResizeCallback(event.mWidth, event.mHeight);
 						break;
-					case SDL_MOUSEMOTION:
-						int w, h;
-						MainWindow.GetSize(w,h);
-						static int xpos = w / 2; 
-						static int ypos = h / 2;
-						xpos += e.motion.xrel;
-						ypos += e.motion.yrel;
-						pClient->OnMouseMovement(xpos, ypos);
-
+					case Platform::EventType::MouseMove:
+						// Preserve the client callback's accumulated relative coordinates
+						// when cursor modes switch or focus changes.
+						mouseX += event.mDeltaX;
+						mouseY += event.mDeltaY;
+						pClient->OnMouseMovement(mouseX, mouseY);
 						break;
-
+					case Platform::EventType::MouseWheel:
+						pClient->OnMouseScroll(event.mWheelX, event.mWheelY);
+						break;
+					default:
+						break;
 					};
-					ImGui_ImplSDL2_ProcessEvent(&e);
+				}
+				if (mShouldClose || !pClient)
+				{
+					break;
 				}
 
 				//Process MainThread tasks
@@ -410,8 +428,7 @@ namespace Nuclear
 		void PrintIntroLog()
 		{
 			NUCLEAR_INFO("-------------------------- -Nuclear Engine- --------------------------");
-			NUCLEAR_INFO("------------------------- Zone Organization --------------------------");
-			NUCLEAR_INFO("--------------------------------v7medz--------------------------------");
+			NUCLEAR_INFO("-------------------------- -- CYBERHAZE -- ---------------------------");
 			NUCLEAR_TRACE("[Engine] Starting Engine...");
 			NUCLEAR_TRACE("[Engine] Engine Build: '{0}'.'{1}'  On: '{2}' At: '{3}'", MajorVersion, MinorVersion, __DATE__, __TIME__);
 

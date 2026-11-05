@@ -119,6 +119,8 @@ namespace Nuclear
 
 		private:
 			GraphicsModuleDesc mStartupDesc{};
+			/// True only when this module created the ImGui context and must destroy it.
+			bool mOwnsImGuiContext = false;
 			Diligent::IRenderDevice* pDevice;
 			Diligent::IDeviceContext* pContext;
 			Diligent::ISwapChain* pSwapChain;
@@ -129,7 +131,8 @@ namespace Nuclear
 			Diligent::ADAPTER_TYPE mAdapterType = Diligent::ADAPTER_TYPE_UNKNOWN;
 			std::string  mAdapterDetailsString;
 
-			bool InitializeDiligentEngine(SDL_Window* window, const Diligent::RENDER_DEVICE_TYPE& type, const Diligent::SwapChainDesc& SCDesc);
+			/// Creates the device and swap chain for a borrowed live platform window.
+			bool InitializeDiligentEngine(Platform::Window* window, const Diligent::RENDER_DEVICE_TYPE& type, const Diligent::SwapChainDesc& SCDesc);
 		};
 	}
 }

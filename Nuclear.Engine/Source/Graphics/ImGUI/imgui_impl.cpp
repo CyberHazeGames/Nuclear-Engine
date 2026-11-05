@@ -357,23 +357,12 @@ bool ImGui_Impl_CreateDeviceObjects()
 
 void ImGui_Impl_InvalidateDeviceObjects()
 {
-	if (g_pVB)
-		g_pVB->Release();
-
-	if (g_pIB)
-		g_pIB->Release();
-
-	if (g_pPSO)
-		g_pPSO->Release();
-
-	if (g_pVertexConstantBuffer)
-		g_pVertexConstantBuffer->Release();
-
-	if (g_pSRB)
-		g_pSRB->Release();
-
-	if (g_pFontTexture)
-		g_pFontTexture->Release();
+    g_pVB.Release();
+    g_pIB.Release();
+    g_pPSO.Release();
+    g_pVertexConstantBuffer.Release();
+    g_pSRB.Release();
+    g_pFontTexture.Release();
 }
 
 bool ImGui_Impl_Init()

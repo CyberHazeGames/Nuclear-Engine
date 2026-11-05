@@ -15,6 +15,8 @@
 #include <Assets\Shader.h>
 #include <Rendering\ImageBasedLighting.h>
 #include <Profiling/Profiler.h>
+#include <chrono>
+#include <thread>
 namespace Nuclear
 {
 	namespace Systems
@@ -115,7 +117,7 @@ namespace Nuclear
 						for (; condition;)
 						{
 							//wait for half a seond
-							Sleep(500);
+							std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 							if (i->GetState() == Assets::IAsset::State::Loaded)
 							{

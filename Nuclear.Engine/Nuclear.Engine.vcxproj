@@ -66,7 +66,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;NUCLEARENGINE_EXPORTS;PLATFORM_WIN32;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Plugins\Scripting.CSharp\Public;..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Nuclear.Platform\include;..\Plugins\Scripting.CSharp\Public;..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
@@ -91,7 +91,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;WIN32;NDEBUG;_WINDOWS;_USRDLL;UNICODE;NOMINMAX;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;PLATFORM_WIN32;NUCLEARENGINE_EXPORTS;ENGINE_DLL;DILIGENT_D3D11_SHARED=1;DILIGENT_D3D12_SHARED=1;DILIGENT_OPENGL_SHARED=1;DILIGENT_VK_SHARED=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Plugins\Scripting.CSharp\Public;..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Nuclear.Platform\include;..\Plugins\Scripting.CSharp\Public;..\Nuclear.Managed.Native\include;..\External\;..\External\Assimp\include;..\External\CmakeProjects\Assimp\include;include;..\External\PhysX\;..\External\PhysX\pxshared\include;..\External\msdf-atlas-gen\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <DebugInformationFormat>None</DebugInformationFormat>
@@ -143,6 +143,7 @@
     <ClInclude Include="include\Fallbacks\Fallbacks.h" />
     <ClInclude Include="include\Fallbacks\FallbacksModule.h" />
     <ClInclude Include="include\Graphics\GraphicsModuleDesc.h" />
+    <ClInclude Include="include\Graphics\ImGuiPlatform.h" />
     <ClInclude Include="include\Graphics\ShaderPipelineVariantFactory.h" />
     <ClInclude Include="include\Parsers\INIParser.h" />
     <ClInclude Include="include\Profiling\Profiler.h" />
@@ -445,7 +446,6 @@
     <ClInclude Include="include\Audio\NullAudioBackend.h" />
     <ClInclude Include="Source\Audio\AudioConverter.h" />
     <ClInclude Include="Source\Graphics\ImGUI\imgui_freetype.h" />
-    <ClInclude Include="Source\Graphics\ImGUI\imgui_impl_sdl.h" />
     <ClInclude Include="Source\Assets\Importers\AssimpGLMHelpers.h" />
     <ClInclude Include="Source\PhysX\PhysXTypes.h" />
     <ClInclude Include="include\PhysX\RigidDynamic.h" />
@@ -504,9 +504,7 @@
     <ClCompile Include="Source\Fallbacks\FallbacksModule.cpp" />
     <ClCompile Include="Source\Graphics\ShaderPipelineVariantFactory.cpp" />
     <ClCompile Include="Source\Parsers\ShaderParser.cpp" />
-    <ClCompile Include="Source\Platform\Input.cpp" />
     <ClCompile Include="Source\ECS\Entity.cpp" />
-    <ClCompile Include="Source\Graphics\ImGUI\imgui_impl_sdl.cpp" />
     <ClCompile Include="Source\Rendering\PostProcessingEffects\Bloom.cpp" />
     <ClCompile Include="Source\Rendering\RenderingModule.cpp" />
     <ClCompile Include="Source\Rendering\RenderPasses\AmbientOcclusionPass.cpp" />
@@ -528,7 +526,6 @@
     <ClCompile Include="Source\Utilities\Logger.cpp" />
     <ClCompile Include="Source\Parsers\INIParser.cpp" />
     <ClCompile Include="Source\Core\Path.cpp" />
-    <ClCompile Include="Source\Platform\Window.cpp" />
     <ClCompile Include="Source\Animation\AnimationClip.cpp" />
     <ClCompile Include="Source\Animation\Animator.cpp" />
     <ClCompile Include="Source\Animation\Bone.cpp" />
@@ -561,6 +558,7 @@
     <ClCompile Include="Source\Graphics\ImGUI\imgui_tables.cpp" />
     <ClCompile Include="Source\Graphics\ShaderPipeline.cpp" />
     <ClCompile Include="Source\Graphics\GraphicsModule.cpp" />
+    <ClCompile Include="Source\Graphics\ImGuiPlatform.cpp" />
     <ClCompile Include="Source\Graphics\RenderTarget.cpp" />
     <ClCompile Include="Source\Graphics\ImGUI\imgui.cpp" />
     <ClCompile Include="Source\Graphics\ImGUI\imgui_draw.cpp" />
@@ -740,6 +738,11 @@
     </ProjectReference>
     <ProjectReference Include="..\Plugins\Scripting.CSharp\Nuclear.Scripting.CSharp.vcxproj">
       <Project>{44F36FE4-4FFE-4C8D-9948-92BD43F94C93}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nuclear.Platform\Nuclear.Platform.vcxproj">
+      <Project>{D9AF2902-8042-45CD-AD9E-1234F7EA3B80}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

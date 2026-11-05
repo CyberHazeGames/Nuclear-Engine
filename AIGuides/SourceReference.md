@@ -15,7 +15,8 @@ Start with the owning row, read the declaration and implementation, then search 
 | Entity and systems | [Entity.h](../Nuclear.Engine/include/ECS/Entity.h), [System.h](../Nuclear.Engine/include/ECS/System.h), [System.cpp](../Nuclear.Engine/Source/ECS/System.cpp) | Component templates, `SystemManager::Add`, `Update_All` |
 | Transforms | [Transform.h](../Nuclear.Engine/include/ECS/Transform.h), [Transform.cpp](../Nuclear.Engine/Source/ECS/Transform.cpp), [EntityInfoComponent.h](../Nuclear.Engine/include/Components/EntityInfoComponent.h) | Spatial state and entity metadata |
 | Paths and IDs | [Path.cpp](../Nuclear.Engine/Source/Core/Path.cpp), [UUID.h](../Nuclear.Engine/include/Core/UUID.h), [UUID.cpp](../Nuclear.Engine/Source/Core/UUID.cpp) | Reserved-path expansion and persistent asset identifiers |
-| Platform services | [Window.cpp](../Nuclear.Engine/Source/Platform/Window.cpp), [Input.cpp](../Nuclear.Engine/Source/Platform/Input.cpp), [FileSystem.cpp](../Nuclear.Engine/Source/Platform/FileSystem.cpp) | SDL window/input, file operations |
+| Platform foundation | [Platform.h](../Nuclear.Platform/include/Nuclear.Platform/Platform.h), [Window.h](../Nuclear.Platform/include/Nuclear.Platform/Window.h), [Input.h](../Nuclear.Platform/include/Nuclear.Platform/Input.h), [Event.h](../Nuclear.Platform/include/Nuclear.Platform/Event.h), [Windows backend](../Nuclear.Platform/Source/Windows), [ImGuiPlatform.cpp](../Nuclear.Engine/Source/Graphics/ImGuiPlatform.cpp) | Native windows, portable events/input, clipboard/cursors, executable discovery, DLL loading; see [Platform.md](Platform.md) |
+| Engine file helpers | [FileSystem.cpp](../Nuclear.Engine/Source/Platform/FileSystem.cpp) | Engine paths, blobs, shader processing, and standard filesystem operations |
 | Diagnostics | [Logger.h](../Nuclear.Engine/include/Utilities/Logger.h), [Logger.cpp](../Nuclear.Engine/Source/Utilities/Logger.cpp), [Profiler.h](../Nuclear.Engine/include/Profiling/Profiler.h) | `NUCLEAR_*`, `CLIENT_*`, log sinks, profiling helpers |
 
 ## Assets, jobs, and serialization
@@ -80,5 +81,5 @@ git ls-files Programs .github
 For a full first-party file listing, exclude bundled libraries explicitly:
 
 ```powershell
-rg --files Nuclear.Engine Nuclear.Editor Nuclear.ScriptCore Samples SamplesScripts Assets/NuclearEngine -g '!**/ThirdParty/**' -g '!**/glm/**' -g '!**/entt/**' -g '!**/spdlog/**' -g '!**/ImGUI/**' -g '!**/Parsers/impl/**'
+rg --files Nuclear.Platform Nuclear.Engine Nuclear.Editor Nuclear.ScriptCore Samples SamplesScripts Assets/NuclearEngine -g '!**/ThirdParty/**' -g '!**/glm/**' -g '!**/entt/**' -g '!**/spdlog/**' -g '!**/ImGUI/**' -g '!**/Parsers/impl/**'
 ```

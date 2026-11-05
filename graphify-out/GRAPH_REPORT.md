@@ -1,1449 +1,1423 @@
-# Graph Report - NuclearEngine  (2026-11-04)
+# Graph Report - NuclearEngine  (2026-11-06)
 
 ## Corpus Check
-- 398 files · ~94,905 words
+- 410 files · ~102,098 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 58 file(s) not represented in the graph (top: .hlsl 24, .vcxproj 8, (none) 6)
+- Unclassified: 61 file(s) not represented in the graph (top: .hlsl 24, .vcxproj 11, (none) 6)
 
 ## Summary
-- 5939 nodes · 9581 relationship records (9478 undirected pairs) · 296 communities (253 shown, 43 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 280 edges (avg confidence: 0.85)
-- Token cost: structural extraction uses no LLM tokens; semantic extraction ran in the current coding-assistant session. The host does not expose token usage, so semantic token counts are unavailable (not zero).
+- 6179 nodes · 9821 edges · 331 communities (265 shown, 66 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 310 edges (avg confidence: 0.85)
+- Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- Native Keyboard Codes
 - Managed Keyboard Codes
-- Architecture and Validation Guides
+- KeyCode
 - Named Color Functions
 - Color Class Palette
-- Render Resource Interfaces
-- Managed Interop Namespaces
-- Shadow Map Rendering
+- AssimpImporter.cpp
 - Asset Import Orchestration
 - Managed Function Pointer Table
-- Native .NET Hosting
 - Managed Function ABI Declarations
+- Managed Interop Namespaces
 - Managed Reflection Entry Points
-- Native String Interop
-- Assimp Model Conversion
-- Native Managed Type Reflection
+- Render System Light Interface
 - Diligent Graphics Module
-- Scripting Integration Source Map
-- PBR Rendering Sample
-- XAudio2 Backend Operations
+- vector
+- Mesh Component Draw State
+- NE_Common.h
+- Native Managed Type Reflection
+- AssetManager.h
 - Managed Object Invocation
-- Asset Path Resolution
-- Component Rendering Dependencies
-- Script Component Runtime
-- Shared Rendering Services
 - Scene Asset Library
-- Native Assembly Contexts
+- PBR Rendering Sample
 - Mesh Animation Audio Sample
+- Native Assembly Contexts
+- Audio Source Interface
+- XAudio2 Backend Operations
 - Image Format Enumeration
 - HostFXR Status Codes
-- Audio Math Dependencies
+- Path
 - GTAO Resources and Settings
-- Common Engine Asset Types
-- Filesystem Binary IO
-- Mesh Component Draw State
-- Postprocessing Pass Execution
+- Audio Module Configuration
 - Native Managed Object Handles
-- Engine Startup Integration
-- PhysX SDK Ownership
-- Forward and Deffered Paths
-- Bone Transform Interpolation
-- OpenAL Backend Operations
 - Light Buffer Baking
-- Render System Light Interface
-- UUID and Entity Metadata
-- Skeletal Animation Playback
+- Postprocessing Pass Execution
+- Shadow Map Rendering
+- Engine Startup Integration
+- Entity
+- OpenAL Backend Operations
+- Win32Platform.cpp
+- Bone Transform Interpolation
+- PhysX SDK Ownership
+- Array
+- String
+- Filesystem Binary IO
 - Texture Import Tasks
-- Collider Shape Creation
-- INI and File Dialogs
 - Editor Project Management
+- graphicsmodule
 - Light Component Interface
-- Rendering Module Buffers
-- Geometry Render Pass
-- Physics Audio ECS Systems
-- Native Interop Memory
+- Texture Decode and Export
+- Forward and Deffered Paths
 - GPU Texture Descriptions
 - Asset Importer Interface
-- Editor UI Panels
-- Native Attribute Property Reflection
-- Texture Decode and Export
-- Skybox Pipeline Rendering
-- Blur Effect Targets
-- Audio Source Interface
-- Native Arrays and Callbacks
-- Managed Gameplay API
-- Asset Import Options
-- Metadata Driven Asset Loading
-- Physics Scripting Sample
-- Light State Implementation
-- Managed Assembly Loading
-- Native Method Reflection
-- Camera Matrices and Targets
-- Audio Module Configuration
-- SDL Window Operations
-- Image Based Lighting Interface
-- Sample Selection UI
-- Multiple Camera Sample
-- UUID Creation Utilities
+- GBuffer Target Management
+- Architecture and Validation Guides
+- Win32Input.cpp
 - Graphics Resource Creation
-- Worker Main Thread Queues
+- ShaderPipelineVariantFactory.cpp
+- ShaderPipelineVariantFactory.cpp
+- Editor UI Panels
+- CSharp Native Callback Bindings
+- HostInstance
+- NE_Common.h
+- Skybox Pipeline Rendering
+- Sample Selection UI
+- Metadata Driven Asset Loading
 - Engine Runtime Interface
+- Rendering Module Buffers
+- Physics Scripting Sample
+- State
+- Audio ECS Component Updates
+- Blur Effect Targets
+- Stable Vector Storage
+- Collider Shape Creation
+- Event
+- Light State Implementation
+- Window
+- Managed Assembly Loading
+- Native Arrays and Callbacks
+- Skeletal Animation Playback
+- AnimationClip
+- Asset Import Options
 - Engine Startup Options
+- Pipeline Variant Interface
+- Native Attribute Property Reflection
+- UUID Creation Utilities
+- ImGuiPlatform.cpp
+- INI Value Access
+- Image Based Lighting Interface
+- Multiple Camera Sample
+- SourceReference.md
+- Worker Main Thread Queues
+- Audio File Buffer Data
 - Scripting Backend Selection
 - Delegate Callback Utilities
-- Deffered Render Pass
-- Stable Vector Storage
-- Bone Keyframe Data
-- Client Frame Lifecycle
+- Architecture and Validation Guides
+- UUID Asset Map Lookup
+- RenderingModule.cpp
+- Shader Build Options
 - Frame Render Data
+- ShadowPass.cpp
 - Native Type Cache
 - Math Archive Adapters
 - Managed Type Classification
-- Scene Registry Interface
-- GBuffer Target Management
-- CSharp Native Callback Bindings
-- Editor Asset Browser
-- Asset Manager Interface
-- Shader Resource Reflection
-- Pipeline Variant Interface
+- Render Target Descriptions
 - Task Execution Contract
-- Shader Pipeline Switch Implementation
+- PlatformSmokeClient
+- Editor Asset Browser
+- Editor Logger Panel
+- Bone Keyframe Data
+- Client Frame Lifecycle
+- Scene Registry Interface
+- RenderingPath.cpp
 - CSharp Backend Initialization
 - Async Asset Sample
+- SourceReference.md
+- Geometry Render Pass
+- Frame Render Data
 - Native Managed Type Conversion
-- Editor Logger Panel
-- Mesh Import Tasks
-- Audio File Buffer Data
-- Shader Pipeline Switch Interface
-- Playground Scene Sample
-- Pipeline Baking Resources
-- XAudio2 Source Spatialization
+- Array
+- Camera Matrices and Targets
 - Solution Managed Project Graph
-- Camera Component Configuration
-- INI Value Access
+- Asset Manager Interface
+- Mesh Import Tasks
+- Native Method Reflection
+- Playground Scene Sample
+- AmbientOcclusionPass.cpp
+- Asset Identity State Interface
+- Shader Resource Reflection
 - Task Cancellation Implementation
-- Rigid Body Transform Integration
+- PDataType
+- Physics Audio ECS Systems
 - Worker Pool Interface
 - Shared Sample Client
 - ECS System Management
 - Ambient Occlusion Pass Interface
-- UUID Asset Map Lookup
+- Pipeline Baking Resources
 - Audio Backend Interface
 - Shader PSO Descriptions
-- INI File Writing
 - Bloom Effect Interface
-- Render Baking Buffer Contracts
-- Native Field Reflection
+- Asset Metadata Serialization
+- Shader Pipeline Switch Implementation
+- Native Attribute Property Reflection
 - Proposed Modular Architecture
-- Native Entity Registry Handles
+- Architecture and Validation Guides
 - Editor Component Registration
 - Mesh Asset Interface
+- Script Component Runtime
+- Client Metadata Types
 - Module Dependency Lifecycle
+- ShaderPipelineSwitchController
 - Shader Creation Descriptions
-- Asset Metadata Serialization
-- Scripting Backend Registry
-- Audio ECS Component Updates
+- Project Dependencies and Roadmap
+- Architecture and Validation Guides
+- Input
+- Shader Stage Enumeration
+- Managed Component Wrappers
 - Engine Math Type Aliases
-- Pipeline Variant Factory
+- HostInstance.cpp
+- CoreCLRFunctions
+- XAudio2 Source Spatialization
 - Texture Usage Enumeration
 - Audio Plugin Factory ABI
 - Fallback Resource Interface
-- Pipeline Variant Switch Controller
 - Debug Rendering Inspection
-- Shader Build Options
-- Audio Backend DLL Loading
-- Bloom Effect Execution
-- Managed Component Wrappers
+- Scripting Backend Interface
+- Platform foundation
+- Material.cpp
 - Rigid Body Component Interface
+- Pipeline Variant Factory
+- AssetMetadata
+- Asset Type Enumeration
 - Font Glyph Metrics
 - Material Import Tasks
 - Submesh GPU Buffers
-- Material Load Tasks
+- Scene Primitive Entity Creation
 - Render Target Interface
+- ShaderPipelineSwitch
+- INI File Writing
 - Physics Geometry Wrappers
-- CPU GPU Profiling
-- Color and Background Interface
-- Material Asset Interface
-- GTAO Compute Execution
+- ImageBasedLighting.cpp
+- MeshComponent.h
 - Assimp Model Loading
-- Material Texture Sets
 - Mesh Vertex Layout
 - Procedural Mesh Generation
 - Script Asset Class Handles
-- Client Metadata Types
-- Graphics Startup Configuration
-- Native Input Implementation
+- TextureData
 - Shadow Pass Baking Options
+- Scripting Backend Registry
+- Native Attribute Property Reflection
 - Native Garbage Collection Control
-- Project Dependencies and Roadmap
 - PhysX Simulation Interface
-- Environment Lighting Capture
-- Editor Entity Inspection
-- Asset Type Enumeration
-- Asset Identity State Interface
-- Asset Loading Descriptions
+- ModuleManager.cpp
 - Shader Asset Interface
-- Engine Frame Timing
-- Physics Raycast Results
+- Camera Matrices and Targets
+- Deffered Render Pass
 - Scene Snapshot Archives
+- Hashed String Tables
+- GTAO Compute Execution
+- Event
+- MouseCursor
 - Lua Backend Scaffold
-- INI Parsing Logger Utilities
-- Font Atlas Creation
-- Material Shader Texture Binding
+- Native Entity Registry Handles
+- ScriptingAssembly.h
 - Texture Asset Interface
-- Engine Module Plugin ABI
-- Scene Primitive Entity Creation
-- Render Target Descriptions
+- Camera Movement Enumeration
+- EngineModulePlugin.h
+- Graphics Startup Configuration
 - Render Target GPU Creation
 - Pipeline State Variant Descriptions
-- Hashed String Tables
+- Physics Raycast Results
+- Rigid Body Transform Integration
 - Managed Component Callback Registry
+- AIGuides/Platform.md
 - Concurrent Task Queues
 - CSharp Class Lifetime Handles
+- Graphics Device Resource Types
+- FileDialog.h
 - CSharp Script Object Invocation
 - Editor Client Runtime
 - Imported Model Asset Bundle
 - Texture GPU Creation Tasks
+- Shader Texture Role Enumeration
 - Shader Pipeline Interface
 - Rendering Shader Baking Context
-- Shader Stage Enumeration
-- Native Input Interface
 - Postprocessing Effect Contract
-- Scripting Backend Interface
-- Asset State Implementation
-- Audio Source Playback Controls
+- IAsset.cpp
 - Native Host Message Levels
-- Sample Selector Asset Imports
-- Shader Creation Resource Parsing
-- Skeletal Bone Metadata
-- Animation Clip Hierarchy
+- Client Frame Lifecycle
+- graphicsmodule
 - Audio Clip Asset Interface
 - Mesh Load Tasks
+- Texture Load Tasks
 - Engine Module Lifecycle Contract
 - Module Registration Descriptors
 - Pipeline Variant Flags
+- GTAO Shader Bindings
+- Engine Startup Integration
 - Fallback Texture Creation
-- Graphics Device Resource Types
+- AudioListenerComponent.h
 - CSharp Backend Runtime Ownership
-- INI Reader Streams
+- INI File Writing
 - License and Dependency Attribution
 - Editor Log Level Enumeration
 - Default Mesh Interface
 - Texture Importer Interface
+- Material Asset Interface
+- Material Texture Sets
+- MaterialLoadTask
 - Mesh GPU Creation Tasks
 - Shader Load Tasks
-- Texture Load Tasks
-- Shader Texture Role Enumeration
 - Asset Callback Module Adapter
-- Module Instance Ownership Records
-- Transform Rotation Position Scale
-- Environment Lighting Capture Options
+- Quaternion
+- INIFile
+- Color.cpp
+- PosShadowMap
 - Worker Pool Task Execution
 - Engine Client Logger Interface
-- Default Mesh Resource Creation
-- Texture View Implementation
+- Engine Frame Timing
+- AmbientOcclusionPass.cpp
 - CSharp Backend Registration Options
+- Entity
 - XAudio2 Engine Callbacks
+- Rigid Body Transform Integration
 - Graphics Diagnostics Resource Binding
-- Asset Metadata Fields
-- Light GPU Buffer Data
-- UUID Hashing and Comparison
-- Shader Category Enumeration
-- Audio Mono Conversion
-- Window Creation Options
+- AudioClipImportingDesc
+- LightComponent.h
+- Module Instance Ownership Records
+- AudioConverter.h
+- LightComponent.h
+- Environment Lighting Capture Options
 - Delegate Task Adapter
 - Task State Enumeration
 - Shader TOML PSO Parsing
 - Managed Host Message Levels
 - Managed Type Accessibility Enumeration
 - CSharp Assembly Class Resolution
-- Asset Readiness State Enumeration
-- Texture Memory Loading Data
-- Camera Movement Enumeration
-- Camera Constant Buffer Layout
 - Engine Lifecycle State Enumeration
-- External Module DLL Loading
-- Static Physics Actor Wrapper
-- GBuffer Configuration
+- Collider Shape Creation
+- RigidStatic
 - Screen Quad Vertex Layout
 - Native Script Object Dispatch
 - Native MSBuild Services
-- Diligent Pipeline Serialization
-- Script Component Asset Reference
-- Win32 DLL Entry Point
-- Assimp Manager Interface
-- Font Import Dimensions
-- Audio Backend Type Enumeration
-- Light Type Enumeration
-- Module Type Enumeration
+- Material Texture Sets
+- Scene
+- Type
+- Module Registration Descriptors
 - Module Lifecycle State Enumeration
-- Scene Entity Creation
-- Pipeline Bake State Enumeration
-- INI Generator Output
+- Type
 - Sprite Rendering Implementation
-- Background Skybox Assignment
-- GTAO Shader Bindings
+- GraphicsModule::InitializeDiligentEngine
 - PhysX Error Callback
-- Audio Playback State Enumeration
-- Postprocessing Target Baking Options
-- Script Object Interface
-- Entity Metadata Construction
-- Diligent Device Initialization
-- Stable Vector Page Storage
-- Pipeline Resource Initialization
-- Light Shadow Mode Enumeration
-- Shader Reflection Creation Helpers
-- Scene Main Camera Selection
+- Physics Audio ECS Systems
+- ShadowType
+- Skeletal Bone Metadata
+- ModuleManager.cpp
+- Shader Pipeline Switch Implementation
 - Editor Systems Panel
-- Texture Image Data Conversion
 
 ## God Nodes (most connected - your core abstractions)
 1. `KeyCode` - 249 edges
 2. `KeyCode` - 249 edges
-3. `Uint32` - 125 edges
+3. `Uint32` - 121 edges
 4. `ManagedFunctions` - 109 edges
-5. `GraphicsModule` - 78 edges
+5. `GraphicsModule` - 79 edges
 6. `ShadowPass` - 58 edges
 7. `Sample2` - 50 edges
 8. `Sample1` - 49 edges
-9. `GTAO` - 47 edges
-10. `IMAGE_EXTENSION` - 47 edges
+9. `IMAGE_EXTENSION` - 47 edges
+10. `GTAO` - 47 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Proposed lifecycle/dependency graph` --semantically_similar_to--> `ModuleManager lifecycle orchestration`  [INFERRED] [semantically similar]
   NuclearEngine_Modular_Architecture.md → AIGuides/Architecture.md
 - `Proposed scripting extension registry` --semantically_similar_to--> `IScriptingBackend opaque interface`  [INFERRED] [semantically similar]
   NuclearEngine_Modular_Architecture.md → AIGuides/Architecture.md
-- `Editor consumes runtime scene` --references--> `NuclearEditor`  [EXTRACTED]
-  AIGuides/Architecture.md → Nuclear.Editor/include/Nuclear.Editor.h
-- `Engine lifecycle` --references--> `Engine::Start()`  [EXTRACTED]
-  AIGuides/Architecture.md → Nuclear.Engine/Source/Core/Engine.cpp
 - `AssetLibrary owns asset maps` --references--> `AssetLibrary`  [EXTRACTED]
   AIGuides/Architecture.md → Nuclear.Engine/include/Assets/AssetLibrary.h
+- `AssetManager import/load/export facade` --references--> `AssetManager`  [EXTRACTED]
+  AIGuides/Architecture.md → Nuclear.Engine/include/Assets/AssetManager.h
+- `Asset readiness states` --references--> `IAsset`  [EXTRACTED]
+  AIGuides/Architecture.md → Nuclear.Engine/include/Assets/IAsset.h
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Documented texture decode-to-GPU creation flow** — aiguides_architecture_asset_manager, aiguides_architecture_texture_decode, aiguides_architecture_threading, aiguides_architecture_texture_create, aiguides_architecture_graphics, aiguides_architecture_asset_states [EXTRACTED 1.00]
-- **Managed API consistency contract** — aiguides_architecture_csharp, aiguides_architecture_managed, aiguides_architecture_native_calls, aiguides_architecture_component_registry [EXTRACTED 1.00]
 - **Proposed modular architecture, not implementation** — nuclearengine_modular_architecture_module_boundary, nuclearengine_modular_architecture_services, nuclearengine_modular_architecture_events, nuclearengine_modular_architecture_scripting, nuclearengine_modular_architecture_graphics, nuclearengine_modular_architecture_physics [EXTRACTED 1.00]
 
-## Communities (296 total, 43 thin omitted)
+## Communities (331 total, 66 thin omitted)
 
-### Community 0 - "Native Keyboard Codes"
-Cohesion: 0.01
-Nodes (249): KeyCode, KEYCODE_0, KEYCODE_1, KEYCODE_2, KEYCODE_3, KEYCODE_4, KEYCODE_5, KEYCODE_6 (+241 more)
-
-### Community 1 - "Managed Keyboard Codes"
+### Community 0 - "Managed Keyboard Codes"
 Cohesion: 0.01
 Nodes (249): KeyCode, A, AC_BACK, AC_BOOKMARKS, AC_FORWARD, AC_HOME, AC_REFRESH, AC_SEARCH (+241 more)
 
-### Community 2 - "Architecture and Validation Guides"
-Cohesion: 0.04
-Nodes (72): Source takes precedence over guides, AssetLibrary owns asset maps, AssetManager import/load/export facade, Asset readiness states, Audio backend DLL selection, Audio backend plugin ABI, Client application callbacks, Managed component registration (+64 more)
+### Community 1 - "KeyCode"
+Cohesion: 0.01
+Nodes (248): KeyCode, KEYCODE_0, KEYCODE_1, KEYCODE_2, KEYCODE_3, KEYCODE_4, KEYCODE_5, KEYCODE_6 (+240 more)
 
-### Community 3 - "Named Color Functions"
+### Community 2 - "Named Color Functions"
 Cohesion: 0.03
 Nodes (77): Aqua(), Aquamarine(), Black(), BlanchedAlmond(), BlueViolet(), Brown(), Chocolate(), Coral() (+69 more)
 
-### Community 4 - "Color Class Palette"
+### Community 3 - "Color Class Palette"
 Cohesion: 0.03
 Nodes (75): AliceBlue(), AntiqueWhite(), Azure(), Beige(), Bisque(), Blue(), BurlyWood(), CadetBlue() (+67 more)
 
-### Community 5 - "Render Resource Interfaces"
-Cohesion: 0.05
-Nodes (16): Animations, mClips, GraphicsModule, Material, ImageBasedLighting, Shader, Shader, Type (+8 more)
-
-### Community 6 - "Managed Interop Namespaces"
+### Community 4 - "AssimpImporter.cpp"
 Cohesion: 0.06
-Nodes (20): Nuclear, Samples, Nuclear.Utilities, Nuclear.Managed, Nuclear.Math, Nuclear.Platform, Nuclear.Managed.Interop, Nuclear.Graphics (+12 more)
+Nodes (19): AssimpImporter, AssimpManager, AssetManager::LoadFolder(), AssimpGLMHelpers, aiAnimation, aiMaterial, aiMesh, aiNode (+11 more)
 
-### Community 7 - "Shadow Map Rendering"
-Cohesion: 0.05
-Nodes (34): PosShadowMap, pPosShadowMap, pPosShadowMapDSVs, pPosShadowMapSRV, ShadowPass, mDesc, mDirShadowMap, mOmniDirShadowPassPSO (+26 more)
-
-### Community 8 - "Asset Import Orchestration"
+### Community 5 - "Asset Import Orchestration"
 Cohesion: 0.08
-Nodes (3): Texture, MainThreadTask, AssetLibrary::Initialize()
+Nodes (7): Texture, FontImportingDesc, Height, Width, MainThreadTask, AssetLibrary::Initialize(), Importer::ImportFont()
 
-### Community 9 - "Managed Function Pointer Table"
+### Community 6 - "Managed Function Pointer Table"
 Cohesion: 0.03
 Nodes (59): GetAssemblyNameFn, GetAssemblyQualifiedNameFn, GetFieldInfoAttributesFn, InvokeMethodRetFn, ManagedFunctions, CollectGarbageFptr, CopyObjectFptr, CreateAssemblyLoadContextFptr (+51 more)
 
-### Community 10 - "Native .NET Hosting"
-Cohesion: 0.05
-Nodes (32): ExceptionCallbackFn, HostInitStatus, DotNetNotFound, ManagedBridgeInitError, ManagedBridgeNotFound, Success, HostInstance, m_HostFXRContext (+24 more)
-
-### Community 11 - "Managed Function ABI Declarations"
+### Community 7 - "Managed Function ABI Declarations"
 Cohesion: 0.03
 Nodes (57): AssemblyLoadStatus, CollectGarbageFn, CopyObjectFn, CreateAssemblyLoadContextFn, CreateObjectFn, DestroyObjectFn, GCCollectionMode, GetAssemblyTypesFn (+49 more)
 
-### Community 12 - "Managed Reflection Entry Points"
+### Community 8 - "Managed Interop Namespaces"
+Cohesion: 0.08
+Nodes (15): Nuclear.Managed, Nuclear.Math, Nuclear.Managed.Interop, Nuclear.Graphics, ExtensionMethods, InternalCall, Name, TypeNotFoundException (+7 more)
+
+### Community 9 - "Managed Reflection Entry Points"
 Cohesion: 0.12
 Nodes (5): GarbageCollector, Bool32, MSBuildRunner, TypeInterface, UniqueIdList
 
-### Community 13 - "Native String Interop"
-Cohesion: 0.05
-Nodes (30): Bool32, CharType, InternalCall, Name, NativeFunctionPtr, StringView, TypeAccessibility, Internal (+22 more)
+### Community 10 - "Render System Light Interface"
+Cohesion: 0.04
+Nodes (29): RenderPass, ImageBasedLighting, RenderSystem, Baked_DirLights_Size, Baked_PointLights_Size, Baked_SpotLights_Size, HasbeenBakedBefore, mPSLightCB (+21 more)
 
-### Community 14 - "Assimp Model Conversion"
-Cohesion: 0.06
-Nodes (17): AssetManager::LoadFolder(), AssimpGLMHelpers, aiAnimation, aiMaterial, aiMesh, aiNode, aiNodeAnim, aiScene (+9 more)
+### Community 11 - "Diligent Graphics Module"
+Cohesion: 0.04
+Nodes (24): GraphicsModule, mAdapterAttribs, mAdapterDetailsString, mAdapterId, mAdapterType, mDefaultStaticSamplers, mDefaultVariantFactory, mOwnsImGuiContext (+16 more)
+
+### Community 12 - "vector"
+Cohesion: 0.07
+Nodes (9): Add(), GetSystem(), ScriptingSystem, ScriptingSystem::Initialize(), ScriptingSystem::Load(), ScriptingSystem::Update(), ScriptInitialization(), ManagedObject (+1 more)
+
+### Community 13 - "Mesh Component Draw State"
+Cohesion: 0.08
+Nodes (17): AddComponentByHash(), AddComponentByHashImp(), EntityEditor::Render(), GetAllComponentsHashes(), GetAvailableComponents(), GetComponentName(), MeshComponent, MeshComponent::MeshComponent() (+9 more)
+
+### Community 14 - "NE_Common.h"
+Cohesion: 0.07
+Nodes (14): Animations, mClips, GraphicsModule, ImageBasedLighting, Shader, Shader, Type, Bloom (+6 more)
 
 ### Community 15 - "Native Managed Type Reflection"
-Cohesion: 0.06
-Nodes (23): InvokeStaticMethod(), Type, m_BaseType, m_ElementType, m_Id, m_InterfaceTypes, Type::CreateInstanceInternal(), Type::GetAssemblyQualifiedName() (+15 more)
+Cohesion: 0.07
+Nodes (22): Type, m_BaseType, m_ElementType, m_Id, m_InterfaceTypes, Type::CreateInstanceInternal(), Type::GetAssemblyQualifiedName(), Type::GetAttributes() (+14 more)
 
-### Community 16 - "Diligent Graphics Module"
-Cohesion: 0.04
-Nodes (20): GraphicsModule, mAdapterAttribs, mAdapterDetailsString, mAdapterId, mAdapterType, mDefaultStaticSamplers, mDefaultVariantFactory, mRendering3D_InputLayout (+12 more)
-
-### Community 17 - "Scripting Integration Source Map"
-Cohesion: 0.06
-Nodes (14): Add(), GetSystem(), IScriptClass, SystemManager::ResizeRTs(), SystemManager::Update_All(), ManagedObject, CSharpScriptingBackend, ManagedAssembly (+6 more)
-
-### Community 18 - "PBR Rendering Sample"
+### Community 16 - "AssetManager.h"
 Cohesion: 0.05
-Nodes (27): Sample2, boxes, DefferedPass, ELights, EnvCapture, EShaderBall, ESphere, ESponza (+19 more)
+Nodes (15): Animation source map, Asset job serialization source map, Graphics source map, Physics audio editor source map, Scoped source search, AudioClip, AudioSourceComponent, hash (+7 more)
 
-### Community 19 - "XAudio2 Backend Operations"
-Cohesion: 0.08
-Nodes (13): Uint32, ShaderPipeline::GetHashedKey(), ShaderPipeline::GetVariant(), XAudioBackend, m3DListener, mBuffers, mChannels, mListenerDirty (+5 more)
-
-### Community 20 - "Managed Object Invocation"
+### Community 17 - "Managed Object Invocation"
 Cohesion: 0.13
 Nodes (6): NativeString, ManagedObject, ArrayObject, Marshalling, ObjectArrayContainer, ValueArrayContainer
 
-### Community 21 - "Asset Path Resolution"
+### Community 18 - "Scene Asset Library"
 Cohesion: 0.07
-Nodes (17): Reserved path aliases, Path, mReservedPaths, Importer::ImportScript(), Importer::ImportShader(), Loader::LoadMaterial(), Loader::LoadMesh(), Loader::LoadShader() (+9 more)
+Nodes (17): AssetLibrary, mImportedAnimations, mImportedAudioClips, mImportedFonts, mImportedMaterials, mImportedMeshes, mImportedScenes, mImportedScripts (+9 more)
 
-### Community 22 - "Component Rendering Dependencies"
-Cohesion: 0.06
-Nodes (17): ShadowPass, Animator, Material, Mesh, ShaderPipelineVariant, Material, SpriteRenderer, pMaterial (+9 more)
-
-### Community 23 - "Script Component Runtime"
-Cohesion: 0.06
-Nodes (17): ScriptComponent, mScriptObject, pParentScript, IScriptClass, ScriptingClass, pClass, ScriptingModule, IScriptObject (+9 more)
-
-### Community 24 - "Shared Rendering Services"
+### Community 19 - "PBR Rendering Sample"
 Cohesion: 0.05
-Nodes (10): RenderingModule::ResizeRTs(), RenderingPath::DrawMesh(), AmbientOcclusionPass::Bake(), AmbientOcclusionPass::GetSSAO_SRV(), AmbientOcclusionPass::ResizeRTs(), AmbientOcclusionPass::Update(), DebugSystem::AddRenderTarget(), DebugSystem::InstantRender() (+2 more)
+Nodes (27): Sample2, boxes, DefferedPass, ELights, EnvCapture, EShaderBall, ESphere, ESponza (+19 more)
 
-### Community 25 - "Scene Asset Library"
-Cohesion: 0.07
-Nodes (15): AssetLibrary, mImportedAnimations, mImportedAudioClips, mImportedFonts, mImportedMaterials, mImportedMeshes, mImportedScenes, mImportedScripts (+7 more)
-
-### Community 26 - "Native Assembly Contexts"
-Cohesion: 0.06
-Nodes (27): AssemblyLoadContext, m_ContextId, m_Host, m_LoadedAssemblies, AssemblyLoadStatus, FileLoadFailure, FileNotFound, InvalidAssembly (+19 more)
-
-### Community 27 - "Mesh Animation Audio Sample"
+### Community 20 - "Mesh Animation Audio Sample"
 Cohesion: 0.05
 Nodes (25): Sample1, AudioSystem, BlinnPhong, BobAnimator, CubeMaterial, DiffuseOnly, EBob, EController (+17 more)
 
-### Community 28 - "Image Format Enumeration"
+### Community 21 - "Native Assembly Contexts"
+Cohesion: 0.06
+Nodes (27): AssemblyLoadContext, m_ContextId, m_Host, m_LoadedAssemblies, AssemblyLoadStatus, FileLoadFailure, FileNotFound, InvalidAssembly (+19 more)
+
+### Community 22 - "Audio Source Interface"
+Cohesion: 0.07
+Nodes (23): AudioClip, AudioSourceComponent, mLoop, mPitch, mPrevPos, mSourceID, mState, mVelocity (+15 more)
+
+### Community 23 - "XAudio2 Backend Operations"
+Cohesion: 0.08
+Nodes (10): XAudioBackend, m3DListener, mBuffers, mChannels, mListenerDirty, mSources, pMasterVoice, pMatrixCoefficients (+2 more)
+
+### Community 24 - "Image Format Enumeration"
 Cohesion: 0.05
 Nodes (40): IMAGE_EXTENSION, IMAGE_EXTENSION_BMP, IMAGE_EXTENSION_CUT, IMAGE_EXTENSION_DDS, IMAGE_EXTENSION_EXR, IMAGE_EXTENSION_FAXG3, IMAGE_EXTENSION_GIF, IMAGE_EXTENSION_HDR (+32 more)
 
-### Community 29 - "HostFXR Status Codes"
+### Community 25 - "HostFXR Status Codes"
 Cohesion: 0.05
 Nodes (40): StatusCode, AppArgNotRunnable, AppHostExeNotBoundFailure, BundleExtractionFailure, BundleExtractionIOError, CoreClrBindFailure, CoreClrExeFailure, CoreClrInitFailure (+32 more)
 
-### Community 31 - "GTAO Resources and Settings"
+### Community 26 - "Path"
+Cohesion: 0.08
+Nodes (19): Reserved path aliases, Path, mReservedPaths, BinaryBuffer, AssetManager::CreateMetadata(), AssetManager::Export(), AssetManager::Import(), AssetManager::Load() (+11 more)
+
+### Community 27 - "GTAO Resources and Settings"
 Cohesion: 0.05
 Nodes (30): GTAO, m_constantBuffer, m_constantsMatchDefaults, m_debugImage, m_debugShowBentNormals, m_debugShowEdges, m_debugShowGTAODebugViz, m_debugShowNormals (+22 more)
 
-### Community 32 - "Common Engine Asset Types"
-Cohesion: 0.06
-Nodes (17): Left-handed zero-to-one convention, AssimpImporter, Texture, Bool, Byte, CPVoid, Int64, PVoid (+9 more)
-
-### Community 33 - "Filesystem Binary IO"
-Cohesion: 0.08
-Nodes (16): Scene, mBinaryBuffer, Uint8, FileSystem, DataBlob, mDataBuf, FileSystem::CreateDir(), FileSystem::CreateFolders() (+8 more)
-
-### Community 34 - "Mesh Component Draw State"
-Cohesion: 0.10
-Nodes (12): EntityEditor::Render(), MeshComponent, MeshComponent::MeshComponent(), MeshComponent::SetCastShadow(), MeshComponent::SetEnableRendering(), MeshComponent::SetMaterial(), MeshComponent::SetMesh(), MeshComponent::SetReceiveShadows() (+4 more)
-
-### Community 35 - "Postprocessing Pass Execution"
+### Community 28 - "Audio Module Configuration"
 Cohesion: 0.07
-Nodes (21): PostProcessingPass, BloomRT, _HashedBloomID, mBackground, mBloomBlur, mBloomEnabled, mDesc, mPipelineCntrllr (+13 more)
+Nodes (20): AudioBackend, AudioBackendType, MAX_UNKNOWN, OpenAL, Unknown, XAudio2, AudioModule, mBackendName (+12 more)
 
-### Community 36 - "Native Managed Object Handles"
+### Community 29 - "Native Managed Object Handles"
 Cohesion: 0.10
 Nodes (20): GetFieldValue(), GetPropertyValue(), InvokeMethod(), ManagedAssembly, ManagedObject, ManagedObject::GetFieldValue(), m_Handle, m_Type (+12 more)
 
-### Community 37 - "Engine Startup Integration"
+### Community 30 - "Light Buffer Baking"
 Cohesion: 0.06
-Nodes (5): Math::Matrix4 GetWorldMatrix(), Math::Vector3 GetWorldPosition(), Engine::SetState(), Engine::Start(), PrintIntroLog()
+Nodes (18): AddToDefinesIfNotZero(), RenderSystem::BakeLightsBuffer(), RenderSystem::RegisterShader(), RenderSystem::SetIBLContext(), RenderSystem::UpdateLightsBuffer(), Shader_DirLight_Struct, Color_Intensity, Direction (+10 more)
+
+### Community 31 - "Postprocessing Pass Execution"
+Cohesion: 0.07
+Nodes (20): PostProcessingPass, BloomRT, _HashedBloomID, mBackground, mBloomBlur, mBloomEnabled, mDesc, mPipelineCntrllr (+12 more)
+
+### Community 32 - "Shadow Map Rendering"
+Cohesion: 0.07
+Nodes (18): ShadowPass, mDesc, mDirShadowMap, mOmniDirShadowPassPSO, mOmniDirShadowPassSRB, mPositionalShadowMapDepthPSO, mPositionalShadowMapDepthSRB, mSpotShadowMap (+10 more)
+
+### Community 33 - "Engine Startup Integration"
+Cohesion: 0.06
+Nodes (4): ModuleManager, Engine::SetState(), ReflectionType, String
+
+### Community 34 - "Entity"
+Cohesion: 0.07
+Nodes (14): Nuclear, Samples, Nuclear.Utilities, Nuclear.Platform, Nuclear.ECS, ReflectionType, ID, Entity (+6 more)
+
+### Community 35 - "OpenAL Backend Operations"
+Cohesion: 0.10
+Nodes (6): ALCcontext, ALCdevice, GetFormat(), OpenALBackend, pDevice, pMasterContext
+
+### Community 36 - "Win32Platform.cpp"
+Cohesion: 0.10
+Nodes (18): GetClipboardText(), GetDynamicLibrarySymbol(), GetExecutablePath(), GetLastError(), LoadDynamicLibrary(), PollEvent(), RecordError(), SetClipboardText() (+10 more)
+
+### Community 37 - "Bone Transform Interpolation"
+Cohesion: 0.10
+Nodes (19): Bone, m_ID, m_LocalTransform, m_Name, mData, mHashedName, AnimationClip::FindBone(), Bone::Bone() (+11 more)
 
 ### Community 38 - "PhysX SDK Ownership"
 Cohesion: 0.09
 Nodes (22): ColliderComponent, PhysXModule, gDefaultMaterial, gDispatcher, gFoundation, gPhysics, gPvd, PhysXModuleDesc (+14 more)
 
-### Community 39 - "Forward and Deffered Paths"
-Cohesion: 0.08
-Nodes (13): FrameRenderData, RenderingPath, pActivePipeline, pCurrentFrame, RenderSystem, ShaderPipeline, ShaderPipelineVariant, DefferedRenderingPath (+5 more)
-
-### Community 40 - "Bone Transform Interpolation"
+### Community 39 - "Array"
 Cohesion: 0.10
-Nodes (20): Bone, m_ID, m_LocalTransform, m_Name, mData, mHashedName, AnimationClip::FindBone(), Bone::Bone() (+12 more)
+Nodes (15): UCString, UCStringView, Memory, StringHelper, Memory::AllocHGlobal(), Memory::FreeCoTaskMem(), Memory::FreeHGlobal(), Memory::StringToCoTaskMemAuto() (+7 more)
 
-### Community 41 - "OpenAL Backend Operations"
+### Community 40 - "String"
+Cohesion: 0.07
+Nodes (20): Bool32, CharType, InternalCall, Name, NativeFunctionPtr, StringView, TypeAccessibility, Internal (+12 more)
+
+### Community 41 - "Filesystem Binary IO"
 Cohesion: 0.10
-Nodes (6): ALCcontext, ALCdevice, GetFormat(), OpenALBackend, pDevice, pMasterContext
+Nodes (14): Uint8, FileSystem, DataBlob, mDataBuf, FileSystem::CreateDir(), FileSystem::CreateFolders(), FileSystem::FileSystem(), FileSystem::LoadBinaryBuffer() (+6 more)
 
-### Community 42 - "Light Buffer Baking"
-Cohesion: 0.07
-Nodes (18): AddToDefinesIfNotZero(), RenderSystem::BakeLightsBuffer(), RenderSystem::RegisterShader(), RenderSystem::SetIBLContext(), RenderSystem::UpdateLightsBuffer(), Shader_DirLight_Struct, Color_Intensity, Direction (+10 more)
-
-### Community 43 - "Render System Light Interface"
-Cohesion: 0.07
-Nodes (16): RenderSystem, Baked_DirLights_Size, Baked_PointLights_Size, Baked_SpotLights_Size, HasbeenBakedBefore, mPSLightCB, mRegisteredShaders, mRenderData (+8 more)
-
-### Community 44 - "UUID and Entity Metadata"
-Cohesion: 0.07
-Nodes (9): EntityInfoComponent, mName, mTransform, hash, hash<T>, FindLatestHostFXR(), ParseHostFXRVersion(), ScriptingAssembly (+1 more)
-
-### Community 45 - "Skeletal Animation Playback"
-Cohesion: 0.09
-Nodes (18): AnimationClip, m_Duration, m_TicksPerSecond, mBoneInfoMap, mBones, mRootNode, Animations, Animator (+10 more)
-
-### Community 46 - "Texture Import Tasks"
+### Community 42 - "Texture Import Tasks"
 Cohesion: 0.07
 Nodes (22): TextureImportingDesc, mBindFlags, mCommonOptions, mCPUAccessFlags, mData, mExportExtension, mFlipY_Axis, mGenerateMips (+14 more)
 
-### Community 47 - "Collider Shape Creation"
-Cohesion: 0.08
-Nodes (23): ColliderComponent, mAddedtoPhysxScene, mShape, mStaticActor, mType, ColliderDesc, mDynamicFriction, mGeo (+15 more)
-
-### Community 48 - "INI and File Dialogs"
-Cohesion: 0.07
-Nodes (16): FileDialogSortOrder, Down, None, Up, FileDialogType, OpenFile, SelectFolder, parseLine() (+8 more)
-
-### Community 49 - "Editor Project Management"
+### Community 43 - "Editor Project Management"
 Cohesion: 0.09
 Nodes (15): Project, mDefaultMaterial, mInfo, mPath, ProjectInfo, mProjectName, AssetTypeToString(), Project::AddNewScene() (+7 more)
 
-### Community 50 - "Light Component Interface"
+### Community 44 - "graphicsmodule"
+Cohesion: 0.09
+Nodes (10): Profiler_CPU, mStart, Profiler_GPU, mName, pQuery, ProfilingModule, Texture::GetHeight(), Texture::GetTextureView() (+2 more)
+
+### Community 45 - "Light Component Interface"
 Cohesion: 0.07
 Nodes (9): LightComponent, _internalPos, LightSpace, mCastShadows, mData, mFov, mNearPlane, mShadowType (+1 more)
 
-### Community 51 - "Rendering Module Buffers"
-Cohesion: 0.07
-Nodes (14): RenderingModule, mAnimationCB, mCameraCB, mDesc, mFinalDepthRT, mFinalRT, mStartupDesc, pSceneToScreenPSO (+6 more)
-
-### Community 52 - "Geometry Render Pass"
-Cohesion: 0.08
-Nodes (10): FrameRenderData, GeometryPass, mDefferedPath, mForwardPath, pActivePipeline, pCurrentFrame, pRenderingPath, ShaderPipeline (+2 more)
-
-### Community 53 - "Physics Audio ECS Systems"
-Cohesion: 0.08
-Nodes (15): TimeDelta, Update(), AudioSystem, PhysXSystemDesc, mGravity, PxScene, Scene::Update(), AudioSystem::Update() (+7 more)
-
-### Community 54 - "Native Interop Memory"
+### Community 46 - "Texture Decode and Export"
 Cohesion: 0.09
-Nodes (10): Array, m_ArrayHandle, m_IsDisposed, m_Length, m_Ptr, Memory, Memory::AllocHGlobal(), Memory::FreeCoTaskMem() (+2 more)
+Nodes (17): TextureLoadingDesc, mData, mExtension, mFlipYAxis, TextureLoadingData, mEngineAllocMem, mMemData, mMemSize (+9 more)
 
-### Community 55 - "GPU Texture Descriptions"
+### Community 47 - "Forward and Deffered Paths"
+Cohesion: 0.09
+Nodes (12): FrameRenderData, RenderingPath, pActivePipeline, pCurrentFrame, RenderSystem, ShaderPipeline, ShaderPipelineVariant, DefferedRenderingPath (+4 more)
+
+### Community 48 - "GPU Texture Descriptions"
 Cohesion: 0.07
 Nodes (19): TextureDesc, mBindFlags, mBitsPerPixel, mComponentType, mCPUAccessFlags, mData, mFormat, mGenerateMipsOnCPU (+11 more)
 
-### Community 56 - "Asset Importer Interface"
+### Community 49 - "Asset Importer Interface"
 Cohesion: 0.07
 Nodes (16): AssetLibrary, AudioClip, Font, FreetypeHandle, FT_Library, FT_LibraryRec_, IAsset, Importer (+8 more)
+
+### Community 50 - "GBuffer Target Management"
+Cohesion: 0.10
+Nodes (17): Vector2ui, GBuffer, mBaked, mDesc, mInitialized, mRenderTargets, GBufferDesc, mDimensions (+9 more)
+
+### Community 51 - "Architecture and Validation Guides"
+Cohesion: 0.13
+Nodes (26): AssetLibrary owns asset maps, AssetManager import/load/export facade, Asset readiness states, Audio backend DLL selection, Audio backend plugin ABI, Client application callbacks, Engine lifecycle, EngineModule lifecycle contract (+18 more)
+
+### Community 53 - "Win32Input.cpp"
+Cohesion: 0.10
+Nodes (10): Input::GetKeyboardState(), Input::GetMouseState(), Input::IsKeyPressed(), ProcessInput(), PushText(), ResetInput(), TranslateKey(), UpdateCursor() (+2 more)
+
+### Community 54 - "Graphics Resource Creation"
+Cohesion: 0.08
+Nodes (11): GraphicsModule::CreateMesh(), GraphicsModule::CreateShader(), GraphicsModule::GetDefaultShaderSourceFactory(), GraphicsModule::isGammaCorrect(), GraphicsModule::ParseNameToGetType(), GraphicsModule::ParseTexUsageFromName(), GraphicsModule::PresentFrame(), GraphicsModule::ReflectShaderResources() (+3 more)
+
+### Community 55 - "ShaderPipelineVariantFactory.cpp"
+Cohesion: 0.08
+Nodes (9): FrameRenderData, PostProcessingPassDesc, SystemManager::ResizeRTs(), SystemManager::Update_All(), ShaderPipeline::Bake(), ReflectVariantPSO(), ShaderPipelineVariantFactory::ReflectShaderPipelineVariant(), Background::GetSkybox() (+1 more)
+
+### Community 56 - "ShaderPipelineVariantFactory.cpp"
+Cohesion: 0.08
+Nodes (8): ShadowPass, Math::Matrix4 GetWorldMatrix(), Math::Vector3 GetWorldPosition(), access, Access, Hash(), hex_to_uint32(), int_to_hex()
 
 ### Community 57 - "Editor UI Panels"
 Cohesion: 0.10
 Nodes (16): EditorUI, mAssetLibViewer, mEditor, mEditorInstance, mNewPrjWindowOpen, mSelectedEntity, pActiveProject, NuclearEditor (+8 more)
 
-### Community 58 - "Native Attribute Property Reflection"
-Cohesion: 0.10
-Nodes (15): Attribute, m_Handle, m_Type, GetFieldValue(), Type, ManagedHandle, Attribute, PropertyInfo (+7 more)
+### Community 58 - "CSharp Native Callback Bindings"
+Cohesion: 0.13
+Nodes (19): Uint32, Material::BindTexSet(), ShaderPipeline::GetHashedKey(), ShaderPipeline::GetVariant(), Components_EntityInfoComponent_GetName(), Components_EntityInfoComponent_SetName(), Components_LightComponent_GetColor(), Components_LightComponent_GetIntensity() (+11 more)
 
-### Community 59 - "Texture Decode and Export"
-Cohesion: 0.10
-Nodes (14): TextureData, mData, mMips, mSubresources, mTexDesc, INPLACESWAP(), MyMessageFunc(), SwapRedBlue32() (+6 more)
+### Community 59 - "HostInstance"
+Cohesion: 0.09
+Nodes (17): ExceptionCallbackFn, HostInitStatus, DotNetNotFound, ManagedBridgeInitError, ManagedBridgeNotFound, Success, HostInstance, m_HostFXRContext (+9 more)
 
-### Community 60 - "Skybox Pipeline Rendering"
+### Community 60 - "NE_Common.h"
+Cohesion: 0.09
+Nodes (14): Left-handed zero-to-one convention, CameraComponent, Material, Bool, Byte, CPVoid, Int64, PVoid (+6 more)
+
+### Community 61 - "Skybox Pipeline Rendering"
 Cohesion: 0.09
 Nodes (13): Skybox, mPipeline, mSampler, mSRB, mTextureSRV, mVBuffer, ReleaseTex, Valid (+5 more)
 
-### Community 61 - "Blur Effect Targets"
-Cohesion: 0.09
-Nodes (12): BlurEffect, BlurHorizentalRT, BlurVerticalRT, mBlurCB, mHorzBlurPSO, mHorzBlurSRB, mVertBlurPSO, mVertBlurSRB (+4 more)
+### Community 62 - "Sample Selection UI"
+Cohesion: 0.11
+Nodes (8): EntityExplorer(), SelectRenderer(), AssetLibraryViewer(), AssetsFolderViewer(), SplitFilename(), TextureViewer(), AssetLibraryVi2ewer(), TextureVi2ewer()
 
-### Community 62 - "Audio Source Interface"
-Cohesion: 0.09
-Nodes (11): AudioClip, AudioSourceComponent, mLoop, mPitch, mPrevPos, mSourceID, mState, mVelocity (+3 more)
-
-### Community 63 - "Native Arrays and Callbacks"
+### Community 63 - "Metadata Driven Asset Loading"
 Cohesion: 0.08
-Nodes (6): InternalCallsManager, NativeArray, Length, NativeArrayEnumerator, Current, NativeInstance
+Nodes (16): AssetLibrary, AudioClip, Font, FreetypeHandle, FT_Library, FT_LibraryRec_, IAsset, Loader (+8 more)
 
-### Community 64 - "Managed Gameplay API"
+### Community 64 - "Engine Runtime Interface"
 Cohesion: 0.08
-Nodes (9): ReflectionType, ID, Entity, ID, Color, NativeCalls, Input, Logger (+1 more)
+Nodes (11): Engine, Engine_State, gisDebug, MainWindow, mShouldClose, mThreadingEnabled, pClient, pModules (+3 more)
 
-### Community 65 - "Asset Import Options"
+### Community 65 - "Rendering Module Buffers"
 Cohesion: 0.08
-Nodes (22): AudioClipImportingDesc, mBitDepth, mCommonOptions, mIs3D, mLoop, CommonImportingOptions, mAssetName, mAsyncImport (+14 more)
+Nodes (13): RenderingModule, mAnimationCB, mCameraCB, mDesc, mFinalDepthRT, mFinalRT, mStartupDesc, pSceneToScreenPSO (+5 more)
 
-### Community 66 - "Metadata Driven Asset Loading"
+### Community 66 - "Physics Scripting Sample"
 Cohesion: 0.08
-Nodes (18): AssetLibrary, AudioClip, Font, FreetypeHandle, FT_Library, FT_LibraryRec_, IAsset, Loader (+10 more)
-
-### Community 67 - "Physics Scripting Sample"
-Cohesion: 0.09
 Nodes (12): Sample3, boxes, ForwardRP, GeoPass, iskinematic, mPhysXSystem, mScriptSystem, PBR (+4 more)
 
-### Community 68 - "Light State Implementation"
+### Community 67 - "State"
+Cohesion: 0.08
+Nodes (15): State, mCursor, mEvents, mHasMousePosition, mHighSurrogate, mKeyboard, mLastError, mMouseButtons (+7 more)
+
+### Community 68 - "Audio ECS Component Updates"
+Cohesion: 0.10
+Nodes (6): AudioDevice, mName, ScriptComponent::GetScriptAsset(), ScriptComponent::ScriptComponent(), AudioListenerInit(), AudioSourceInit()
+
+### Community 69 - "Blur Effect Targets"
+Cohesion: 0.10
+Nodes (12): BlurEffect, BlurHorizentalRT, BlurVerticalRT, mBlurCB, mHorzBlurPSO, mHorzBlurSRB, mVertBlurPSO, mVertBlurSRB (+4 more)
+
+### Community 70 - "Stable Vector Storage"
+Cohesion: 0.10
+Nodes (9): Page, Elements, StableVector, m_Capacity, m_ElementCount, m_Mutex, m_PageCount, m_PageTable (+1 more)
+
+### Community 71 - "Collider Shape Creation"
+Cohesion: 0.10
+Nodes (20): ColliderComponent, mAddedtoPhysxScene, mShape, mStaticActor, mType, ColliderDesc, mDynamicFriction, mGeo (+12 more)
+
+### Community 72 - "Event"
+Cohesion: 0.08
+Nodes (18): Event, mButton, mCodepoint, mDeltaX, mDeltaY, mFocused, mHeight, mKey (+10 more)
+
+### Community 73 - "Light State Implementation"
 Cohesion: 0.10
 Nodes (13): LightComponent::GetAttenuation(), LightComponent::GetColor(), LightComponent::GetDirection(), LightComponent::GetInternalPosition(), LightComponent::GetSpotlightCone(), LightComponent::GetType(), LightComponent::LightComponent(), LightComponent::SetAttenuation() (+5 more)
 
-### Community 69 - "Managed Assembly Loading"
-Cohesion: 0.12
+### Community 74 - "Window"
+Cohesion: 0.10
+Nodes (8): Window, pWindow, Window::Create(), Window::GetAspectRatioF32(), Window::GetSize(), Window::SetSize(), Window::SetTitle(), Window::~Window()
+
+### Community 75 - "Managed Assembly Loading"
+Cohesion: 0.11
 Nodes (9): AssemblyLoader, AssemblyLoadStatus, FileLoadFailure, FileNotFound, InvalidAssembly, InvalidFilePath, Success, UnknownError (+1 more)
 
-### Community 70 - "Native Method Reflection"
-Cohesion: 0.10
-Nodes (12): Attribute, MethodInfo, m_Handle, m_ParameterTypes, m_ReturnType, Type, CreateInstance(), ReflectionType (+4 more)
-
-### Community 71 - "Camera Matrices and Targets"
+### Community 76 - "Native Arrays and Callbacks"
 Cohesion: 0.09
-Nodes (14): Matrix4, CameraComponent::CreateRenderTargets(), CameraComponent::ResizeRTs(), CameraComponent::SetModelMatrix(), CameraComponent::SetPosition(), CameraComponent::SetProjectionMatrix(), CameraComponent::SetViewMatrix(), RenderingPath::UpdateAnimationCB() (+6 more)
+Nodes (6): InternalCallsManager, NativeArray, Length, NativeArrayEnumerator, Current, NativeInstance
 
-### Community 72 - "Audio Module Configuration"
-Cohesion: 0.09
-Nodes (13): AudioBackend, AudioModule, mBackendName, mInitialized, mStartupDesc, pBackend, pLibrary, AudioModuleDesc (+5 more)
-
-### Community 73 - "SDL Window Operations"
+### Community 77 - "Skeletal Animation Playback"
 Cohesion: 0.11
-Nodes (11): SDL_Surface, SDL_Window, Window, pWindow, Engine::GetMainWindow(), Window::Destroy(), Window::Display(), Window::GetSDLWindowPtr() (+3 more)
+Nodes (12): Animations, Animator, m_CurrentAnimation, m_CurrentTime, m_DeltaTime, m_FinalBoneMatrices, Animator::Animator(), Animator::CalculateBoneTransform() (+4 more)
 
-### Community 74 - "Image Based Lighting Interface"
+### Community 78 - "AnimationClip"
+Cohesion: 0.09
+Nodes (16): AnimationClip, m_Duration, m_TicksPerSecond, mBoneInfoMap, mBones, mRootNode, ClipNodeData, children (+8 more)
+
+### Community 79 - "Asset Import Options"
+Cohesion: 0.09
+Nodes (18): CommonImportingOptions, mAssetName, mAsyncImport, mChangeExportedName, mExportPath, mLoadOnly, SceneImportingDesc, mName (+10 more)
+
+### Community 80 - "Engine Startup Options"
+Cohesion: 0.08
+Nodes (23): EngineStartupDesc, AutoInitAudioModule, AutoInitFallbacksModule, AutoInitGraphicsModule, AutoInitPhysXModule, AutoInitRenderingModule, AutoInitScriptingModule, AutoInitThreadingModule (+15 more)
+
+### Community 81 - "Pipeline Variant Interface"
+Cohesion: 0.08
+Nodes (17): BakeStatus, Baked, NotInitalized, RequiresBaking, ShaderPipelineVariant, isValid, mDesc, mGBufferPipeline (+9 more)
+
+### Community 82 - "Native Attribute Property Reflection"
+Cohesion: 0.09
+Nodes (12): ManagedHandle, Attribute, PropertyInfo, m_Handle, m_Type, Type, CreateInstance(), InvokeStaticMethod() (+4 more)
+
+### Community 83 - "UUID Creation Utilities"
+Cohesion: 0.11
+Nodes (10): AndroidUUIDInfo::fromJniEnv(), hexDigitToChar(), hexPairToChar(), initJni(), isValidHexChar(), newUUID(), UUID::CreateNewUUID(), UUID::operator==() (+2 more)
+
+### Community 84 - "ImGuiPlatform.cpp"
+Cohesion: 0.11
+Nodes (13): AudioModule::OnInitialize(), BackendData, mClipboard, mKeys, mLastFrame, pWindow, GetData(), Initialize() (+5 more)
+
+### Community 85 - "INI Value Access"
+Cohesion: 0.17
+Nodes (6): INIMap, data, dataIndexMap, replace(), toLower(), Logger::Logger()
+
+### Community 86 - "Image Based Lighting Interface"
 Cohesion: 0.08
 Nodes (14): ImageBasedLighting, mBRDF_LUT_Image, mDesc, pCaptureCB, pEnvCapture, pERectToCubemap_PSO, pERectToCubemap_SRB, pPrecomputeBRDF_PSO (+6 more)
 
-### Community 75 - "Sample Selection UI"
-Cohesion: 0.13
-Nodes (7): EntityExplorer(), AssetLibraryViewer(), AssetsFolderViewer(), SplitFilename(), TextureViewer(), AssetLibraryVi2ewer(), TextureVi2ewer()
-
-### Community 76 - "Multiple Camera Sample"
+### Community 87 - "Multiple Camera Sample"
 Cohesion: 0.10
 Nodes (12): Sample4, boxes, CameraRTHeight, CameraRTWidth, ECamera2, ForwardRP, GeoPass, iskinematic (+4 more)
 
-### Community 77 - "UUID Creation Utilities"
-Cohesion: 0.11
-Nodes (9): AndroidUUIDInfo::fromJniEnv(), hexDigitToChar(), hexPairToChar(), initJni(), isValidHexChar(), newUUID(), UUID::CreateNewUUID(), UUID::str() (+1 more)
+### Community 88 - "SourceReference.md"
+Cohesion: 0.12
+Nodes (20): Default Samples audio blocker, Dependency preparation, Historical startup evidence, x64 .NET10 runtime discovery, Module/audio validation scope, Platform migration validation, Platform smoke project, BuildSupport build runner (+12 more)
 
-### Community 78 - "Graphics Resource Creation"
-Cohesion: 0.09
-Nodes (8): GraphicsModule::CreateImage(), GraphicsModule::CreateMesh(), GraphicsModule::GetDefaultShaderSourceFactory(), GraphicsModule::isGammaCorrect(), GraphicsModule::PresentFrame(), GraphicsModule::ResizeSwapChain(), GraphicsModule::Shutdown(), ModifyComponentCount()
-
-### Community 79 - "Worker Main Thread Queues"
+### Community 89 - "Worker Main Thread Queues"
 Cohesion: 0.11
 Nodes (11): ThreadingModule, mMainPool, mMainThreadID, mMainTTasks, mMainTTasksMutex, ThreadingModule::AddMainThreadTask(), ThreadingModule::AddTask(), ThreadingModule::ExecuteMainThreadTasks() (+3 more)
 
-### Community 80 - "Engine Runtime Interface"
+### Community 90 - "Audio File Buffer Data"
 Cohesion: 0.09
-Nodes (10): Engine, Engine_State, gisDebug, MainWindow, mShouldClose, mThreadingEnabled, pClient, pModules (+2 more)
+Nodes (17): AudioClipInfo, mBitDepth, mBitsPerSample, mChannels, mFormat, mSampleRate, mSamples, mSections (+9 more)
 
-### Community 81 - "Engine Startup Options"
-Cohesion: 0.09
-Nodes (21): EngineStartupDesc, AutoInitAudioModule, AutoInitFallbacksModule, AutoInitGraphicsModule, AutoInitPhysXModule, AutoInitRenderingModule, AutoInitScriptingModule, AutoInitThreadingModule (+13 more)
-
-### Community 82 - "Scripting Backend Selection"
+### Community 91 - "Scripting Backend Selection"
 Cohesion: 0.09
 Nodes (7): ScriptingModuleDesc, mBackendName, ScriptingModule, mBackends, mStartupDesc, pActiveBackend, ScriptingModule::Initialize()
 
-### Community 83 - "Delegate Callback Utilities"
+### Community 92 - "Delegate Callback Utilities"
 Cohesion: 0.13
 Nodes (10): Create(), Delegate, Delegate_base, Delegate_base<RET(PARAMS...)>, Delegate<RET(PARAMS...)>, invocation, InvocationElement, object (+2 more)
 
-### Community 84 - "Deffered Render Pass"
-Cohesion: 0.10
-Nodes (6): RenderPass, DefferedPass, DefferedPass::Update(), RenderSystem::AddRenderPass(), RenderSystem::ResizeRTs(), RenderSystem::Update()
+### Community 93 - "Architecture and Validation Guides"
+Cohesion: 0.11
+Nodes (8): Incomplete CMake alternative, Portable CMake build unestablished, Plugin limitations, Root CMake project, CMake engine shared target, EngineModule, GetEngineModulePlugin, CMake Samples target
 
-### Community 85 - "Stable Vector Storage"
+### Community 94 - "UUID Asset Map Lookup"
 Cohesion: 0.12
-Nodes (7): StableVector, m_Capacity, m_ElementCount, m_Mutex, m_PageCount, m_PageTable, m_PageTables
+Nodes (8): ImportedAssetsMap, mData, hash<T, Rest...>, UUID, _bytes, operator<(), swap(), UUID::swap()
 
-### Community 86 - "Bone Keyframe Data"
+### Community 95 - "RenderingModule.cpp"
 Cohesion: 0.10
-Nodes (17): BoneData, m_NumPositions, m_NumRotations, m_NumScalings, m_Positions, m_Rotations, m_Scales, KeyPosition (+9 more)
+Nodes (13): CameraBuffer, Model, ModelInvTranspose, ModelViewProjection, Projection, View, IBuffer, RenderingModule::GetAnimationCB() (+5 more)
 
-### Community 87 - "Client Frame Lifecycle"
+### Community 96 - "Shader Build Options"
 Cohesion: 0.09
-Nodes (9): Client, ClockTime, DeltaTime, FPS, FrameTime, LastFrame, minfo, Engine::GetClient() (+1 more)
+Nodes (21): ShaderBuildDesc, mDefines, mExcludedVariants, mPipelineDesc, mSupportedTechniques, mSupportShadows, mSupportSkinnedMeshes, mType (+13 more)
 
-### Community 88 - "Frame Render Data"
+### Community 97 - "Frame Render Data"
 Cohesion: 0.10
 Nodes (18): FrameRenderData, DirLights, mMeshView, mShadowsEnabled, mUsedDefferedPipelines, pCamera, pDirPosShadowMapSRV, PointLights (+10 more)
 
-### Community 89 - "Native Type Cache"
+### Community 98 - "ShadowPass.cpp"
+Cohesion: 0.12
+Nodes (15): NEStatic_LightInfo, LightSpace, Model, ShadowPass::DirLightShadowDepthPass(), ShadowPass::GetDirPosShadowMapSRV(), ShadowPass::GetOmniDirShadowMapSRV(), ShadowPass::GetSpotShadowMapSRV(), ShadowPass::InitOmniDirShadowMapTexture() (+7 more)
+
+### Community 99 - "Native Type Cache"
 Cohesion: 0.13
 Nodes (11): TypeId, Type, TypeCache, m_IDCache, m_NameCache, m_Types, ReflectionType::operator Type&() const(), TypeCache::CacheType() (+3 more)
 
-### Community 91 - "Managed Type Classification"
+### Community 101 - "Managed Type Classification"
 Cohesion: 0.10
 Nodes (16): ManagedType, Bool, Byte, Double, Float, Int, Long, Pointer (+8 more)
 
-### Community 92 - "Scene Registry Interface"
+### Community 102 - "Render Target Descriptions"
 Cohesion: 0.10
-Nodes (7): CameraComponent, Scene, mCurrentSceneName, mRegistry, mSystems, pMainCamera, pSceneAsset
+Nodes (17): RenderTargetDesc, ClearValue, ColorTexFormat, DepthTexFormat, mDimensions, mName, mType, PostProcessingEffectBakingDesc (+9 more)
 
-### Community 93 - "GBuffer Target Management"
-Cohesion: 0.13
-Nodes (13): Vector2ui, GBuffer, mBaked, mDesc, mInitialized, mRenderTargets, RenderTarget::GetDimensions(), RenderTarget::Resize() (+5 more)
+### Community 103 - "Task Execution Contract"
+Cohesion: 0.11
+Nodes (4): Task, mCancelRequested, mState, Task::Execute()
 
-### Community 94 - "CSharp Native Callback Bindings"
-Cohesion: 0.15
-Nodes (15): Components_EntityInfoComponent_GetName(), Components_EntityInfoComponent_SetName(), Components_LightComponent_GetColor(), Components_LightComponent_GetIntensity(), Components_LightComponent_SetColor(), Components_LightComponent_SetIntensity(), ECS_Entity_AddComponent(), ECS_Entity_HasComponent() (+7 more)
+### Community 104 - "PlatformSmokeClient"
+Cohesion: 0.10
+Nodes (6): Dll(), PlatformSmokeClient, mFrames, mMouseMoves, mResizes, mScrolls
 
-### Community 95 - "Editor Asset Browser"
+### Community 105 - "Editor Asset Browser"
 Cohesion: 0.14
 Nodes (11): AssetLibraryViewer, mEditorInstance, mPath, pActiveProject, NuclearEditor, AssetLibraryViewer::AssetLibraryViewer(), AssetLibraryViewer::Render(), AssetLibraryViewer::SetPath() (+3 more)
 
-### Community 96 - "Asset Manager Interface"
-Cohesion: 0.10
-Nodes (10): AssetManager, mDesc, AssetManagerDesc, mSaveMaterialsPaths, mSaveMeshPaths, mSaveTexturePaths, Import(), Load() (+2 more)
-
-### Community 97 - "Shader Resource Reflection"
-Cohesion: 0.11
-Nodes (16): ShaderTexture, mName, mSlot, mTex, mType, ShaderReflection, mMaterialTexturesInfo, ShaderShadowMapsInfo (+8 more)
-
-### Community 98 - "Pipeline Variant Interface"
-Cohesion: 0.10
-Nodes (13): ShaderPipelineVariant, isValid, mDesc, mGBufferPipeline, mGBufferSRB, mName, mPipeline, mPipelineSRB (+5 more)
-
-### Community 99 - "Task Execution Contract"
-Cohesion: 0.12
-Nodes (4): Task, mCancelRequested, mState, Task::Execute()
-
-### Community 100 - "Shader Pipeline Switch Implementation"
-Cohesion: 0.13
-Nodes (11): ShaderPipelineSwitch::GetID(), ShaderPipelineSwitch::GetName(), ShaderPipelineSwitch::GetType(), ShaderPipelineSwitch::SetName(), ShaderPipelineSwitch::SetType(), ShaderPipelineSwitch::ShaderPipelineSwitch(), ShaderPipelineSwitchController::GetActiveVariant(), ShaderPipelineSwitchController::GetRequiredHash() (+3 more)
-
-### Community 101 - "CSharp Backend Initialization"
-Cohesion: 0.12
-Nodes (9): CSharpScriptingBackend, mClientAssembly, mCoreAssembly, mDesc, mRegistry, pRuntime, CSharpScriptingBackend::InitBindings(), CSharpScriptingBackend::Initialize() (+1 more)
-
-### Community 102 - "Async Asset Sample"
-Cohesion: 0.12
-Nodes (8): Sample5, boxes, ForwardRP, GeoPass, iskinematic, mPhysXSystem, PBR, Plastic
-
-### Community 103 - "Native Managed Type Conversion"
-Cohesion: 0.11
-Nodes (18): AddToArray(), AddToArrayI(), GetManagedType(), ManagedType, Bool, Byte, Double, Float (+10 more)
-
-### Community 104 - "Editor Logger Panel"
+### Community 106 - "Editor Logger Panel"
 Cohesion: 0.12
 Nodes (7): EditorUILayer, mEnabled, pName, NuclearEditor, LoggerView, LoggerView::Init(), LoggerView::Update()
 
-### Community 105 - "Mesh Import Tasks"
+### Community 107 - "Bone Keyframe Data"
+Cohesion: 0.12
+Nodes (16): BoneData, m_NumPositions, m_NumRotations, m_NumScalings, m_Positions, m_Rotations, m_Scales, KeyPosition (+8 more)
+
+### Community 108 - "Client Frame Lifecycle"
+Cohesion: 0.10
+Nodes (9): Client, ClockTime, DeltaTime, FPS, FrameTime, LastFrame, minfo, Engine::GetClient() (+1 more)
+
+### Community 109 - "Scene Registry Interface"
+Cohesion: 0.10
+Nodes (6): Scene, mCurrentSceneName, mRegistry, mSystems, pMainCamera, pSceneAsset
+
+### Community 111 - "CSharp Backend Initialization"
+Cohesion: 0.12
+Nodes (9): CSharpScriptingBackend, mClientAssembly, mCoreAssembly, mDesc, mRegistry, pRuntime, CSharpScriptingBackend::InitBindings(), CSharpScriptingBackend::Initialize() (+1 more)
+
+### Community 112 - "Async Asset Sample"
+Cohesion: 0.12
+Nodes (8): Sample5, boxes, ForwardRP, GeoPass, iskinematic, mPhysXSystem, PBR, Plastic
+
+### Community 113 - "SourceReference.md"
+Cohesion: 0.13
+Nodes (16): Focused changes, Header documentation, Human readable code, Ownership and readiness contracts, Source takes precedence over guides, Validation and graph refresh, Validation by affected sample, Native platform changes (+8 more)
+
+### Community 114 - "Geometry Render Pass"
+Cohesion: 0.13
+Nodes (10): FrameRenderData, GeometryPass, mDefferedPath, mForwardPath, pActivePipeline, pCurrentFrame, pRenderingPath, ShaderPipeline (+2 more)
+
+### Community 115 - "Frame Render Data"
+Cohesion: 0.11
+Nodes (5): ForwardRenderingPath::StartRendering(), DebugSystem::AddRenderTarget(), DebugSystem::InstantRender(), DebugSystem::ShowRendertargets(), main()
+
+### Community 116 - "Native Managed Type Conversion"
+Cohesion: 0.11
+Nodes (18): AddToArray(), AddToArrayI(), GetManagedType(), ManagedType, Bool, Byte, Double, Float (+10 more)
+
+### Community 117 - "Array"
+Cohesion: 0.11
+Nodes (5): Array, m_ArrayHandle, m_IsDisposed, m_Length, m_Ptr
+
+### Community 118 - "Camera Matrices and Targets"
+Cohesion: 0.12
+Nodes (10): Matrix4, Bone::GetLocalTransform(), CameraComponent::ResizeRTs(), CameraComponent::SetModelMatrix(), CameraComponent::SetPosition(), CameraComponent::SetProjectionMatrix(), CameraComponent::SetViewMatrix(), SSAO_CB (+2 more)
+
+### Community 119 - "Solution Managed Project Graph"
+Cohesion: 0.13
+Nodes (18): Nuclear.Editor, Nuclear.Engine, Nuclear.Managed.Native, Nuclear.Managed, net10.0, Microsoft.NET.Sdk, Nuclear.Platform, Nuclear.ScriptCore (+10 more)
+
+### Community 120 - "Asset Manager Interface"
+Cohesion: 0.11
+Nodes (10): AssetManager, mDesc, AssetManagerDesc, mSaveMaterialsPaths, mSaveMeshPaths, mSaveTexturePaths, Import(), Load() (+2 more)
+
+### Community 121 - "Mesh Import Tasks"
 Cohesion: 0.12
 Nodes (14): MeshImportingDesc, mCommonOptions, mExportMaterial, mImportAnimations, mImportMaterial, mImportMesh, mSaveMaterialNames, pMaterialShader (+6 more)
 
-### Community 106 - "Audio File Buffer Data"
-Cohesion: 0.11
-Nodes (17): AudioClipInfo, mBitDepth, mBitsPerSample, mChannels, mFormat, mSampleRate, mSamples, mSections (+9 more)
+### Community 122 - "Native Method Reflection"
+Cohesion: 0.13
+Nodes (9): Attribute, MethodInfo, m_Handle, m_ParameterTypes, m_ReturnType, Type, MethodInfo::GetAccessibility(), MethodInfo::GetAttributes() (+1 more)
 
-### Community 107 - "Shader Pipeline Switch Interface"
-Cohesion: 0.11
-Nodes (10): ShaderPipelineSwitch, mID, mName, mType, mValue, Type, PostProcessingAndRenderingEffect, PostProcessingEffect (+2 more)
-
-### Community 108 - "Playground Scene Sample"
+### Community 123 - "Playground Scene Sample"
 Cohesion: 0.12
 Nodes (9): Playground, ArialFont, audio, GeoPass, iskinematic, PBR, Plastic, RustedIron (+1 more)
 
-### Community 109 - "Pipeline Baking Resources"
-Cohesion: 0.12
-Nodes (14): PSOResourcesInitInfo, mResources, mStaticSamplers, mTexturesSamplers, ShaderPipelineBakingDesc, mDefines, mPipelineResourcesInfo, mRTHeight (+6 more)
-
-### Community 110 - "XAudio2 Source Spatialization"
+### Community 124 - "AmbientOcclusionPass.cpp"
 Cohesion: 0.13
-Nodes (7): XAudioSource, m3DEmitter, mDirty, mFormat, mIs3D, mPitch, pVoice
+Nodes (8): DefaultMeshes::GetCubeAsset(), DefaultMeshes::GetPlaneAsset(), DefaultMeshes::GetScreenQuadAsset(), DefaultMeshes::GetSphereAsset(), Bloom::GetHashedName(), Bloom::GetName(), Bloom::ResizeRTs(), Bloom::Update()
 
-### Community 111 - "Solution Managed Project Graph"
+### Community 125 - "Asset Identity State Interface"
+Cohesion: 0.11
+Nodes (11): IAsset, mName, mState, mType, mUUID, State, Created, Deserialized (+3 more)
+
+### Community 126 - "Shader Resource Reflection"
+Cohesion: 0.12
+Nodes (15): ShaderTexture, mName, mSlot, mTex, mType, ShaderReflection, mMaterialTexturesInfo, ShaderShadowMapsInfo (+7 more)
+
+### Community 128 - "PDataType"
+Cohesion: 0.13
+Nodes (12): INIGenerator, fileWriteStream, prettyPrint, parseLine(), PDataType, PDATA_COMMENT, PDATA_KEYVALUE, PDATA_NONE (+4 more)
+
+### Community 129 - "Physics Audio ECS Systems"
 Cohesion: 0.14
-Nodes (14): Nuclear.Editor, Nuclear.Engine, Nuclear.Managed.Native, net10.0, Microsoft.NET.Sdk, net10.0, Microsoft.NET.Sdk, Nuclear.Audio.OpenAL (+6 more)
+Nodes (11): TimeDelta, Update(), PxScene, Scene::Update(), AudioSystem::Update(), PhysXSystem::AddActor(), PhysXSystem::BeginSimulation(), PhysXSystem::GetPhysXScene() (+3 more)
 
-### Community 112 - "Camera Component Configuration"
-Cohesion: 0.12
-Nodes (14): CameraComponentDesc, mDepthRTDesc, mInitRTs, mIsActiveCamera, mPitch, mProjection, mRTDesc, mSensitivity (+6 more)
-
-### Community 113 - "INI Value Access"
-Cohesion: 0.20
-Nodes (5): INIMap, data, dataIndexMap, replace(), trim()
-
-### Community 115 - "Rigid Body Transform Integration"
-Cohesion: 0.12
-Nodes (4): AudioClip, AudioSourceComponent, RigidBodyComponent::RigidBodyComponent(), To()
-
-### Community 116 - "Worker Pool Interface"
+### Community 130 - "Worker Pool Interface"
 Cohesion: 0.13
 Nodes (6): ThreadPool, mShouldClose, mTaskConditionVar, mTasks, mTasksMutex, mThreads
 
-### Community 117 - "Shared Sample Client"
+### Community 131 - "Shared Sample Client"
 Cohesion: 0.12
 Nodes (8): SampleBase, DebugSystem, EController, firstMouse, isMouseDisabled, lastX, lastY, Renderer
 
-### Community 118 - "ECS System Management"
+### Community 132 - "ECS System Management"
 Cohesion: 0.13
 Nodes (5): BaseSystem, family_counter_, SystemManager, systems_, NonCopyable
 
-### Community 119 - "Ambient Occlusion Pass Interface"
+### Community 133 - "Ambient Occlusion Pass Interface"
 Cohesion: 0.12
 Nodes (9): AmbientOcclusionPass, mSSAO_Blur_RT, mSSAO_Extract_RT, pNoiseTexView, pSSAO_BlurShader, pSSAO_ExtractCB, pSSAO_ExtractShader, FrameRenderData (+1 more)
 
-### Community 120 - "UUID Asset Map Lookup"
-Cohesion: 0.15
-Nodes (6): ImportedAssetsMap, mData, UUID, swap(), UUID::operator==(), UUID::swap()
+### Community 134 - "Pipeline Baking Resources"
+Cohesion: 0.12
+Nodes (13): PSOResourcesInitInfo, mResources, mStaticSamplers, mTexturesSamplers, ShaderPipelineBakingDesc, mDefines, mPipelineResourcesInfo, mRTHeight (+5 more)
 
-### Community 122 - "Shader PSO Descriptions"
+### Community 136 - "Shader PSO Descriptions"
 Cohesion: 0.12
 Nodes (14): ShaderPSODesc, GraphicsPipeline, mLayout, mPixelShader, mRTsNames, mType, mValid, mVertexShader (+6 more)
 
-### Community 123 - "INI File Writing"
-Cohesion: 0.17
-Nodes (6): INIFile, filename, INIStructure, INIWriter, filename, prettyPrint
-
-### Community 124 - "Bloom Effect Interface"
+### Community 137 - "Bloom Effect Interface"
 Cohesion: 0.12
 Nodes (7): Bloom, BloomRT, mBloomBlur, mRTHeight, mRTWidth, pBloomExtractPSO, pBloomExtractSRB
 
-### Community 125 - "Render Baking Buffer Contracts"
+### Community 138 - "Asset Metadata Serialization"
 Cohesion: 0.12
-Nodes (14): IBuffer, ImageBasedLighting, RenderSystemBakeStatus, BakeLighting, BakePipelines, RenderSystemBakingDesc, mIsDefferedByDefault, mRenderToScreen (+6 more)
+Nodes (9): Material, Mesh, Scene, SerializationModule, Shader, Texture, SerializationModule::DeserializeUUID(), SerializationModule::SerializationModule() (+1 more)
 
-### Community 126 - "Native Field Reflection"
+### Community 139 - "Shader Pipeline Switch Implementation"
+Cohesion: 0.15
+Nodes (9): ShaderPipelineSwitch::GetID(), ShaderPipelineSwitch::GetName(), ShaderPipelineSwitch::GetType(), ShaderPipelineSwitch::SetName(), ShaderPipelineSwitch::SetType(), ShaderPipelineSwitch::ShaderPipelineSwitch(), ShaderPipelineSwitchController::GetActiveVariant(), ShaderPipelineSwitchController::GetRequiredHash() (+1 more)
+
+### Community 140 - "Native Attribute Property Reflection"
 Cohesion: 0.15
 Nodes (8): Attribute, FieldInfo, m_Handle, m_Type, Type, FieldInfo::GetAccessibility(), FieldInfo::GetAttributes(), FieldInfo::GetName()
 
-### Community 127 - "Proposed Modular Architecture"
+### Community 141 - "Proposed Modular Architecture"
 Cohesion: 0.21
 Nodes (16): Proposed public/private module API, Proposed native project decomposition, Proposed CSharp editor extension, Proposed cycle-breaking shared abstractions, Proposed editor-above-runtime layering, Proposed EventBus notifications, Proposed Graphics.Diligent plugin, Proposed JavaScript scripting backend (+8 more)
 
-### Community 128 - "Native Entity Registry Handles"
-Cohesion: 0.14
-Nodes (6): Entity registry handle, Entity, mEntity, pRegistry, Entity::Entity(), Entity::GetRegistry()
+### Community 142 - "Architecture and Validation Guides"
+Cohesion: 0.13
+Nodes (13): Editor consumes runtime scene, EntityInfoComponent transform/name, Scene and EnTT registry, Scene snapshot coverage, SystemManager unordered updates, Component lifecycle and persistence changes, EditorClient assembly prerequisite, System update order unspecified (+5 more)
 
-### Community 129 - "Editor Component Registration"
+### Community 143 - "Editor Component Registration"
 Cohesion: 0.13
 Nodes (7): EntityEditor, AllComponentsIDs, NuclearEditor, ProjectTemplate, mProjectTemplateName, NuclearEditor, Systems
 
-### Community 130 - "Mesh Asset Interface"
+### Community 144 - "Mesh Asset Interface"
 Cohesion: 0.12
 Nodes (8): Animations, Material, Mesh, mBoneCounter, mBoneInfoMap, mSubMeshes, pImportedAnimations, pImportedMaterial
 
-### Community 131 - "Module Dependency Lifecycle"
+### Community 145 - "Script Component Runtime"
+Cohesion: 0.15
+Nodes (8): ScriptComponent, mScriptObject, pParentScript, IScriptObject, ScriptingClass, ScriptingObject, pObject, pParent
+
+### Community 146 - "Client Metadata Types"
+Cohesion: 0.14
+Nodes (14): AssetManager, ClientInfo, mDeveloper, mName, mType, mVersion, ClientType, Editor (+6 more)
+
+### Community 147 - "Module Dependency Lifecycle"
 Cohesion: 0.13
 Nodes (8): ModuleManager, mEntries, mLastError, mOrder, mPluginLibraries, mRunning, ModuleManager::~ModuleManager(), ModuleManager::StartModules()
 
-### Community 132 - "Shader Creation Descriptions"
+### Community 148 - "ShaderPipelineSwitchController"
+Cohesion: 0.14
+Nodes (8): ShaderPipeline, ShaderPipelineSwitchController, mDirty, mRequiredHash, mSwitches, pActiveVariant, pPipeline, ShaderPipelineVariant
+
+### Community 149 - "Shader Creation Descriptions"
 Cohesion: 0.13
 Nodes (12): ShaderObjectCreationDesc, mDefines, mEntrypoint, mName, mPath, mSource, mType, mUseCombinedTextureSamplers (+4 more)
 
-### Community 133 - "Asset Metadata Serialization"
+### Community 150 - "Project Dependencies and Roadmap"
+Cohesion: 0.22
+Nodes (15): Assets and rendering, OpenAL-soft, libsndfile, entt, IMGUI, Future platforms and roadmap, Freeimage, spdlog (+7 more)
+
+### Community 151 - "Architecture and Validation Guides"
+Cohesion: 0.18
+Nodes (14): Managed component registration, C# static scripting backend, Nuclear.Managed .NET bridge, NativeCalls Cdecl ABI, Managed entity script callbacks, ScriptingModule backend registry, Managed API coordinated change, Lua backend remains scaffold (+6 more)
+
+### Community 152 - "Input"
 Cohesion: 0.13
-Nodes (7): SerializationModule, SerializationModule::Deserialize(), SerializationModule::DeserializeUUID(), SerializationModule::SerializationModule(), SerializationModule::Serialize(), SerializationModule::Shutdown(), SetBool()
+Nodes (8): Platform source map, Input, MouseInputMode, Hidden, Locked, Normal, Input::GetMouseInputMode(), Input::SetMouseInputMode()
 
-### Community 134 - "Scripting Backend Registry"
-Cohesion: 0.14
-Nodes (5): ScriptingModule::CreateScriptAsset(), ScriptingModule::FindBackend(), ScriptingModule::GetBackendNames(), ScriptingModule::RegisterBackend(), ScriptingModule::UnregisterBackend()
+### Community 153 - "Shader Stage Enumeration"
+Cohesion: 0.12
+Nodes (11): ShaderStage, Amplification, Compute, Domain, Geometry, Hull, Mesh, Pixel (+3 more)
 
-### Community 136 - "Engine Math Type Aliases"
+### Community 154 - "Managed Component Wrappers"
+Cohesion: 0.15
+Nodes (8): Nuclear.Components, Component, Entity, EntityInfoComponent, Name, LightComponent, Color, Intensity
+
+### Community 155 - "Engine Math Type Aliases"
 Cohesion: 0.13
 Nodes (12): Matrix2, Matrix3, Vector2, Vector2d, Vector2i, Vector3, Vector3d, Vector3i (+4 more)
 
-### Community 137 - "Pipeline Variant Factory"
-Cohesion: 0.20
-Nodes (8): ShaderPipelineVariantFactory, mRenderQueueCounter, mPostVariantReflectionCallback, mPreVariantPipelineCreationCallback, SetSuitableLayout(), ShaderPipelineVariantFactory::CreateDefferedVariant(), ShaderPipelineVariantFactory::CreateForwardVariant(), ShaderPipelineVariantFactory::ReflectShaderPipelineVariant()
+### Community 156 - "HostInstance.cpp"
+Cohesion: 0.16
+Nodes (7): GetManagedFunctionPtr, DefaultMessageCallback(), GetHostFXRPath(), HostInstance::CreateAssemblyLoadContext(), HostInstance::LoadHostFXR(), HostInstance::LoadManagedBridgeFunctionPtr(), HostInstance::LoadManagedFunctions()
 
-### Community 138 - "Texture Usage Enumeration"
+### Community 157 - "CoreCLRFunctions"
+Cohesion: 0.15
+Nodes (8): ExceptionCallback, CoreCLRFunctions, CloseHostFXR, GetRuntimeDelegate, InitHostFXRForRuntimeConfig, SetRuntimePropertyValue, HostInstance::InitializeManagedBridge(), HostInstance::Shutdown()
+
+### Community 158 - "XAudio2 Source Spatialization"
+Cohesion: 0.16
+Nodes (7): XAudioSource, m3DEmitter, mDirty, mFormat, mIs3D, mPitch, pVoice
+
+### Community 159 - "Texture Usage Enumeration"
 Cohesion: 0.13
 Nodes (15): TextureUsageType, Albedo, AmbientOcclusion, AO, BRDF_LUT, Diffuse, IrradianceMap, Metallic (+7 more)
 
-### Community 139 - "Audio Plugin Factory ABI"
+### Community 160 - "Audio Plugin Factory ABI"
 Cohesion: 0.17
 Nodes (10): AudioBackendPlugin, mSize, mVersion, pName, Create(), Destroy(), GetNuclearAudioBackendPlugin(), Create() (+2 more)
 
-### Community 140 - "Fallback Resource Interface"
+### Community 161 - "Fallback Resource Interface"
 Cohesion: 0.13
 Nodes (7): FallbacksModule, DefaultBlackImage, DefaultDiffuseTex, DefaultGreyImage, DefaultNormalTex, DefaultSpecularTex, DefaultWhiteImage
 
-### Community 141 - "Pipeline Variant Switch Controller"
-Cohesion: 0.13
-Nodes (8): ShaderPipeline, ShaderPipelineSwitchController, mDirty, mRequiredHash, mSwitches, pActiveVariant, pPipeline, ShaderPipelineVariant
-
-### Community 142 - "Debug Rendering Inspection"
+### Community 162 - "Debug Rendering Inspection"
 Cohesion: 0.14
 Nodes (7): DebugSystem, mRegisteredRTs, pShader, RenderLightSources, ShowRegisteredRenderTargets, RenderTarget, DebugSystem::Update()
 
-### Community 143 - "Shader Build Options"
-Cohesion: 0.13
-Nodes (14): ShaderBuildDesc, mDefines, mExcludedVariants, mPipelineDesc, mSupportedTechniques, mSupportShadows, mSupportSkinnedMeshes, mType (+6 more)
-
-### Community 144 - "Audio Backend DLL Loading"
-Cohesion: 0.15
-Nodes (4): AudioDevice, mName, AudioModule::GetBackend(), AudioModule::LoadBackend()
-
-### Community 145 - "Bloom Effect Execution"
+### Community 163 - "Scripting Backend Interface"
 Cohesion: 0.14
-Nodes (9): PostProcessingEffectBakingDesc, mFinalRTDesc, mRTHeight, mRTWidth, Bloom::Bake(), Bloom::GetHashedName(), Bloom::GetName(), Bloom::ResizeRTs() (+1 more)
+Nodes (4): IScriptingBackend opaque interface, IScriptingBackend, ScriptingModule::RegisterBackend(), Scripting.Lua future scaffold
 
-### Community 146 - "Managed Component Wrappers"
+### Community 164 - "Platform foundation"
+Cohesion: 0.15
+Nodes (10): Engine boundaries and compatibility, Extending to another platform, Lifetime and event flow, Platform foundation, Validation, WindowDesc, FullScreen, Title (+2 more)
+
+### Community 165 - "Material.cpp"
 Cohesion: 0.16
-Nodes (8): Nuclear.Components, Component, Entity, EntityInfoComponent, Name, LightComponent, Color, Intensity
+Nodes (7): ShaderPipelineVariant, ShaderTextureSet, Material::Create(), Material::GetShader(), Material::GetShaderID(), Material::InitializePipelineTextures(), Material::SetShader()
 
-### Community 147 - "Rigid Body Component Interface"
+### Community 166 - "Rigid Body Component Interface"
 Cohesion: 0.16
 Nodes (7): RigidBodyComponent, InternalisKinematic, isKinematic, mDynamicActor, PxRigidDynamic, RigidDynamic, mPtr
 
-### Community 148 - "Font Glyph Metrics"
+### Community 167 - "Pipeline Variant Factory"
+Cohesion: 0.22
+Nodes (7): ShaderPipelineVariantFactory, mRenderQueueCounter, mPostVariantReflectionCallback, mPreVariantPipelineCreationCallback, SetSuitableLayout(), ShaderPipelineVariantFactory::CreateDefferedVariant(), ShaderPipelineVariantFactory::CreateForwardVariant()
+
+### Community 168 - "AssetMetadata"
+Cohesion: 0.14
+Nodes (10): AssetMetadata, mName, mType, mUUID, pLoadingDesc, AssetLoadingDesc, mAsyncLoading, pMetadata (+2 more)
+
+### Community 169 - "Asset Type Enumeration"
+Cohesion: 0.14
+Nodes (12): AssetType, Animations, AudioClip, Font, Material, Mesh, Scene, Script (+4 more)
+
+### Community 170 - "Font Glyph Metrics"
 Cohesion: 0.14
 Nodes (8): Font, Characters, mTextureView, FontCharacter, Advance, Bearing, CodePoint, Size
 
-### Community 149 - "Material Import Tasks"
+### Community 171 - "Material Import Tasks"
 Cohesion: 0.16
 Nodes (10): MaterialImportingDesc, mCommonOptions, Material, MaterialImportTask, mImportingDesc, mPath, pResult, AssetNameFromDirectory() (+2 more)
 
-### Community 150 - "Submesh GPU Buffers"
+### Community 172 - "Submesh GPU Buffers"
 Cohesion: 0.15
 Nodes (11): SubMesh, data, mIB, mIndicesCount, mIndicesOffset, mVB, SubMeshData, indices (+3 more)
 
-### Community 151 - "Material Load Tasks"
-Cohesion: 0.16
-Nodes (10): Material, MaterialLoadTask, mAssetmeta, mPath, pResult, Material, Mesh, Scene (+2 more)
+### Community 173 - "Scene Primitive Entity Creation"
+Cohesion: 0.24
+Nodes (7): System, CameraInitialization(), Scene::CreateBox(), Scene::CreateEntity(), Scene::CreatePlane(), Scene::CreateSphere(), Scene::GetName()
 
-### Community 152 - "Render Target Interface"
+### Community 174 - "Render Target Interface"
 Cohesion: 0.14
 Nodes (5): RenderTarget, GetRTVDblPtr, mDesc, mRTV, mSRV
 
-### Community 153 - "Physics Geometry Wrappers"
+### Community 175 - "ShaderPipelineSwitch"
+Cohesion: 0.14
+Nodes (5): ShaderPipelineSwitch, mID, mName, mType, mValue
+
+### Community 176 - "INI File Writing"
+Cohesion: 0.21
+Nodes (4): INIStructure, INIWriter, filename, prettyPrint
+
+### Community 177 - "Physics Geometry Wrappers"
 Cohesion: 0.23
 Nodes (7): BoxGeometry, mHalfExtents, PhysicsGeometry, mTransform, PlaneGeometry, SphereGeometry, radius
 
-### Community 154 - "CPU GPU Profiling"
+### Community 178 - "ImageBasedLighting.cpp"
+Cohesion: 0.21
+Nodes (9): PBRCapture, mIrradiance, mPrefiltered, ImageBasedLighting::EquirectangularToCubemap(), ImageBasedLighting::GetBRDF_LUT(), ImageBasedLighting::GetEnvironmentCapture(), ImageBasedLighting::Initialize(), ImageBasedLighting::PrecomputePBRCapture() (+1 more)
+
+### Community 179 - "MeshComponent.h"
 Cohesion: 0.19
-Nodes (5): Profiler_CPU, mStart, Profiler_GPU, mName, pQuery
+Nodes (9): Animator, Material, Mesh, ShaderPipelineVariant, Material, SpriteRenderer, pMaterial, pSprite (+1 more)
 
-### Community 155 - "Color and Background Interface"
-Cohesion: 0.15
-Nodes (6): Background, mClearColor, mSkybox, Color::Get4f(), Color::operator==(), operator+()
-
-### Community 158 - "Assimp Model Loading"
+### Community 180 - "Assimp Model Loading"
 Cohesion: 0.19
 Nodes (8): MeshLoadingDesc, mAnimationsUUID, mExternalMaterial, mMaterialUUID, mSaveMaterialNames, AssimpManager::Import(), AssimpManager::IsExtensionSupported(), AssimpManager::Load()
 
-### Community 159 - "Material Texture Sets"
-Cohesion: 0.15
-Nodes (8): MaterialTexture, mUsageType, pTexture, MaterialTextureSet, mData, mHashedName, mName, Texture
-
-### Community 160 - "Mesh Vertex Layout"
+### Community 181 - "Mesh Vertex Layout"
 Cohesion: 0.18
 Nodes (9): Vertex, Bitangents, BoneIDs, Normal, Position, Tangents, UV, Weights (+1 more)
 
-### Community 161 - "Procedural Mesh Generation"
+### Community 182 - "Procedural Mesh Generation"
 Cohesion: 0.21
 Nodes (7): Mesh::CreateCube(), Mesh::CreateGrid(), Mesh::CreatePlane(), Mesh::CreateScreenQuad(), Mesh::CreateSphere(), Mesh::GetImportedAnimations(), Mesh::GetImportedMaterial()
 
-### Community 162 - "Script Asset Class Handles"
+### Community 183 - "Script Asset Class Handles"
 Cohesion: 0.17
 Nodes (5): Script, mClass, mOnStartMethod, mOnUpdateMethod, ScriptingClass::CreateObject()
 
-### Community 163 - "Client Metadata Types"
+### Community 184 - "TextureData"
 Cohesion: 0.15
-Nodes (12): ClientInfo, mDeveloper, mName, mType, mVersion, ClientType, Editor, Game (+4 more)
+Nodes (8): TextureData, mData, mMips, mSubresources, mTexDesc, GraphicsModule::CreateImage(), GraphicsModule::CreateImageData(), GraphicsModule::ModifyImageComponents()
 
-### Community 164 - "Graphics Startup Configuration"
-Cohesion: 0.17
-Nodes (8): GraphicsModuleDesc, GammaCorrect, InitImGui, mRenderAPI, pWindowHandle, SCDesc, SDL_Window, GraphicsModule::Initialize()
-
-### Community 165 - "Native Input Implementation"
-Cohesion: 0.15
-Nodes (8): MouseInputMode, Hidden, Locked, Normal, Input::GetKeyboardState(), Input::GetMouseState(), Input::IsKeyPressed(), Input::SetMouseInputMode()
-
-### Community 166 - "Shadow Pass Baking Options"
+### Community 185 - "Shadow Pass Baking Options"
 Cohesion: 0.15
 Nodes (12): ShadowMapInfo, mFormat, mResolution, ShadowPassBakingDesc, MAX_DIR_CASTERS, MAX_DIR_CSM_CASTERS, MAX_OMNIDIR_CASTERS, MAX_SPOT_CASTERS (+4 more)
 
-### Community 167 - "Native Garbage Collection Control"
+### Community 186 - "Scripting Backend Registry"
+Cohesion: 0.18
+Nodes (4): ScriptingModule::CreateScriptAsset(), ScriptingModule::FindBackend(), ScriptingModule::GetBackendNames(), ScriptingModule::UnregisterBackend()
+
+### Community 187 - "Native Attribute Property Reflection"
+Cohesion: 0.22
+Nodes (7): Attribute, m_Handle, m_Type, GetFieldValue(), Type, Attribute::GetFieldValue(), Attribute::GetFieldValueInternal()
+
+### Community 188 - "Native Garbage Collection Control"
 Cohesion: 0.19
 Nodes (8): GC, GCCollectionMode, Aggressive, Default, Forced, Optimized, GC::Collect(), GC::WaitForPendingFinalizers()
 
-### Community 168 - "Project Dependencies and Roadmap"
-Cohesion: 0.29
-Nodes (12): OpenAL-soft, libsndfile, entt, IMGUI, Freeimage, spdlog, Assimp, Nuclear Engine work in progress (+4 more)
-
-### Community 169 - "PhysX Simulation Interface"
+### Community 189 - "PhysX Simulation Interface"
 Cohesion: 0.17
 Nodes (3): PhysX SDK and ECS simulation, PhysXSystem, mPhysXScene
 
-### Community 170 - "Environment Lighting Capture"
-Cohesion: 0.23
-Nodes (8): PBRCapture, mIrradiance, mPrefiltered, ImageBasedLighting::EquirectangularToCubemap(), ImageBasedLighting::GetBRDF_LUT(), ImageBasedLighting::GetEnvironmentCapture(), ImageBasedLighting::PrecomputePBRCapture(), ImageBasedLighting::SetEnvironmentCapture()
+### Community 190 - "ModuleManager.cpp"
+Cohesion: 0.20
+Nodes (4): ModuleManager::LoadPlugin(), ModuleManager::LoadPlugins(), ModuleManager::ShutdownModules(), ModuleManager::UnloadPluginsFrom()
 
-### Community 171 - "Editor Entity Inspection"
-Cohesion: 0.30
-Nodes (5): AddComponentByHash(), AddComponentByHashImp(), GetAllComponentsHashes(), GetAvailableComponents(), GetComponentName()
-
-### Community 172 - "Asset Type Enumeration"
-Cohesion: 0.17
-Nodes (11): AssetType, Animations, AudioClip, Font, Material, Mesh, Scene, Script (+3 more)
-
-### Community 173 - "Asset Identity State Interface"
-Cohesion: 0.17
-Nodes (5): IAsset, mName, mState, mType, mUUID
-
-### Community 174 - "Asset Loading Descriptions"
-Cohesion: 0.17
-Nodes (9): AssetLoadingDesc, mAsyncLoading, pMetadata, AssetMetadata, MaterialLoadingDesc, TextureLoadingDesc, mData, mExtension (+1 more)
-
-### Community 175 - "Shader Asset Interface"
+### Community 191 - "Shader Asset Interface"
 Cohesion: 0.17
 Nodes (5): Shader, mBuildDesc, mPipeline, mReflection, Shader::GetID()
 
-### Community 176 - "Engine Frame Timing"
+### Community 192 - "Camera Matrices and Targets"
 Cohesion: 0.17
-Nodes (4): Timer, start, Engine::MainLoop(), ResizeCallback()
+Nodes (12): CameraComponentDesc, mDepthRTDesc, mInitRTs, mIsActiveCamera, mPitch, mProjection, mRTDesc, mSensitivity (+4 more)
 
-### Community 177 - "Physics Raycast Results"
-Cohesion: 0.18
-Nodes (9): Float32, RaycastHit, distance, HitEntity, normal, position, valid, Window::GetAspectRatioF32() (+1 more)
-
-### Community 178 - "Scene Snapshot Archives"
+### Community 194 - "Scene Snapshot Archives"
 Cohesion: 0.20
 Nodes (5): operator()(), SceneInputArchive, Ser, SceneOutputArchive, Ser
 
-### Community 181 - "Font Atlas Creation"
-Cohesion: 0.18
-Nodes (6): FontCreationDesc, AtlasHeight, AtlasWidth, Data, Font::Create(), fillfontdesc()
+### Community 195 - "Hashed String Tables"
+Cohesion: 0.23
+Nodes (7): serialize(), TString, id, size, str, StringTable, mTable
 
-### Community 182 - "Material Shader Texture Binding"
+### Community 197 - "Event"
+Cohesion: 0.17
+Nodes (12): EventType, FocusChanged, Key, MouseButton, MouseLeave, MouseMove, MouseWheel, None (+4 more)
+
+### Community 198 - "MouseCursor"
+Cohesion: 0.17
+Nodes (12): MouseCursor, Arrow, Hand, Hidden, NotAllowed, ResizeAll, ResizeEW, ResizeNESW (+4 more)
+
+### Community 201 - "ScriptingAssembly.h"
 Cohesion: 0.22
-Nodes (7): ShaderTextureSet, Material::BindTexSet(), Material::Create(), Material::GetShader(), Material::GetShaderID(), Material::InitializePipelineTextures(), Material::SetShader()
+Nodes (6): CSharpScriptingBackend, ManagedAssembly, ScriptingAssembly, mNamespaceName, pAssembly, ScriptingAssembly::GetAssembly()
 
-### Community 183 - "Texture Asset Interface"
+### Community 202 - "Texture Asset Interface"
 Cohesion: 0.18
 Nodes (4): Texture, mHeight, mTextureView, mWidth
 
-### Community 184 - "Engine Module Plugin ABI"
+### Community 203 - "Camera Movement Enumeration"
+Cohesion: 0.20
+Nodes (8): CAMERA_MOVEMENT, CAMERA_MOVEMENT_BACKWARD, CAMERA_MOVEMENT_FORWARD, CAMERA_MOVEMENT_LEFT, CAMERA_MOVEMENT_RIGHT, Math::Matrix4 GetProjectionMatrix(), Math::Vector3 GetPosition(), CameraComponent::ProcessMovement()
+
+### Community 204 - "EngineModulePlugin.h"
 Cohesion: 0.20
 Nodes (10): EngineModulePlugin, mModuleCount, mSize, mVersion, pModules, PluginModuleFactory, mDependencyCount, mType (+2 more)
 
-### Community 185 - "Scene Primitive Entity Creation"
-Cohesion: 0.33
-Nodes (5): System, CameraInitialization(), Scene::CreateBox(), Scene::CreatePlane(), Scene::CreateSphere()
-
-### Community 186 - "Render Target Descriptions"
+### Community 205 - "Graphics Startup Configuration"
 Cohesion: 0.20
-Nodes (7): RenderTargetDesc, ClearValue, ColorTexFormat, DepthTexFormat, mDimensions, mName, mType
+Nodes (7): GraphicsModuleDesc, GammaCorrect, InitImGui, mRenderAPI, pWindowHandle, SCDesc, Window
 
-### Community 187 - "Render Target GPU Creation"
+### Community 206 - "Render Target GPU Creation"
 Cohesion: 0.22
 Nodes (5): RenderTarget::Create(), RenderTarget::GetDesc(), RenderTarget::GetRTV(), RenderTarget::GetRTVDblPtr(), RenderTarget::GetSRV()
 
-### Community 188 - "Pipeline State Variant Descriptions"
+### Community 207 - "Pipeline State Variant Descriptions"
 Cohesion: 0.18
 Nodes (9): ShaderPipelineDesc, mDefferedPSOCreateInfo, mDefines, mForwardPSOCreateInfo, mGBufferPSOCreateInfo, mInstanceDesc, mName, Switches (+1 more)
 
-### Community 189 - "Hashed String Tables"
-Cohesion: 0.24
-Nodes (7): serialize(), TString, id, size, str, StringTable, mTable
+### Community 208 - "Physics Raycast Results"
+Cohesion: 0.20
+Nodes (8): Float32, RaycastHit, distance, HitEntity, normal, position, valid, PhysXSystem::Raycast()
 
-### Community 191 - "Managed Component Callback Registry"
+### Community 211 - "Managed Component Callback Registry"
 Cohesion: 0.22
 Nodes (6): ScriptingRegistry, mAddComponentFuncs, mHasComponentFuncs, RegisterComponent(), ScriptingRegistry::Clear(), ScriptingRegistry::RegisterEngineComponents()
 
-### Community 192 - "Concurrent Task Queues"
+### Community 212 - "AIGuides/Platform.md"
+Cohesion: 0.31
+Nodes (9): Platform dependency boundary, Compatibility and file helpers, ImGui platform adapter, Native library services, Nuclear.Platform foundation, Physical keys and Unicode text, Portable event translation, Raw mouse and focus (+1 more)
+
+### Community 213 - "Concurrent Task Queues"
 Cohesion: 0.24
 Nodes (3): Int32, ConcurrentQueue, ConcurrentTaskQueue
 
-### Community 193 - "CSharp Class Lifetime Handles"
+### Community 214 - "CSharp Class Lifetime Handles"
 Cohesion: 0.31
 Nodes (4): CSharpScriptClass, mLifetime, mName, pType
 
-### Community 194 - "CSharp Script Object Invocation"
+### Community 215 - "Graphics Device Resource Types"
+Cohesion: 0.20
+Nodes (4): IEngineFactory, ISwapChain, Mesh, Texture
+
+### Community 216 - "FileDialog.h"
+Cohesion: 0.20
+Nodes (7): FileDialogSortOrder, Down, None, Up, FileDialogType, OpenFile, SelectFolder
+
+### Community 217 - "CSharp Script Object Invocation"
 Cohesion: 0.31
 Nodes (3): CSharpScriptingBackend::TrackObject(), CSharpScriptObject, pObject
 
-### Community 195 - "Editor Client Runtime"
+### Community 218 - "Editor Client Runtime"
 Cohesion: 0.20
 Nodes (3): NuclearEditor, GUI, mActiveProject
 
-### Community 196 - "Imported Model Asset Bundle"
+### Community 219 - "Imported Model Asset Bundle"
 Cohesion: 0.27
 Nodes (8): Animations, Material, Mesh, Model, mName, pAnimations, pMaterial, pMesh
 
-### Community 197 - "Texture GPU Creation Tasks"
+### Community 220 - "Texture GPU Creation Tasks"
 Cohesion: 0.22
 Nodes (7): Texture, TextureCreateTask, mDesc, mFactoryType, mPath, pImageData, pTexture
 
-### Community 199 - "Rendering Shader Baking Context"
+### Community 221 - "Shader Texture Role Enumeration"
+Cohesion: 0.20
+Nodes (9): ShaderTextureType, MaterialTex, RenderingEffect, RenderTarget, ShadowTex, Sprite, Unknown, UNKNOWN_MAX (+1 more)
+
+### Community 223 - "Rendering Shader Baking Context"
 Cohesion: 0.20
 Nodes (10): ImageBasedLighting, Rendering3DShaderBakingDesc, DirLights, mRenderSystemHasDefferedPass, mRenderSystemHasShadowPass, pIBLContext, PointLights, pShadowPass (+2 more)
 
-### Community 200 - "Shader Stage Enumeration"
-Cohesion: 0.20
-Nodes (10): ShaderStage, Amplification, Compute, Domain, Geometry, Hull, Mesh, Pixel (+2 more)
-
-### Community 204 - "Asset State Implementation"
+### Community 225 - "IAsset.cpp"
 Cohesion: 0.24
 Nodes (7): IAsset::GetName(), IAsset::GetState(), IAsset::GetType(), IAsset::IAsset(), IAsset::SetName(), IAsset::SetState(), IAsset::SetUUID()
 
-### Community 205 - "Audio Source Playback Controls"
-Cohesion: 0.22
-Nodes (8): AudioSourceComponent::AudioSourceComponent(), AudioSourceComponent::Pause(), AudioSourceComponent::Play(), AudioSourceComponent::SetAudioClip(), AudioSourceComponent::SetIsLooping(), AudioSourceComponent::SetPitch(), AudioSourceComponent::SetVolume(), AudioSourceComponent::Stop()
-
-### Community 206 - "Native Host Message Levels"
+### Community 226 - "Native Host Message Levels"
 Cohesion: 0.24
 Nodes (9): MessageCallbackFn, MessageLevel, All, Error, Info, Trace, Warning, operator|() (+1 more)
 
-### Community 208 - "Shader Creation Resource Parsing"
+### Community 228 - "graphicsmodule"
 Cohesion: 0.22
-Nodes (4): GraphicsModule::CreateShader(), GraphicsModule::ParseNameToGetType(), GraphicsModule::ParseTexUsageFromName(), GraphicsModule::ReflectShaderResources()
+Nodes (6): FontCreationDesc, AtlasHeight, AtlasWidth, Data, Font::Create(), fillfontdesc()
 
-### Community 209 - "Skeletal Bone Metadata"
-Cohesion: 0.22
-Nodes (4): BoneInfo, id, offset, Mesh::Mesh()
-
-### Community 210 - "Animation Clip Hierarchy"
-Cohesion: 0.22
-Nodes (6): ClipNodeData, children, childrenCount, mHashedName, mName, transformation
-
-### Community 211 - "Audio Clip Asset Interface"
+### Community 229 - "Audio Clip Asset Interface"
 Cohesion: 0.25
 Nodes (4): AudioClip, m3D, mBufferID, mLoop
 
-### Community 212 - "Mesh Load Tasks"
+### Community 230 - "Mesh Load Tasks"
 Cohesion: 0.28
 Nodes (4): MeshLoadTask, mAssetmeta, mPath, mResult
 
-### Community 214 - "Module Registration Descriptors"
+### Community 231 - "Texture Load Tasks"
+Cohesion: 0.28
+Nodes (5): Texture, TextureLoadTask, mAssetmeta, mPath, pResult
+
+### Community 233 - "Module Registration Descriptors"
 Cohesion: 0.22
 Nodes (5): ModuleDescriptor, mDependencies, mName, mType, ModuleManager::RegisterModule()
 
-### Community 215 - "Pipeline Variant Flags"
+### Community 234 - "Pipeline Variant Flags"
 Cohesion: 0.22
 Nodes (8): ShaderPipelineVariantDesc, isDeffered, isShadowed, isSkinned, mDefines, mGBufferPSOCreateInfo, mHashKey, mMainPSOCreateInfo
 
-### Community 216 - "Fallback Texture Creation"
+### Community 235 - "GTAO Shader Bindings"
+Cohesion: 0.22
+Nodes (3): GTAOShader, pPipeline, pSRB
+
+### Community 236 - "Engine Startup Integration"
+Cohesion: 0.25
+Nodes (4): IScriptClass, ScriptingClass, pClass, ScriptingModule
+
+### Community 237 - "Fallback Texture Creation"
 Cohesion: 0.28
 Nodes (3): FallbacksModule::GetDefaultBlackImage(), FallbacksModule::GetDefaultGreyImage(), FallbacksModule::GetDefaultWhiteImage()
 
-### Community 217 - "Graphics Device Resource Types"
-Cohesion: 0.25
-Nodes (4): IEngineFactory, ISwapChain, Mesh, Texture
-
-### Community 218 - "CSharp Backend Runtime Ownership"
+### Community 239 - "CSharp Backend Runtime Ownership"
 Cohesion: 0.25
 Nodes (6): CSharpScriptingBackend::Runtime, mContext, mHost, mInitialized, mLifetime, mObjects
 
-### Community 219 - "INI Reader Streams"
+### Community 240 - "INI File Writing"
 Cohesion: 0.29
 Nodes (4): INIReader, fileReadStream, isBOM, lineData
 
-### Community 220 - "License and Dependency Attribution"
+### Community 241 - "License and Dependency Attribution"
 Cohesion: 0.46
 Nodes (7): Assimp and Poly2Tri notices, DiligentCore Apache2 attribution, EnTT MIT attribution, Bundled MIT dependency notices, Nuclear Project license terms, PhysX4.1 NVIDIA notice, SDL2 notice
 
-### Community 221 - "Editor Log Level Enumeration"
+### Community 242 - "Editor Log Level Enumeration"
 Cohesion: 0.25
 Nodes (8): LogLevel, All, Error, Fatal, Info, None, Trace, Warn
 
-### Community 224 - "Mesh GPU Creation Tasks"
+### Community 246 - "Material Texture Sets"
+Cohesion: 0.25
+Nodes (4): MaterialTextureSet, mData, mHashedName, mName
+
+### Community 247 - "MaterialLoadTask"
+Cohesion: 0.32
+Nodes (5): Material, MaterialLoadTask, mAssetmeta, mPath, pResult
+
+### Community 248 - "Mesh GPU Creation Tasks"
 Cohesion: 0.29
 Nodes (5): Mesh, MeshCreateTask, mFactoryType, mPath, pMesh
 
-### Community 225 - "Shader Load Tasks"
+### Community 249 - "Shader Load Tasks"
 Cohesion: 0.32
 Nodes (5): Shader, ShaderLoadTask, mAssetmeta, mPath, pResult
 
-### Community 226 - "Texture Load Tasks"
-Cohesion: 0.32
-Nodes (5): Texture, TextureLoadTask, mAssetmeta, mPath, pResult
-
-### Community 227 - "Shader Texture Role Enumeration"
-Cohesion: 0.25
-Nodes (8): ShaderTextureType, MaterialTex, RenderingEffect, RenderTarget, ShadowTex, Sprite, Unknown, UNKNOWN_MAX
-
-### Community 228 - "Asset Callback Module Adapter"
+### Community 250 - "Asset Callback Module Adapter"
 Cohesion: 0.36
 Nodes (3): CallbackModule, mInitialize, mShutdown
 
-### Community 229 - "Module Instance Ownership Records"
-Cohesion: 0.25
-Nodes (7): Entry, mDescriptor, mState, pModule, pOwnedModule, pPluginLibrary, ModuleManager::UnloadPluginsFrom()
-
-### Community 230 - "Transform Rotation Position Scale"
+### Community 251 - "Quaternion"
 Cohesion: 0.43
 Nodes (5): Quaternion, Transform::SetPosition(), Transform::SetRotation(), Transform::SetScale(), Transform::Transform()
 
-### Community 231 - "Environment Lighting Capture Options"
+### Community 252 - "INIFile"
 Cohesion: 0.25
-Nodes (7): ImageBasedLightingDesc, mBRDF_LUTDim, mIrradianceCubeDim, mIrradianceCubeFmt, mPrefilteredEnvMapDim, mPrefilteredEnvMapFmt, ImageBasedLighting::Initialize()
+Nodes (5): INIFile, filename, SerializationModule::Deserialize(), SerializationModule::Serialize(), SetBool()
 
-### Community 232 - "Worker Pool Task Execution"
+### Community 253 - "Color.cpp"
+Cohesion: 0.29
+Nodes (3): Color::Get4f(), Color::operator==(), operator+()
+
+### Community 254 - "PosShadowMap"
+Cohesion: 0.25
+Nodes (4): PosShadowMap, pPosShadowMap, pPosShadowMapDSVs, pPosShadowMapSRV
+
+### Community 255 - "Worker Pool Task Execution"
 Cohesion: 0.25
 Nodes (3): ThreadPool::AddTask(), ThreadPool::Initialize(), ThreadPool::ThreadFunc()
 
-### Community 233 - "Engine Client Logger Interface"
+### Community 256 - "Engine Client Logger Interface"
 Cohesion: 0.25
 Nodes (3): Logger, mClientLogger, mEngineLogger
 
-### Community 234 - "Default Mesh Resource Creation"
-Cohesion: 0.36
-Nodes (4): DefaultMeshes::GetCubeAsset(), DefaultMeshes::GetPlaneAsset(), DefaultMeshes::GetScreenQuadAsset(), DefaultMeshes::GetSphereAsset()
+### Community 258 - "AmbientOcclusionPass.cpp"
+Cohesion: 0.25
+Nodes (4): AmbientOcclusionPass::Bake(), AmbientOcclusionPass::GetSSAO_SRV(), AmbientOcclusionPass::ResizeRTs(), AmbientOcclusionPass::Update()
 
-### Community 235 - "Texture View Implementation"
-Cohesion: 0.29
-Nodes (4): Texture::GetHeight(), Texture::GetTextureView(), Texture::GetWidth(), Texture::SetTextureView()
-
-### Community 236 - "CSharp Backend Registration Options"
+### Community 259 - "CSharp Backend Registration Options"
 Cohesion: 0.25
 Nodes (7): CSharpBackendDesc, mAutoInitClientAssembly, mClientAssemblyPath, mClientNamespace, mScriptingCoreAssemblyDir, CSharpScriptingBackend::CSharpScriptingBackend(), RegisterCSharpBackend()
 
-### Community 238 - "Graphics Diagnostics Resource Binding"
+### Community 260 - "Entity"
+Cohesion: 0.29
+Nodes (5): Entity registry handle, Entity, mEntity, pRegistry, Scene::Scene()
+
+### Community 263 - "Graphics Diagnostics Resource Binding"
 Cohesion: 0.29
 Nodes (3): Char, DiligentMassageCallback(), ShaderPipelineVariantFactory::SetIfFound()
 
-### Community 239 - "Asset Metadata Fields"
+### Community 264 - "AudioClipImportingDesc"
 Cohesion: 0.29
-Nodes (5): AssetMetadata, mName, mType, mUUID, pLoadingDesc
+Nodes (6): AudioClipImportingDesc, mBitDepth, mCommonOptions, mIs3D, mLoop, Importer::ImportAudioClip()
 
-### Community 240 - "Light GPU Buffer Data"
+### Community 265 - "LightComponent.h"
 Cohesion: 0.29
 Nodes (6): LightData, Attenuation_FarPlane, Color_Intensity, Direction, InnerCutOf_OuterCutoff, Position
 
-### Community 241 - "UUID Hashing and Comparison"
+### Community 266 - "Module Instance Ownership Records"
 Cohesion: 0.29
-Nodes (4): hash<Nuclear::Core::UUID>, hash<T, Rest...>, _bytes, operator<()
+Nodes (6): Entry, mDescriptor, mState, pModule, pOwnedModule, pPluginLibrary
 
-### Community 242 - "Shader Category Enumeration"
-Cohesion: 0.29
-Nodes (7): ShaderType, PostFX, Rendering2D, Rendering3D, RenderingEffect, Unknown, UNKNOWN_MAX
-
-### Community 243 - "Audio Mono Conversion"
+### Community 267 - "AudioConverter.h"
 Cohesion: 0.38
 Nodes (5): Int16, Int8, ConvertToMono(), ConvertToMono16(), ConvertToMono8()
 
-### Community 244 - "Window Creation Options"
+### Community 268 - "LightComponent.h"
 Cohesion: 0.29
-Nodes (6): WindowDesc, FullScreen, Title, WindowHeight, WindowWidth, Window::Create()
+Nodes (3): Background, mClearColor, mSkybox
 
-### Community 245 - "Delegate Task Adapter"
+### Community 269 - "Environment Lighting Capture Options"
+Cohesion: 0.29
+Nodes (6): ImageBasedLightingDesc, mBRDF_LUTDim, mIrradianceCubeDim, mIrradianceCubeFmt, mPrefilteredEnvMapDim, mPrefilteredEnvMapFmt
+
+### Community 270 - "Delegate Task Adapter"
 Cohesion: 0.43
 Nodes (3): DelegateTask, mDelegate, mDelegateNoReturn
 
-### Community 246 - "Task State Enumeration"
+### Community 271 - "Task State Enumeration"
 Cohesion: 0.29
 Nodes (7): State, Canceled, Created, Failed, Finished, Queued, Running
 
-### Community 247 - "Shader TOML PSO Parsing"
+### Community 272 - "Shader TOML PSO Parsing"
 Cohesion: 0.33
 Nodes (3): ParsePSO(), ParsePSOShader(), ShaderParser::ParseSource()
 
-### Community 248 - "Managed Host Message Levels"
+### Community 273 - "Managed Host Message Levels"
 Cohesion: 0.33
 Nodes (6): ManagedHost, MessageLevel, Error, Info, Trace, Warning
 
-### Community 249 - "Managed Type Accessibility Enumeration"
+### Community 274 - "Managed Type Accessibility Enumeration"
 Cohesion: 0.29
 Nodes (7): TypeAccessibility, Internal, Private, PrivateProtected, Protected, ProtectedPublic, Public
 
-### Community 250 - "CSharp Assembly Class Resolution"
+### Community 275 - "CSharp Assembly Class Resolution"
 Cohesion: 0.33
 Nodes (4): CSharpScriptingBackend::CreateScriptingAssembly(), CSharpScriptingBackend::FindClass(), CSharpScriptingBackend::IsEntityClass(), CSharpScriptingBackend::Shutdown()
 
-### Community 251 - "Asset Readiness State Enumeration"
-Cohesion: 0.33
-Nodes (6): State, Created, Deserialized, Loaded, Queued, Unknown
-
-### Community 252 - "Texture Memory Loading Data"
-Cohesion: 0.33
-Nodes (5): TextureLoadingData, mEngineAllocMem, mMemData, mMemSize, TextureImporter::FreeimageLoadMemory()
-
-### Community 253 - "Camera Movement Enumeration"
-Cohesion: 0.33
-Nodes (6): CAMERA_MOVEMENT, CAMERA_MOVEMENT_BACKWARD, CAMERA_MOVEMENT_FORWARD, CAMERA_MOVEMENT_LEFT, CAMERA_MOVEMENT_RIGHT, CameraComponent::ProcessMovement()
-
-### Community 254 - "Camera Constant Buffer Layout"
-Cohesion: 0.33
-Nodes (6): CameraBuffer, Model, ModelInvTranspose, ModelViewProjection, Projection, View
-
-### Community 255 - "Engine Lifecycle State Enumeration"
+### Community 276 - "Engine Lifecycle State Enumeration"
 Cohesion: 0.33
 Nodes (6): State, ExitingRendering, Initializing, Loading, Rendering, Shuttingdown
 
-### Community 256 - "External Module DLL Loading"
-Cohesion: 0.33
-Nodes (3): ModuleManager::LoadPlugin(), ModuleManager::LoadPlugins(), ModuleManager::ShutdownModules()
+### Community 277 - "Collider Shape Creation"
+Cohesion: 0.40
+Nodes (3): PhysXShape, mPtr, PxShape
 
-### Community 257 - "Static Physics Actor Wrapper"
+### Community 278 - "RigidStatic"
 Cohesion: 0.40
 Nodes (3): PxRigidStatic, RigidStatic, mPtr
 
-### Community 258 - "GBuffer Configuration"
-Cohesion: 0.33
-Nodes (4): GBufferDesc, mDimensions, mGbufferName, mRTDescs
-
-### Community 259 - "Screen Quad Vertex Layout"
+### Community 279 - "Screen Quad Vertex Layout"
 Cohesion: 0.47
 Nodes (3): ScreenVertex, Position, UV
 
-### Community 267 - "Font Import Dimensions"
+### Community 283 - "Material Texture Sets"
 Cohesion: 0.40
-Nodes (4): FontImportingDesc, Height, Width, Importer::ImportFont()
+Nodes (4): MaterialTexture, mUsageType, pTexture, Texture
 
-### Community 268 - "Audio Backend Type Enumeration"
-Cohesion: 0.40
-Nodes (5): AudioBackendType, MAX_UNKNOWN, OpenAL, Unknown, XAudio2
-
-### Community 269 - "Light Type Enumeration"
+### Community 285 - "Type"
 Cohesion: 0.40
 Nodes (5): Type, Directional, Point, Spot, Unknown
 
-### Community 270 - "Module Type Enumeration"
+### Community 286 - "Module Registration Descriptors"
 Cohesion: 0.40
 Nodes (5): ModuleType, Developer, Editor, Program, Runtime
 
-### Community 271 - "Module Lifecycle State Enumeration"
+### Community 287 - "Module Lifecycle State Enumeration"
 Cohesion: 0.40
 Nodes (5): State, Initialized, Loaded, Started, Unloaded
 
-### Community 272 - "Scene Entity Creation"
+### Community 288 - "Type"
 Cohesion: 0.40
-Nodes (3): Scene::CreateEntity(), Scene::GetName(), Scene::Scene()
+Nodes (5): Type, PostProcessingAndRenderingEffect, PostProcessingEffect, RenderingEffect, Unknown
 
-### Community 273 - "Pipeline Bake State Enumeration"
-Cohesion: 0.40
-Nodes (4): BakeStatus, Baked, NotInitalized, RequiresBaking
-
-### Community 274 - "INI Generator Output"
-Cohesion: 0.40
-Nodes (3): INIGenerator, fileWriteStream, prettyPrint
-
-### Community 277 - "GTAO Shader Bindings"
-Cohesion: 0.40
-Nodes (3): GTAOShader, pPipeline, pSRB
-
-### Community 279 - "Audio Playback State Enumeration"
+### Community 292 - "Physics Audio ECS Systems"
 Cohesion: 0.50
-Nodes (4): State, Paused, Playing, Stopped
+Nodes (3): PhysXSystemDesc, mGravity, PhysXSystem::PhysXSystem()
 
-### Community 280 - "Postprocessing Target Baking Options"
-Cohesion: 0.50
-Nodes (4): PostProcessingBakingDesc, mFinalRTDesc, mRTHeight, mRTWidth
-
-### Community 286 - "Light Shadow Mode Enumeration"
+### Community 293 - "ShadowType"
 Cohesion: 0.67
 Nodes (3): ShadowType, No_Shadows, Simple_Shadows
 
 ## Knowledge Gaps
-- **1831 isolated node(s):** `pActiveProject`, `mEditorInstance`, `mPath`, `mEditor`, `pActiveProject` (+1826 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3366 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1905 isolated node(s):** `KEYCODE_0`, `KEYCODE_1`, `KEYCODE_2`, `KEYCODE_3`, `KEYCODE_4` (+1900 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3495 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **66 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Uint32` connect `XAudio2 Backend Operations` to `Native Entity Registry Handles`, `Mesh Asset Interface`, `Shadow Map Rendering`, `Pipeline Variant Factory`, `Font Import Dimensions`, `Pipeline Variant Switch Controller`, `Assimp Model Conversion`, `Diligent Graphics Module`, `Bloom Effect Execution`, `Scripting Integration Source Map`, `Font Glyph Metrics`, `Submesh GPU Buffers`, `Component Rendering Dependencies`, `Postprocessing Target Baking Options`, `Shared Rendering Services`, `GTAO Compute Execution`, `Material Texture Sets`, `Common Engine Asset Types`, `Mesh Component Draw State`, `Postprocessing Pass Execution`, `Script Asset Class Handles`, `Native Input Implementation`, `Shadow Pass Baking Options`, `Bone Transform Interpolation`, `OpenAL Backend Operations`, `Light Buffer Baking`, `Skeletal Animation Playback`, `Texture Import Tasks`, `Shader Asset Interface`, `Rendering Module Buffers`, `Geometry Render Pass`, `Font Atlas Creation`, `Material Shader Texture Binding`, `Texture Asset Interface`, `GPU Texture Descriptions`, `Hashed String Tables`, `Audio Source Interface`, `Blur Effect Targets`, `Asset Import Options`, `CSharp Script Object Invocation`, `Rendering Shader Baking Context`, `Camera Matrices and Targets`, `SDL Window Operations`, `Multiple Camera Sample`, `Graphics Resource Creation`, `Worker Main Thread Queues`, `Engine Runtime Interface`, `Engine Startup Options`, `Animation Clip Hierarchy`, `Audio Clip Asset Interface`, `Skeletal Bone Metadata`, `Deffered Render Pass`, `Pipeline Variant Flags`, `CSharp Native Callback Bindings`, `Shader Resource Reflection`, `Pipeline Variant Interface`, `Shader Pipeline Switch Implementation`, `Environment Lighting Capture Options`, `Worker Pool Task Execution`, `Audio File Buffer Data`, `Shader Pipeline Switch Interface`, `Texture View Implementation`, `Pipeline Baking Resources`, `Bloom Effect Interface`, `Audio Mono Conversion`, `Window Creation Options`, `ECS System Management`, `Texture Memory Loading Data`, `Render Baking Buffer Contracts`?**
-  _High betweenness centrality (0.131) - this node is a cross-community bridge._
+- **Why does `Uint32` connect `CSharp Native Callback Bindings` to `AmbientOcclusionPass.cpp`, `ECS System Management`, `Asset Import Orchestration`, `Pipeline Baking Resources`, `AssimpImporter.cpp`, `AudioClipImportingDesc`, `Bloom Effect Interface`, `Render System Light Interface`, `Diligent Graphics Module`, `AudioConverter.h`, `Environment Lighting Capture Options`, `Mesh Component Draw State`, `Shader Pipeline Switch Implementation`, `Mesh Asset Interface`, `ShaderPipelineSwitchController`, `Audio Source Interface`, `XAudio2 Backend Operations`, `Light Buffer Baking`, `Postprocessing Pass Execution`, `OpenAL Backend Operations`, `Bone Transform Interpolation`, `Material.cpp`, `Pipeline Variant Factory`, `Skeletal Bone Metadata`, `Font Glyph Metrics`, `Texture Import Tasks`, `Submesh GPU Buffers`, `graphicsmodule`, `Texture Decode and Export`, `ShaderPipelineSwitch`, `GPU Texture Descriptions`, `Graphics Resource Creation`, `ShaderPipelineVariantFactory.cpp`, `ShaderPipelineVariantFactory.cpp`, `Shadow Pass Baking Options`, `Script Asset Class Handles`, `NE_Common.h`, `Shader Asset Interface`, `Engine Runtime Interface`, `Rendering Module Buffers`, `Hashed String Tables`, `GTAO Compute Execution`, `Blur Effect Targets`, `Native Entity Registry Handles`, `Texture Asset Interface`, `AnimationClip`, `Engine Startup Options`, `Pipeline Variant Interface`, `Multiple Camera Sample`, `Worker Main Thread Queues`, `Audio File Buffer Data`, `CSharp Script Object Invocation`, `Rendering Shader Baking Context`, `RenderingModule.cpp`, `ShadowPass.cpp`, `graphicsmodule`, `Audio Clip Asset Interface`, `Render Target Descriptions`, `Pipeline Variant Flags`, `Geometry Render Pass`, `Frame Render Data`, `Material Texture Sets`, `Camera Matrices and Targets`, `AmbientOcclusionPass.cpp`, `Shader Resource Reflection`, `Worker Pool Task Execution`?**
+  _High betweenness centrality (0.134) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Uint32` (e.g. with `DebugSystem::ShowRendertargets()` and `.CreateAudioSource()`) actually correct?**
   _`Uint32` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `pActiveProject`, `mEditorInstance`, `mPath` to the rest of the system?**
-  _1831 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Native Keyboard Codes` be split into smaller, more focused modules?**
-  _Cohesion score 0.008032128514056224 - nodes in this community are weakly interconnected._
-- **Why does `Input` connect `Managed Gameplay API` to `Managed Keyboard Codes`, `Managed Interop Namespaces`?**
-  _High betweenness centrality (0.096) - this node is a cross-community bridge._
+- **What connects `KEYCODE_0`, `KEYCODE_1`, `KEYCODE_2` to the rest of the system?**
+  _1905 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Managed Keyboard Codes` be split into smaller, more focused modules?**
   _Cohesion score 0.008032128514056224 - nodes in this community are weakly interconnected._
-- **Why does `KeyCode` connect `Native Keyboard Codes` to `Native Input Interface`?**
-  _High betweenness centrality (0.089) - this node is a cross-community bridge._
-## Repository scope and extraction limits
-
-- Snapshot: first-party working-tree inputs at commit `464633530fea4404119ac18931927cd2c8fed851`; 398 detected files (382 code, 16 documents), 94,905 words.
-- Tool: Graphify 0.9.102, Python 3.12, local AST extraction and assistant semantic extraction. Community detection used the NetworkX Louvain fallback; optional native Leiden is not installed.
-- External SDKs, generated outputs, bundled ImGui/TOML/GLM/EnTT/spdlog code and sample media are excluded through `.graphifyignore`. The maintained Nuclear.Managed fork is included.
-- Native `.vcxproj`, `.NuclearShader`, and HLSL formats are outside this extractor run. Four generic plugin JSON manifests were detected but yielded no modeled symbols.
-- Document extraction covered every document to its last line. `NuclearEngine_Modular_Architecture.md` is a proposal; its nodes are labeled proposed. Older guide assertions retain document provenance and do not establish current runtime behavior.
-- This is a source index; no engine build or launch was performed.
-- Degree rankings count enum members and type references: the two KeyCode enums dominate the hub list. Degree alone does not establish architectural importance.
-- HTML is an aggregated view of 296 communities because the detailed graph exceeds 5,000 nodes. The full graph remains queryable in `graph.json`.
-- `graphify-out/` is written into the working tree. Cache/session sidecars are ignored; the HTML, JSON, and report remain visible in `git status` for review or sharing.
-
-### Partial C++ parser recovery (8 files)
-
-- `Nuclear.Engine/Source/Systems/DebugSystem.cpp:41`
-- `Nuclear.Engine/include/Assets/AssetManager.h:90`
-- `Nuclear.Engine/include/Assets/Material.h:47`
-- `Nuclear.Engine/include/Components/MeshComponent.h:100`
-- `Nuclear.Engine/include/Core/Path.h:51`
-- `Nuclear.Engine/include/ECS/Transform.h:38`
-- `Nuclear.Engine/include/Graphics/ShaderPipeline.h:69`
-- `Nuclear.Managed.Native/Source/Verify.hpp:21`
-
-These are Tree-sitter recovery warnings, not compiler diagnostics. Some symbols or relationships in these files can be absent.
-
-### Graph health
-
-The raw extraction diagnostic reported 897 unresolved endpoint references, 0 missing-endpoint edges, 0 self-loops, and 96 relationships sharing undirected endpoints. Graphify resolves or materializes reference nodes during its build, so some reference nodes have no local definition. The JSON export includes every built graph connection with its resolved endpoints, plus distinct original relationship evidence where endpoints survive canonicalization; the exported 9,581 relationships have no dangling endpoints. Clustering and HTML operate on a simple undirected projection, so distinct relationships can share one visual line. Use the source evidence to confirm direction and behavior.
-
-Raw diagnostic details:
-
-```text
-[graphify] MultiDiGraph edge-collapse diagnostic
-input: <in-memory>
-input_stage: provided JSON (normal graph.json is post-build)
-effective_directed: <direct-call>
-nodes: 5705
-unverified_code_nodes: 0
-raw_edges: 9579
-valid_candidate_edges: 8682
-missing_endpoint_edges: 0
-dangling_endpoint_edges: 897
-external_reference_edges: 0
-self_loop_edges: 0
-exact_duplicate_edges: 0
-directed_unique_endpoint_pairs: 8621
-directed_same_endpoint_collapsed_edges: 61
-undirected_unique_endpoint_pairs: 8586
-undirected_same_endpoint_collapsed_edges: 96
-same_endpoint_group_count: 61
-relation_variant_groups: 18
-source_file_variant_groups: 0
-source_location_variant_groups: 28
-context_variant_groups: 43
-post_build_graph_type: Graph
-post_build_edges: 9478
-producer_suppression_sites: 12
-producer_suppression_examples:
-  - L1857 seen_ids arity=unknown
-  - L2532 seen_ids arity=unknown
-  - L2534 seen_doc_refs arity=unknown
-  - L3201 seen_ids arity=unknown
-  - L3348 seen_ids arity=unknown
-  - L4489 seen_keys arity=unknown
-  - L4675 seen_keys arity=unknown
-  - L8495 seen_ids arity=unknown
-examples:
-  - nuclear_editor_source_assetlibraryviewer_splitfilename -> nuclear_editor_source_assetlibraryviewer_cpp_string edges=2 relations=['references'] locations=['L16'] contexts=['parameter_type', 'return_type']
-  - nuclear_editor_source_entityeditor_getavailablecomponents -> nuclear_editor_source_entityeditor_cpp_vector edges=2 relations=['references'] locations=['L18'] contexts=['parameter_type', 'return_type']
-  - nuclear_engine_source_assets_importer_assetnamefromdirectory -> nuclear_engine_source_assets_importer_cpp_string edges=2 relations=['references'] locations=['L58'] contexts=['parameter_type', 'return_type']
-  - nuclear_engine_source_assets_importer_importer_importtexturecube -> nuclear_engine_source_assets_importer_cpp_array edges=2 relations=['references'] locations=['L537'] contexts=['parameter_type', 'return_type']
-  - nuclear_engine_source_assets_importers_assimpimporter_assimpimporter -> nuclear_engine_source_assets_importers_assimpimporter_h_string edges=2 relations=['references'] locations=['L44', 'L48'] contexts=['field', 'generic_arg']
-note: normal graph.json is post-build; raw producer loss must be measured earlier.
-```
-
-### Synthetic query benchmark
-
-Graphify estimates 126,540 tokens to read the 94,905-word detected corpus and about 1,614 tokens per graph query (78.4x ratio) across its four generic benchmark prompts. This is a synthetic size comparison, not measured agent savings or an accuracy test.
+- **Why does `KeyCode` connect `Managed Keyboard Codes` to `Entity`?**
+  _High betweenness centrality (0.097) - this node is a cross-community bridge._
+- **Should `KeyCode` be split into smaller, more focused modules?**
+  _Cohesion score 0.008064516129032258 - nodes in this community are weakly interconnected._
+- **Why does `Input` connect `Entity` to `Managed Interop Namespaces`, `Managed Keyboard Codes`?**
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._

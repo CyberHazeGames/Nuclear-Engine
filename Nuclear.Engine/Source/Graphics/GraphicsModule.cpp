@@ -7,11 +7,9 @@
 #include "Diligent/Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h"
 #include "Diligent/Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h"
 #include "Diligent/Graphics/GraphicsEngineVulkan/interface/EngineFactoryVk.h"
-#include <SDL\include\SDL.h>
-#include <SDL\include\SDL_syswm.h>
 
 #include <Assets\AssetManager.h>
-#include "..\Graphics\ImGUI\imgui_impl_sdl.h"
+#include <Graphics/ImGuiPlatform.h>
 #include "..\Graphics\ImGUI\imgui_impl.h"
 #include <Utilities/Logger.h>
 #include <Platform\FileSystem.h>
@@ -81,11 +79,18 @@ namespace Nuclear
 			if (GraphicsDesc.InitImGui)
 			{
 				ImGui::CreateContext();
+				mOwnsImGuiContext = true;
 				ImGuiIO& io = ImGui::GetIO();
 				io.Fonts->AddFontFromFileTTF(Core::Path("@NuclearAssets@/Fonts/Roboto-Medium.ttf").GetRealPath().c_str(), 15);
 				io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 				io.ConfigDockingWithShift = true;
-				ImGui_ImplSDL2_InitForDiligent(GraphicsDesc.pWindowHandle);
+				if (!ImGuiPlatform::Initialize(*GraphicsDesc.pWindowHandle))
+				{
+					ImGui::DestroyContext();
+					mOwnsImGuiContext = false;
+					Shutdown();
+					return false;
+				}
 				ImGui_Impl_Init();
 				ImGui_Impl_CreateDeviceObjects();
 				//io.Fonts->GetTexDataAsAlpha8()
@@ -104,9 +109,28 @@ namespace Nuclear
 		void GraphicsModule::Shutdown()
 		{
 			NUCLEAR_INFO("[GraphicsModule] Shutting down...");
-			pDevice->Release();
-			pContext->Release();
-			pSwapChain->Release();
+			if (mOwnsImGuiContext && ImGui::GetCurrentContext())
+			{
+				ImGui_Impl_Shutdown();
+				ImGuiPlatform::Shutdown();
+				ImGui::DestroyContext();
+			}
+			mOwnsImGuiContext = false;
+			if (pSwapChain)
+			{
+				pSwapChain->Release();
+				pSwapChain = nullptr;
+			}
+			if (pContext)
+			{
+				pContext->Release();
+				pContext = nullptr;
+			}
+			if (pDevice)
+			{
+				pDevice->Release();
+				pDevice = nullptr;
+			}
 		}
 
 		void GraphicsModule::PresentFrame()
@@ -650,17 +674,21 @@ namespace Nuclear
 				pSwapChain->Resize(Width, Height);
 		}
 
-		bool GraphicsModule::InitializeDiligentEngine(SDL_Window* window, const RENDER_DEVICE_TYPE& type, const SwapChainDesc& SCDesc)
+		bool GraphicsModule::InitializeDiligentEngine(Platform::Window* window, const RENDER_DEVICE_TYPE& type, const SwapChainDesc& SCDesc)
 		{
 			Uint32 NumDeferredCtx = 0;
 
-			SDL_SysWMinfo wmInfo;
-			SDL_VERSION(&wmInfo.version);
-			SDL_GetWindowWMInfo(window, &wmInfo);
+			if (!window || !window->GetNativeHandle())
+			{
+				NUCLEAR_ERROR("[GraphicsModule] A live platform window is required.");
+				return false;
+			}
 
 			FullScreenModeDesc FSDesc;
 			NativeWindow DLWindow;
-			DLWindow.hWnd = wmInfo.info.win.window;
+			// Diligent's native-window adapter is the only graphics boundary that needs
+			// the backend-specific handle. Future platforms provide their adapter here.
+			DLWindow.hWnd = window->GetNativeHandle();
 
 
 			auto FindAdapter = [this](auto* pFactory, Version GraphicsAPIVersion, GraphicsAdapterInfo& AdapterAttribs) {

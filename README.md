@@ -74,7 +74,7 @@ List is W.I.P (There are lots of features not written here)
 Follow the instructions below to compile and run the engine from source.
 If you wish to build with another compiler/platform, please note that:
   - The engine requires a C++20 compiler and currently only supports x64 platforms (support for x32 is planned)
-  - The engine doesn't contain platform-specific code and is written with cross-platform portability in mind, so porting to other platforms should be easy.
+  - Windows x64 is currently supported. Nuclear.Platform isolates native window, input, event, clipboard, and library-loading services; other platform backends and remaining engine integrations still require implementation and validation. See [the platform guide](AIGuides/Platform.md).
 
 ## Windows
 
@@ -106,7 +106,7 @@ Consoles are planned but not a priority now...
 | Freetype | submodule | Built with their provided build-tools |
 | msdf-atlas-gen | submodule | Built with their provided build-tools |
 | [Nuclear.Managed](Nuclear.Managed/README.md) | Included source fork of Coral (MIT) | Nuclear.Managed and Nuclear.Managed.Native projects; requires the x64 .NET 10 runtime and .NET 10 SDK |
-| SDL2 | External | Put headers in External/SDL/include |
+| Nuclear.Platform | First-party foundation | Built by the solution; Windows x64 backend, replacing SDL |
 | libsndfile | External | Put the .lib in your Build Output directory |
 | spdlog | included | Built with the engine |
 | IMGUI | included | Built with the engine |
