@@ -4,6 +4,8 @@
 
 Only **Windows x64** is implemented. Public headers under [Nuclear.Platform/include/Nuclear.Platform](../Nuclear.Platform/include/Nuclear.Platform) use standard C++ types and opaque native handles. Windows APIs and message translation live under [Source/Windows](../Nuclear.Platform/Source/Windows). Additional platforms require their own implementation and build selection; these boundaries do not establish that the rest of the engine is portable.
 
+[Networking](Networking.md) adds independent UDP/TCP sockets, IPv4/IPv6 endpoints, synchronous hostname resolution, readiness waits, and explicit operation results. Sockets initialize and retain the networking runtime automatically, work without a window/event thread, and default to nonblocking mode. Higher-level replication and session protocols belong above the foundation.
+
 ## Lifetime and event flow
 
 1. Call `Nuclear::Platform::Initialize()` on the thread that will own windows and pump events.

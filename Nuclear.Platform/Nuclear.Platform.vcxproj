@@ -49,7 +49,7 @@
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -72,14 +72,18 @@
     <ClInclude Include="include\Nuclear.Platform\Export.h" />
     <ClInclude Include="include\Nuclear.Platform\Event.h" />
     <ClInclude Include="include\Nuclear.Platform\Input.h" />
+    <ClInclude Include="include\Nuclear.Platform\Networking.h" />
     <ClInclude Include="include\Nuclear.Platform\Platform.h" />
     <ClInclude Include="include\Nuclear.Platform\Window.h" />
     <ClInclude Include="Source\Windows\Win32Platform.h" />
+    <ClInclude Include="Source\Windows\Win32Networking.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Windows\Win32Platform.cpp" />
     <ClCompile Include="Source\Windows\Win32Window.cpp" />
     <ClCompile Include="Source\Windows\Win32Input.cpp" />
+    <ClCompile Include="Source\Windows\Win32Networking.cpp" />
+    <ClCompile Include="Source\Windows\Win32Socket.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

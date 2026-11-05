@@ -26,6 +26,8 @@ An external module DLL exports `GetNuclearEngineModulePlugin` using the versione
 
 [Nuclear.Platform](Platform.md) is a separate native DLL with no engine or renderer dependencies. Its Windows backend owns windows, message translation, physical keyboard state, mouse modes/raw motion, clipboard text, and native library operations. The engine retains forwarding headers for Window/Input, translates platform events into client callbacks, and attaches ImGui through a portable event adapter. Graphics borrows a platform window and adapts its native handle for Diligent. Module/audio plugin policy remains in the engine while native DLL operations go through the foundation. Windows x64 is the only implemented backend.
 
+Networking transport is exposed separately through [Nuclear::Platform::Networking](Networking.md), using portable endpoints and movable owned sockets. The Windows backend provides nonblocking UDP/TCP, readiness, address resolution, and shared Winsock lifetime without window initialization. Future replication/session/serialization policy belongs in the engine; no replication module or wire protocol is registered by startup.
+
 ## Scene, entities, and systems
 
 [Core::Scene](../Nuclear.Engine/Source/Core/Scene.cpp) owns the EnTT registry, system manager, main-camera pointer, and current scene-asset pointer. `Scene::CreateEntity` adds an `EntityInfoComponent`, which carries the transform and name. Prefer that path when dependent components expect entity information to exist.

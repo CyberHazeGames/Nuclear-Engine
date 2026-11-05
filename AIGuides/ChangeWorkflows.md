@@ -17,6 +17,8 @@ Use these as change-impact maps, then read the current implementation. They do n
 - Preserve physical key values shared with C# and event-thread/window lifetime contracts. Route UI input through the engine's `ImGuiPlatform` adapter rather than adding ImGui dependencies to the foundation.
 - Add compilation units to `Nuclear.Platform.vcxproj`, build consumers, and run the independent Windows smoke project. Check physical locked mouse behavior and UI interaction in a sample when affected.
 
+For socket transport changes, follow [Networking.md](Networking.md). Keep native socket/runtime types in the platform backend and preserve nonblocking results, partial TCP transfers, UDP datagram boundaries, and runtime ownership. Add source files to `Nuclear.Platform.vcxproj` and run `Nuclear.Platform.NetworkTests.vcxproj` in Debug and Release. Replication/session policy belongs in higher-level engine code.
+
 ## Add or change an engine module or audio backend
 
 - Derive from `EngineModule` and register through `Engine::GetModuleManager()` before `Start`; declare dependencies by registered name. The manager owns `unique_ptr` registrations and borrows references to longer-lived singleton modules.
