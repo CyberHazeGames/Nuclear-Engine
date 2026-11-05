@@ -60,7 +60,6 @@
 /Samples/*.deps.json
 /Samples/*.runtimeconfig.json
 *.dll
-/External/SDL
 /Assets/Common/Scenes/Sample3.bin
 /Assets/Imported
 /Assets/Models/
