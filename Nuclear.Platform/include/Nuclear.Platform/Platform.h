@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Nuclear.Platform/Event.h>
+#include <Nuclear.Platform/Diagnostics.h>
 #include <Nuclear.Platform/Networking.h>
 #include <Nuclear.Platform/Window.h>
 #include <filesystem>

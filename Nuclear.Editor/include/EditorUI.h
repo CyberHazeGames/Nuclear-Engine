@@ -28,5 +28,6 @@ namespace Nuclear::Editor {
 
 		void RenderEntityExplorer();
 		bool mNewPrjWindowOpen = false;
+		bool mProfilerWindowOpen = false; ///< Visibility of the optional performance/memory tool.
 	};
 }

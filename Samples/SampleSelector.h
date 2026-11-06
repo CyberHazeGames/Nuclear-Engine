@@ -155,6 +155,12 @@ public:
 		ImGui::Begin("SampleSelector");
 
 		ImGui::Text("Select Sample");
+		static bool showProfiler = false;
+		ImGui::Checkbox("Performance & Memory Profiler", &showProfiler);
+		if (showProfiler)
+		{
+			Profiling::DrawProfilerWindow(&showProfiler);
+		}
 
 		if (ImGui::Button("Sample1 : Basic model loading & animation & rendering"))
 		{

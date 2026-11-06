@@ -9,6 +9,7 @@ These notes help future agents navigate and change this repository without repea
 | [ChangeWorkflows.md](ChangeWorkflows.md) | Adding components, script bindings, assets, shaders, or source files |
 | [Platform.md](Platform.md) | Native windows, events, input, clipboard, DLL loading, or future platform backends |
 | [Networking.md](Networking.md) | UDP/TCP sockets, addresses, readiness, networking lifetime, or future replication transport |
+| [Profiling.md](Profiling.md) | CPU/GPU queries, memory diagnostics, frame capture, allocation accounting, or profiler UI |
 | [SourceReference.md](SourceReference.md) | Finding a subsystem's files, entry points, or related implementation |
 | [KnowledgeGraph.md](KnowledgeGraph.md) | Exploring the Graphify graph, querying relationships, or refreshing the local index |
 | [KnownLimitations.md](KnownLimitations.md) | Checking source-observed gaps and avoiding stale assumptions |

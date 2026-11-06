@@ -19,6 +19,12 @@ Use these as change-impact maps, then read the current implementation. They do n
 
 For socket transport changes, follow [Networking.md](Networking.md). Keep native socket/runtime types in the platform backend and preserve nonblocking results, partial TCP transfers, UDP datagram boundaries, and runtime ownership. Add source files to `Nuclear.Platform.vcxproj` and run `Nuclear.Platform.NetworkTests.vcxproj` in Debug and Release. Replication/session policy belongs in higher-level engine code.
 
+## Change profiling or diagnostics
+
+- Keep OS CPU/memory/adapter queries in Nuclear.Platform; keep Diligent queries and ImGui capture/UI in Nuclear.Engine. Follow [Profiling.md](Profiling.md) for units and lifetime/thread contracts.
+- Preserve bounded capture, explicit validity, and asynchronous query polling. Never introduce waits/flushes in normal profiling or interpret pending/unsupported GPU results as valid zero values.
+- Register new compilation units in the native projects. Run platform diagnostic tests, CPU/accounting tests, and the GPU integration test; document which backend/device actually ran. Allocation tracking must not change caller ownership or silently replace allocators.
+
 ## Add or change an engine module or audio backend
 
 - Derive from `EngineModule` and register through `Engine::GetModuleManager()` before `Start`; declare dependencies by registered name. The manager owns `unique_ptr` registrations and borrows references to longer-lived singleton modules.

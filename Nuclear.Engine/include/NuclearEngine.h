@@ -25,4 +25,5 @@ _____________/BOOOM\_____________
 #include <Scripting/Scripting.h>
 #include <Rendering/Rendering.h>
 #include <Utilities/Utilities.h>
+#include <Profiling/Profiling.h>
 

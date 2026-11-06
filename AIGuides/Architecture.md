@@ -28,6 +28,10 @@ An external module DLL exports `GetNuclearEngineModulePlugin` using the versione
 
 Networking transport is exposed separately through [Nuclear::Platform::Networking](Networking.md), using portable endpoints and movable owned sockets. The Windows backend provides nonblocking UDP/TCP, readiness, address resolution, and shared Winsock lifetime without window initialization. Future replication/session/serialization policy belongs in the engine; no replication module or wire protocol is registered by startup.
 
+## Profiling and diagnostics
+
+[Platform diagnostics](Profiling.md) provides OS CPU/process/system/GPU memory queries. The engine's `ProfilingModule` registers after Graphics (when enabled) and releases its bounded GPU query pools before graphics shutdown. It is registered by default; capture defaults off and can be enabled through `EngineStartupDesc::EnableProfiling` or the profiler UI. Frame scopes, asynchronous query results, periodic OS counters, and explicit allocation accounting remain separate measurements with validity flags. Diligent query features are requested as optional. The editor Window menu and sample selector expose the ImGui performance/memory tool. See [Profiling.md](Profiling.md) for units, thread/lifetime contracts, bounds, and validated backends.
+
 ## Scene, entities, and systems
 
 [Core::Scene](../Nuclear.Engine/Source/Core/Scene.cpp) owns the EnTT registry, system manager, main-camera pointer, and current scene-asset pointer. `Scene::CreateEntity` adds an `EntityInfoComponent`, which carries the transform and name. Prefer that path when dependent components expect entity information to exist.

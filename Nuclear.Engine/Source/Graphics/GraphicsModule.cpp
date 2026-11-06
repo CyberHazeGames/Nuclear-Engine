@@ -782,6 +782,9 @@ namespace Nuclear
 			case RENDER_DEVICE_TYPE_D3D11:
 			{
 				EngineD3D11CreateInfo EngineCI;
+				EngineCI.Features.TimestampQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				EngineCI.Features.PipelineStatisticsQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				EngineCI.Features.OcclusionQueries = DEVICE_FEATURE_STATE_OPTIONAL;
 				auto* pFactoryD3D11 = LoadAndGetEngineFactoryD3D11();
 				pFactoryD3D11->SetMessageCallback(DiligentMassageCallback);
 
@@ -801,6 +804,9 @@ namespace Nuclear
 			case RENDER_DEVICE_TYPE_D3D12:
 			{
 				EngineD3D12CreateInfo EngineCI;
+				EngineCI.Features.TimestampQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				EngineCI.Features.PipelineStatisticsQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				EngineCI.Features.OcclusionQueries = DEVICE_FEATURE_STATE_OPTIONAL;
 				EngineCI.GraphicsAPIVersion = { 11, 0 };
 
 				auto* pFactoryD3D12 = LoadAndGetEngineFactoryD3D12();
@@ -825,6 +831,9 @@ namespace Nuclear
 				pEngineFactory = pFactoryOpenGL;
 
 				EngineGLCreateInfo CreationCreateInfo;
+				CreationCreateInfo.Features.TimestampQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				CreationCreateInfo.Features.PipelineStatisticsQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				CreationCreateInfo.Features.OcclusionQueries = DEVICE_FEATURE_STATE_OPTIONAL;
 				CreationCreateInfo.Window = DLWindow;
 				pFactoryOpenGL->CreateDeviceAndSwapChainGL(
 					CreationCreateInfo, &pDevice, &pContext, SCDesc, &pSwapChain);
@@ -835,6 +844,9 @@ namespace Nuclear
 			case RENDER_DEVICE_TYPE_VULKAN:
 			{
 				EngineVkCreateInfo EngVkCreateInfo;
+				EngVkCreateInfo.Features.TimestampQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				EngVkCreateInfo.Features.PipelineStatisticsQueries = DEVICE_FEATURE_STATE_OPTIONAL;
+				EngVkCreateInfo.Features.OcclusionQueries = DEVICE_FEATURE_STATE_OPTIONAL;
 
 				auto* pFactoryVk = LoadAndGetEngineFactoryVk();
 				pFactoryVk->SetMessageCallback(DiligentMassageCallback);

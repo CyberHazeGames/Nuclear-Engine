@@ -6,6 +6,8 @@ Only **Windows x64** is implemented. Public headers under [Nuclear.Platform/incl
 
 [Networking](Networking.md) adds independent UDP/TCP sockets, IPv4/IPv6 endpoints, synchronous hostname resolution, readiness waits, and explicit operation results. Sockets initialize and retain the networking runtime automatically, work without a window/event thread, and default to nonblocking mode. Higher-level replication and session protocols belong above the foundation.
 
+[Diagnostics](Profiling.md#platform-cpu-gpu-and-memory-queries) exposes CPU topology/counters, process/system memory, GPU adapter identities, and exact-adapter process memory budgets without a window. Native Windows/DXGI types stay private. Renderer query objects, allocation accounting, capture history, and the ImGui profiler stay in Nuclear.Engine.
+
 ## Lifetime and event flow
 
 1. Call `Nuclear::Platform::Initialize()` on the thread that will own windows and pump events.

@@ -26,6 +26,7 @@
 #include <Threading/ThreadingModule.h>
 #include <Threading/DelegateTask.h>
 #include <Fallbacks/FallbacksModule.h>
+#include <Profiling/ProfilingModule.h>
 
 #include <Assets/AssetManager.h>
 #include <Assets/AssetLibrary.h>
@@ -192,6 +193,16 @@ namespace Nuclear
 				}
 			}
 
+			if (desc.AutoInitProfilingModule)
+			{
+				const std::vector<std::string> dependencies = desc.AutoInitGraphicsModule ?
+					std::vector<std::string>{ "Graphics" } : std::vector<std::string>{};
+				if (!modules.RegisterModule({ "Profiling", ModuleType::Runtime, dependencies }, Profiling::ProfilingModule::Get()))
+				{
+					return failStartup();
+				}
+			}
+
 			if (!modules.RegisterModule({ "Assets", ModuleType::Runtime, std::move(assetDependencies) },
 				std::make_unique<CallbackModule>([]() { Assets::AssetManager::Get().Initialize(); return true; }, []() {})))
 				return failStartup();
@@ -206,6 +217,10 @@ namespace Nuclear
 				return failStartup();
 			}
 			mThreadingEnabled = desc.AutoInitThreadingModule;
+			if (desc.AutoInitProfilingModule)
+			{
+				Profiling::ProfilingModule::Get().SetEnabled(desc.EnableProfiling);
+			}
 			gisDebug = desc.Debug;
 
 			NUCLEAR_INFO("[Engine] Nuclear Engine has been initialized successfully!");
@@ -234,6 +249,7 @@ namespace Nuclear
 
 		void Engine::BeginFrame()
 		{
+			Profiling::ProfilingModule::Get().BeginFrame();
 			if (!ImGui::GetCurrentContext())
 			{
 				return;
@@ -250,10 +266,12 @@ namespace Nuclear
 				ImGui::Render();
 				ImGui_Impl_RenderDrawData(ImGui::GetDrawData());
 			}
+			Profiling::ProfilingModule::Get().EndGpuFrame();
 			if (auto* swapChain = Graphics::GraphicsModule::Get().GetSwapChain())
 			{
 				swapChain->Present(SwapChainSyncInterval);
 			}
+			Profiling::ProfilingModule::Get().EndFrame();
 		}
 		Platform::Window* Engine::GetMainWindow()
 		{
@@ -373,6 +391,8 @@ namespace Nuclear
 					break;
 				}
 
+				Profiling::ProfilingModule::Get().BeginFrame();
+
 				//Process MainThread tasks
 				if (mThreadingEnabled) Threading::ThreadingModule::Get().ExecuteMainThreadTasks(1);
 					
@@ -388,8 +408,14 @@ namespace Nuclear
 
 				BeginFrame();
 
-				pClient->Update(pClient->DeltaTime);
-				pClient->Render(pClient->DeltaTime);
+				{
+					PROFILE_CPU("Client Update");
+					pClient->Update(pClient->DeltaTime);
+				}
+				{
+					PROFILE_CPU("Client Render");
+					pClient->Render(pClient->DeltaTime);
+				}
 
 				EndFrame();
 

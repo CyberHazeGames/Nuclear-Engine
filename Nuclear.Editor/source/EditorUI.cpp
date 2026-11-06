@@ -1,6 +1,7 @@
 #include "EditorUI.h"
 #include "Nuclear.Editor.h"
 #include <type_traits>
+#include <Profiling/ProfilingModule.h>
 
 #include <ECS/entt/core/type_info.hpp>
 using namespace entt::literals;
@@ -183,6 +184,10 @@ namespace Nuclear::Editor
 
 		RenderMainMenuBar();
 		RenderStatusBar();
+		if (mProfilerWindowOpen)
+		{
+			Profiling::DrawProfilerWindow(&mProfilerWindowOpen);
+		}
 		if (mNewPrjWindowOpen)
 		{
 			ImGui::OpenPopup("New Project");
@@ -245,6 +250,11 @@ namespace Nuclear::Editor
 		if (ImGui::BeginMainMenuBar())
 		{
 			//Scene / Project
+			if (ImGui::BeginMenu("Window"))
+			{
+				ImGui::MenuItem("Performance & Memory Profiler", nullptr, &mProfilerWindowOpen);
+				ImGui::EndMenu();
+			}
 			if (ImGui::BeginMenu("File"))
 			{
 				if (ImGui::BeginMenu("New"))

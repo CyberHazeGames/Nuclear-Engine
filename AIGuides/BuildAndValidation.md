@@ -123,6 +123,8 @@ Sample1 and the selector import the supplied vampire Collada model as `dancing_v
 
 ## Choosing validation
 
+Profiling adds the Windows SDK's `dxgi.lib`/`psapi.lib` to Nuclear.Platform and optional Diligent GPU query features. See [Profiling.md](Profiling.md#validation) for separate platform diagnostics, CPU/accounting, and GPU test projects. On 2026-11-06 the diagnostics executable passed in Debug and Release; CPU/accounting tests and the 70-frame D3D11 GPU/UI test passed in Debug, and the full Debug solution built. This does not validate a full Release engine build or GPU query behavior on the other rendering backends.
+
 The [networking test project](../Nuclear.Platform/Nuclear.Platform.NetworkTests.vcxproj) builds a headless loopback executable separately from the solution's default projects. See [Networking.md](Networking.md#validation) for Debug/Release build/run commands. Nuclear.Platform links the Windows SDK's `ws2_32.lib`; no additional third-party networking SDK or runtime distribution is required.
 
 On 2026-11-06, the networking loopback tests passed in Debug and Release for IPv4/IPv6 UDP/TCP, and the full Debug solution build passed with the new API. These checks do not validate replication, remote networks, or a full Release engine build.
@@ -135,6 +137,7 @@ There is a focused Windows platform smoke project, but no general engine test su
 | --- | --- |
 | Native platform services | Build and run `Nuclear.Platform/Nuclear.Platform.Tests.vcxproj` as described in [Platform.md](Platform.md#validation), then exercise window resize/close, keyboard/mouse modes, and ImGui in Samples |
 | Networking transport | Build and run `Nuclear.Platform/Nuclear.Platform.NetworkTests.vcxproj` in Debug and Release; exercise IPv4/IPv6 UDP/TCP loopback and runtime lifetimes without window startup |
+| CPU/GPU/memory profiling | Run the three projects listed in [Profiling.md](Profiling.md#validation); verify query support/validity, bounded history, process counters, explicit accounting, asynchronous GPU results, and shutdown on the backend being changed |
 | Core/client lifecycle | Open selector, enter/exit a sample, close application, inspect shutdown log |
 | Module manager or audio loading | Build the engine and relevant DLL, then launch a sample with the selected module or audio backend; exercise playback for audio changes |
 | Basic mesh/animation | Sample1, subject to local model availability |

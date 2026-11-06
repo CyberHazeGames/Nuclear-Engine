@@ -147,6 +147,9 @@
     <ClInclude Include="include\Graphics\ShaderPipelineVariantFactory.h" />
     <ClInclude Include="include\Parsers\INIParser.h" />
     <ClInclude Include="include\Profiling\Profiler.h" />
+    <ClInclude Include="include\Profiling\Profiling.h" />
+    <ClInclude Include="include\Profiling\MemoryProfiler.h" />
+    <ClInclude Include="include\Profiling\GpuQuery.h" />
     <ClInclude Include="include\Profiling\ProfilingModule.h" />
     <ClInclude Include="include\Rendering\PostProcessingEffects\Bloom.h" />
     <ClInclude Include="include\Rendering\RenderingModule.h" />
@@ -593,6 +596,10 @@
     <ClCompile Include="Source\ThirdParty\crc32c\crc32c_sse42.cc" />
     <ClCompile Include="Source\Components\EntityInfoComponent.cpp" />
     <ClCompile Include="Source\Core\Engine.cpp" />
+    <ClCompile Include="Source\Profiling\ProfilerWindow.cpp" />
+    <ClCompile Include="Source\Profiling\ProfilingModule.cpp" />
+    <ClCompile Include="Source\Profiling\MemoryProfiler.cpp" />
+    <ClCompile Include="Source\Profiling\GpuQuery.cpp" />
     <ClCompile Include="Source\Components\CameraComponent.cpp" />
     <ClCompile Include="Source\Rendering\Skybox.cpp" />
     <ClCompile Include="Source\Platform\Win32\dllmain.cpp" />

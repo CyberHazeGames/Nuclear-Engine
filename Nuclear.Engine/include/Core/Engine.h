@@ -27,6 +27,10 @@ namespace Nuclear
 			bool AutoInitRenderingModule = true;
 			bool AutoInitThreadingModule = true;
 			bool AutoInitFallbacksModule = true;
+			/// Registers performance capture after Graphics; capture itself stays opt-in.
+			bool AutoInitProfilingModule = true;
+			/// Starts CPU/GPU frame capture and periodic OS counters when the profiling module is enabled.
+			bool EnableProfiling = false;
 			std::string mAudioBackendName = "XAudio2";
 			std::filesystem::path mAudioPluginDirectory;
 			std::filesystem::path mModulePluginDirectory;
