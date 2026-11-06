@@ -7,6 +7,9 @@ namespace Nuclear
 	namespace Systems {	class AudioSystem; }
 	namespace Components
 	{
+		/// Scene audio source whose backend handle is created by AudioSystem after a clip is supplied.
+		/// Clips are borrowed from the asset library and must outlive the component. Controls are
+		/// ignored until a loaded/created clip and a nonzero backend source handle are available.
 		class NEAPI AudioSourceComponent
 		{
 		public:
@@ -25,6 +28,8 @@ namespace Nuclear
 			{
 				return pActiveClip;
 			}
+			/// Assigns a borrowed clip (nullptr is allowed); binds ready clips only to an existing source.
+			/// Assigning a clip does not create a backend source; AudioSystem handles source creation.
 			void SetAudioClip(Assets::AudioClip* clip);
 
 			FORCE_INLINE Uint32 GetSourceID() const

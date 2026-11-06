@@ -104,6 +104,10 @@ A subsequent selector launch also reached rendering, then exited with `0xC000013
 
 Logs are written to `NuclearEngine.log` in the working directory and truncated when the logger is constructed. Save a relevant failure log before rerunning if it is needed for comparison.
 
+The Playground audio test creates its listener/source on the controller through `AudioSystem`, after a successful clip import with a nonzero buffer. `AudioSourceComponent::SetAudioClip` only assigns/binds a borrowed clip; it does not create a backend source. Controls require a nonzero source handle and a loaded/created clip with a nonzero buffer, and pitch uses the backend pitch operation. `SetIsLooping` only caches the component flag; backend looping still comes from the clip at source creation. Missing Playground audio content skips playback, and shutdown pauses playback, restores normal mouse input, and clears the scene before flushing imported assets.
+
+On 2026-11-06, a temporary Debug x64 harness reproduced the Playground crash as a vector bounds assertion: the standalone component passed source ID zero to XAudio2 before source creation. After the fix, the full `BuildSupport/Build.ps1 -Configuration Debug` solution build passed. The harness loaded the actual Playground twice and rendered 240 D3D11 frames per run, both with the local `str3.mp3` and with its asset path deliberately missing. It checked source/buffer creation, exercised volume/pitch and pause/play calls, tested controls on empty/uncreated sources, and verified scene/system clearing; both runs exited with code 0. The missing `arial.ttf` remained nonfatal. Shutdown logged a PhysX pending-module-reference error despite the zero exit status. This verifies the automated Playground lifecycle and control calls, not manual selector interaction, audible playback, a Release build, or other rendering/audio backends.
+
 ### LearnOpenGL sample content
 
 The samples resolve `@CommonAssets@` to `Assets/Common/` when launched from `Samples/`. For content supplied by a LearnOpenGL download, place these files from its `resources/` directory at the following destinations under `Assets/Common/`:

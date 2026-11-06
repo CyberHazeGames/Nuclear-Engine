@@ -20,17 +20,23 @@ namespace Nuclear
 			if (!source.GetAudioClip())
 			{
 				NUCLEAR_WARN("[AudioSystem] Creating AudioSourceComponent with no audio clip!");
-
+				return;
 			}
-			if (source.GetAudioClip()->GetState() != Assets::IAsset::State::Loaded)
+			const auto state = source.GetAudioClip()->GetState();
+			if ((state != Assets::IAsset::State::Loaded && state != Assets::IAsset::State::Created) ||
+				source.GetAudioClip()->GetBufferID() == 0)
 			{
 				NUCLEAR_ERROR("[AudioSystem] Creating AudioSourceComponent with invalid audio clip!");
 				return;
 			}
 
-			Audio::AudioModule::Get().GetBackend()->CreateAudioSource(&source, transform);
-			Audio::AudioModule::Get().GetBackend()->SetSource_Transform(source.GetSourceID(), transform.GetLocalPosition(), transform.GetLocalRotation());
-			Audio::AudioModule::Get().GetBackend()->SetSource_Velocity(source.GetSourceID(), Math::Vector3(0.0f));
+			auto* backend = Audio::AudioModule::Get().GetBackend();
+			if (!backend || !backend->CreateAudioSource(&source, transform))
+			{
+				return;
+			}
+			backend->SetSource_Transform(source.GetSourceID(), transform.GetLocalPosition(), transform.GetLocalRotation());
+			backend->SetSource_Velocity(source.GetSourceID(), Math::Vector3(0.0f));
 		}
 
 		void AudioListenerInit(entt::registry& reg, entt::entity entity)
@@ -84,11 +90,17 @@ namespace Nuclear
 				auto& audio_source = eView.get<Components::AudioSourceComponent>(entity);				
 				auto Einfo = Core::Scene::Get().GetRegistry().try_get<Components::EntityInfoComponent>(entity);
 
-				if (audio_source.GetAudioClip()->GetState() != Assets::IAsset::State::Created)
+				auto* clip = audio_source.GetAudioClip();
+				if (!clip || audio_source.GetSourceID() == 0 || !Einfo)
 				{
 					continue;
 				}
-				if (audio_source.GetAudioClip()->Is3D())
+				const auto state = clip->GetState();
+				if (state != Assets::IAsset::State::Loaded && state != Assets::IAsset::State::Created)
+				{
+					continue;
+				}
+				if (clip->Is3D())
 				{
 					const Math::Vector3 pos = Einfo->mTransform.GetLocalPosition();
 

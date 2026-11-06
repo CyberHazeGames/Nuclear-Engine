@@ -12,8 +12,8 @@ class Playground : public SampleBase
 
 	Assets::Shader* PBR;
 
-	Assets::AudioClip* audio;
-	Components::AudioSourceComponent testcmp;
+	/// Borrowed controller audio source; valid until the playground scene is cleared.
+	Components::AudioSourceComponent* testcmp = nullptr;
 
 	Rendering::GeometryPass GeoPass;
 	//Rendering::PostProcessingPass PostFXPass;
@@ -23,6 +23,7 @@ public:
 	Playground()
 	{
 	}
+	/// Imports optional font/audio content and creates a scene-owned playback source when audio is ready.
 	void SetupAssets()
 	{
 
@@ -36,11 +37,14 @@ public:
 		Assets::FontImportingDesc fdesc;
 		ArialFont = GetAssetManager().Import<Assets::Font> ("@CommonAssets@/Fonts/arial.ttf", fdesc);
 
-		audio = GetAssetManager().Import<Assets::AudioClip>("@Assets@/AudioClips/str3.mp3");
-
-		testcmp.SetAudioClip(audio);
-
-		testcmp.Play();
+		auto* audio = GetAssetManager().Import<Assets::AudioClip>("@Assets@/AudioClips/str3.mp3");
+		if (audio && audio->GetState() == Assets::IAsset::State::Loaded && audio->GetBufferID() != 0)
+		{
+			GetScene().GetSystemManager().Add<Systems::AudioSystem>();
+			EController.AddComponent<Components::AudioListenerComponent>();
+			testcmp = &EController.AddComponent<Components::AudioSourceComponent>(audio);
+			testcmp->Play();
+		}
 	}
 	void SetupEntities()
 	{
@@ -156,14 +160,14 @@ public:
 			ImGui::Checkbox("RenderLightSources", &DebugSystem->RenderLightSources);
 
 			static float v = 1.0f, p = 1.0f;
-			if (ImGui::SliderFloat("volume: ", &v, 0.0f, 1.0f))
+			if (ImGui::SliderFloat("volume: ", &v, 0.0f, 1.0f) && testcmp)
 			{
-				testcmp.SetVolume(v);
+				testcmp->SetVolume(v);
 			}
 			
-			if (ImGui::SliderFloat("pitch: ", &p, 0.0f, 100.0f))
+			if (ImGui::SliderFloat("pitch: ", &p, 0.5f, 2.0f) && testcmp)
 			{
-				testcmp.SetPitch(p);
+				testcmp->SetPitch(p);
 			}
 
 			/*if (ImGui::TreeNode("PostFX Effects"))
@@ -193,8 +197,15 @@ public:
 		}
 	}
 
+	/// Ends playback before clearing scene components and their borrowed asset pointers.
 	void Shutdown() override
 	{
-		GetAssetManager().FlushContainers();
+		if (testcmp)
+		{
+			testcmp->Pause();
+			testcmp = nullptr;
+		}
+		Platform::Input::Get().SetMouseInputMode(Platform::Input::MouseInputMode::Normal);
+		SampleBase::Shutdown();
 	}
 };

@@ -6,9 +6,25 @@ namespace Nuclear
 {
 	namespace Components
 	{
+		namespace
+		{
+			Audio::AudioBackend* GetReadyBackend(AudioSourceComponent& source)
+			{
+				auto* clip = source.GetAudioClip();
+				if (!clip || source.GetSourceID() == 0 || clip->GetBufferID() == 0)
+				{
+					return nullptr;
+				}
 
-#define CheckIfValid() 	if (GetAudioClip()->GetState() != Assets::IAsset::State::Created) return
-		
+				const auto state = clip->GetState();
+				if (state != Assets::IAsset::State::Loaded && state != Assets::IAsset::State::Created)
+				{
+					return nullptr;
+				}
+
+				return Audio::AudioModule::Get().GetBackend();
+			}
+		}
 
 		AudioSourceComponent::AudioSourceComponent()
 			: AudioSourceComponent(nullptr)
@@ -26,40 +42,52 @@ namespace Nuclear
 		{
 			pActiveClip = clip;
 
-			Audio::AudioModule::Get().GetBackend()->SetAudioSourceClip(mSourceID, pActiveClip->GetBufferID());
+			if (auto* backend = GetReadyBackend(*this))
+			{
+				backend->SetAudioSourceClip(mSourceID, pActiveClip->GetBufferID());
+			}
 		}
 		void AudioSourceComponent::SetVolume(float vol)
 		{
 			mVolume = vol;
-			CheckIfValid();
-			Audio::AudioModule::Get().GetBackend()->SetSource_Volume(mSourceID, vol);
+			if (auto* backend = GetReadyBackend(*this))
+			{
+				backend->SetSource_Volume(mSourceID, vol);
+			}
 		}
 		void AudioSourceComponent::SetPitch(float pitch)
 		{
 			mPitch = pitch;
-			CheckIfValid();
-			Audio::AudioModule::Get().GetBackend()->SetSource_Volume(mSourceID, pitch);
+			if (auto* backend = GetReadyBackend(*this))
+			{
+				backend->SetSource_Pitch(mSourceID, pitch);
+			}
 		}
 		void AudioSourceComponent::SetIsLooping(bool val)
 		{
 			mLoop = val;
-			CheckIfValid();
-			Audio::AudioModule::Get().GetBackend()->SetSource_Volume(mSourceID, val);
+			// Backend looping is configured from the clip when its source is created.
 		}
 		void AudioSourceComponent::Play()
 		{
-			CheckIfValid();
-			Audio::AudioModule::Get().GetBackend()->Play(mSourceID);
+			if (auto* backend = GetReadyBackend(*this))
+			{
+				backend->Play(mSourceID);
+			}
 		}
 		void AudioSourceComponent::Pause()
 		{
-			CheckIfValid();
-			Audio::AudioModule::Get().GetBackend()->Pause(mSourceID);
+			if (auto* backend = GetReadyBackend(*this))
+			{
+				backend->Pause(mSourceID);
+			}
 		}
 		void AudioSourceComponent::Stop()
 		{
-			CheckIfValid();
-			Audio::AudioModule::Get().GetBackend()->Stop(mSourceID);
+			if (auto* backend = GetReadyBackend(*this))
+			{
+				backend->Stop(mSourceID);
+			}
 		}
 	}
 }
