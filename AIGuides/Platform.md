@@ -15,6 +15,10 @@ Only **Windows x64** is implemented. Public headers under [Nuclear.Platform/incl
 3. Pass the borrowed window to `GraphicsModuleDesc::pWindowHandle`. Graphics converts `GetNativeHandle()` to Diligent's native-window description at the renderer boundary.
 4. Drain `Platform::PollEvent(Event&)` before each frame. It pumps Windows messages and returns portable events. Physical key identifiers retain the previous USB HID values, including the values in `Nuclear.ScriptCore/Platform/Input.cs`. Text input is separate Unicode scalar data, with UTF-16 surrogate pairs combined by the Windows backend.
 5. Forward events to [ImGuiPlatform](../Nuclear.Engine/Source/Graphics/ImGuiPlatform.cpp) and dispatch close, resize, movement, and scroll callbacks to the client. Held keys/buttons are cleared on focus loss. Locked mouse mode uses foreground raw relative motion, hides the cursor, and confines it to the focused client area. Confinement is released on focus loss and restored when focus returns.
+   The engine also routes events through [retained UI](UI.md) before gameplay mouse
+   callbacks. MouseButton events contain the button message's client coordinates
+   (virtual coordinates in locked mode), including clicks without prior MouseMove.
+   The foundation remains independent of both retained UI and ImGui.
 6. Shut down clients and modules, detach ImGui, and destroy graphics resources before destroying the window. A close event leaves its native handle alive for this cleanup. Finally call `Platform::Shutdown()`.
 
 The platform API is intended for the window/event thread. Window objects cannot be copied. Native handles, queued event window pointers, and library symbol addresses are borrowed and must not outlive their owners. Destroying a window removes its queued events. Repeated `Destroy()` and `Shutdown()` calls are safe; shutdown refuses to unregister the backend while windows remain alive.

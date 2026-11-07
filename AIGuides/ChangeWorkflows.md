@@ -6,6 +6,8 @@ Use these as change-impact maps, then read the current implementation. They do n
 
 1. Find the owning subsystem in [SourceReference.md](SourceReference.md). Inspect its public header, implementation, and an actual caller.
 2. Follow neighboring namespace, export, naming, and ownership conventions. `NEAPI` is controlled by `NUCLEARENGINE_EXPORTS` in the engine project.
+   Follow the class-per-file rule in [AGENTS.md](../AGENTS.md): each native class
+   owns a same-named header/source pair, and aggregate headers contain includes only.
 3. Add new headers/source files to the relevant `.vcxproj` item lists. C# projects likewise use explicit `Compile` items. `.filters` files are ignored here.
 4. Check umbrella headers such as `NuclearEngine.h`, `Components/Components.h`, or `Systems/Systems.h` when the new type belongs in the public aggregate API.
 5. Build the affected project and consumers when public declarations or binary interfaces changed.

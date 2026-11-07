@@ -30,7 +30,7 @@ Networking transport is exposed separately through [Nuclear::Platform::Networkin
 
 ## Profiling and diagnostics
 
-[Platform diagnostics](Profiling.md) provides OS CPU/process/system/GPU memory queries. The engine's `ProfilingModule` registers after Graphics (when enabled) and releases its bounded GPU query pools before graphics shutdown. It is registered by default; capture defaults off and can be enabled through `EngineStartupDesc::EnableProfiling` or the profiler UI. Frame scopes, asynchronous query results, periodic OS counters, and explicit allocation accounting remain separate measurements with validity flags. Diligent query features are requested as optional. The editor Window menu and sample selector expose the ImGui performance/memory tool. See [Profiling.md](Profiling.md) for units, thread/lifetime contracts, bounds, and validated backends.
+[Platform diagnostics](Profiling.md) provides OS CPU/process/system/GPU memory queries. The engine's `ProfilingModule` registers after Graphics (when enabled) and releases its bounded GPU query pools before graphics shutdown. It is registered by default; capture defaults off and can be enabled through `EngineStartupDesc::EnableProfiling` or the profiler UI. Frame scopes, asynchronous query results, periodic OS counters, and explicit allocation accounting remain separate measurements with validity flags. Diligent query features are requested as optional. The editor Window menu exposes the detailed ImGui performance/memory tool; the retained sample selector provides a compact summary and capture/history controls through the same module. See [Profiling.md](Profiling.md) for units, thread/lifetime contracts, bounds, and validated backends.
 
 ## Scene, entities, and systems
 
@@ -67,6 +67,22 @@ Reserved path aliases are expanded by [Core::Path](../Nuclear.Engine/Source/Core
 - [ShaderParser](../Nuclear.Engine/Source/Parsers/ShaderParser.cpp) parses TOML-style `.NuclearShader` descriptions. They can refer to HLSL paths or embed source. Resource names such as `NEMat_Diffuse1` and `NEStatic_Camera` connect shaders to C++ binding logic.
 
 `NE_Common.h` selects a left-handed coordinate convention and zero-to-one clip depth. Check [Math.h](../Nuclear.Engine/include/Math/Math.h), buffer definitions, and shader code together before changing matrix or coordinate handling.
+
+## Runtime UI
+
+The [runtime UI](UI.md) is an independent retained widget tree under `Nuclear::UI`.
+`UIModule` registers after Graphics and Assets when enabled. `UIContext` owns client
+viewport roots, layout, focus, and pointer capture; widgets are not ECS entities.
+The engine routes portable input before gameplay mouse callbacks and draws UI after
+client rendering, before optional ImGui and presentation. Client teardown clears UI
+before client asset cleanup, and module teardown releases its Diligent resources
+before Graphics. `EnableImGui` and `AutoInitUIModule` are independent startup options.
+See [UI.md](UI.md) for raw-input polling guards, resource ownership, and limitations.
+
+The Samples launcher also uses retained widgets for navigation, settings, imports,
+and compact diagnostics. Its callbacks queue a selection; the outer loop in
+`Samples/Main.cpp` ends the selector and owns the next client, avoiding nested
+engine loops during UI input dispatch.
 
 ## Scripting, physics, audio, and editor
 

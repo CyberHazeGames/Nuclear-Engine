@@ -101,10 +101,11 @@ namespace Nuclear
 			}
 		};
 
+		/// Settings for synchronous ASCII single-channel SDF font import on the graphics thread.
 		struct FontImportingDesc
 		{
-			Uint32 Width = 0;
-			Uint32 Height = 48;
+			Uint32 Width = 0; ///< Reserved for compatibility; the atlas packer selects its width.
+			Uint32 Height = 48; ///< Minimum atlas pixels per em, clamped to [8, 256].
 
 		};
 

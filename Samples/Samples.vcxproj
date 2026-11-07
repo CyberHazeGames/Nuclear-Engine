@@ -93,6 +93,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="UISample.cpp" />
+    <ClCompile Include="UIShowcaseWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Playground.h" />
@@ -103,6 +105,8 @@
     <ClInclude Include="Sample4.h" />
     <ClInclude Include="Sample5.h" />
     <ClInclude Include="SampleBase.h" />
+    <ClInclude Include="UISample.h" />
+    <ClInclude Include="UIShowcaseWidget.h" />
     <ClInclude Include="SampleSelector.h" />
   </ItemGroup>
   <ItemGroup>

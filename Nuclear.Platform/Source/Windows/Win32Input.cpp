@@ -251,6 +251,10 @@ namespace Nuclear::Platform::Detail
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP:
 			event.mType = EventType::MouseButton;
+			// Button messages carry their own client coordinates, even when no
+			// WM_MOUSEMOVE preceded the click. Preserve virtual coordinates while locked.
+			event.mMouseX = state.mMouseMode == Input::MouseInputMode::Locked ? state.mMouseX : GET_X_LPARAM(lparam);
+			event.mMouseY = state.mMouseMode == Input::MouseInputMode::Locked ? state.mMouseY : GET_Y_LPARAM(lparam);
 			event.mPressed = message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN ||
 				message == WM_MBUTTONDOWN || message == WM_XBUTTONDOWN;
 			if (message == WM_LBUTTONDOWN || message == WM_LBUTTONUP)
@@ -293,6 +297,8 @@ namespace Nuclear::Platform::Detail
 				{
 					event.mType = EventType::MouseButton;
 					event.mButton = button;
+					event.mMouseX = state.mMouseX;
+					event.mMouseY = state.mMouseY;
 					PushEvent(event);
 				}
 			}

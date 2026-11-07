@@ -108,6 +108,10 @@ static void RunChecks()
 	SendMessageW(handle, WM_KEYDOWN, 'W', KeyData(0x11));
 	SendMessageW(handle, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(12, 25));
 	Require(Input::Get().GetMouseState(nullptr, nullptr) & MOUSE_BUTTON_LMASK, "Mouse button state missing");
+	const auto buttonEvents = DrainEvents();
+	Require(std::any_of(buttonEvents.begin(), buttonEvents.end(), [](const Event& event)
+		{ return event.mType == EventType::MouseButton && event.mPressed && event.mMouseX == 12 && event.mMouseY == 25; }),
+		"Mouse button event lost its client coordinates");
 	SendMessageW(handle, WM_KILLFOCUS, 0, 0);
 	Require(!Input::Get().IsKeyPressed(Input::KEYCODE_W), "Focus loss did not clear held keys");
 	Require(Input::Get().GetMouseState(nullptr, nullptr) == 0, "Focus loss did not clear held mouse buttons");

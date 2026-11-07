@@ -31,6 +31,16 @@ Diligent::RENDER_DEVICE_TYPE SelectRenderer()
 int main(int argc, char* argv[])
 {
 	Core::EngineStartupDesc desc;
+	const bool uiOnly = argc > 1 && std::string(argv[1]) == "--ui";
+	if (uiOnly)
+	{
+		desc.EnableImGui = false;
+		desc.AutoInitAudioModule = false;
+		desc.AutoInitPhysXModule = false;
+		desc.AutoInitScriptingModule = false;
+		desc.AutoInitThreadingModule = false;
+		desc.AutoInitRenderingModule = false;
+	}
 
 	/*std::cout << "Auto Initialize? \n"
 		<< "1) Yes \n"
@@ -58,13 +68,28 @@ int main(int argc, char* argv[])
 	desc.mScriptingClientDllName = "SamplesScripts.dll";
 	desc.mScriptingAssemblyNamespace = "Samples";
 	desc.mAssetsLibraryPath = "../Assets/";
-	Core::Engine::Get().Start(desc);
+	if (!Core::Engine::Get().Start(desc)) return 1;
 	Core::Path::mReservedPaths["@CommonAssets@"] = "../Assets/Common";
+	if (uiOnly)
+	{
+		UISample ui;
+		Core::Engine::Get().LoadClient(&ui);
+		Core::Engine::Get().EndClient();
+		Core::Engine::Get().Shutdown();
+		return 0;
+	}
 
 	while (!Core::Engine::Get().ShouldClose())
 	{
 		SampleSelector selector;
 		Core::Engine::Get().LoadClient(&selector);
+		Core::Engine::Get().EndClient();
+		if (Core::Engine::Get().ShouldClose()) break;
+		if (auto sample = selector.CreateSelectedSample())
+		{
+			Core::Engine::Get().LoadClient(sample.get());
+			Core::Engine::Get().EndClient();
+		}
 	}
 	Core::Engine::Get().Shutdown();
 	return 0;

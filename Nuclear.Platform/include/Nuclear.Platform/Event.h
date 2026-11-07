@@ -34,8 +34,8 @@ namespace Nuclear::Platform
 		bool mPressed = false; ///< Down/up state for Key or MouseButton.
 		bool mRepeat = false; ///< True for an auto-repeated key-down event.
 		std::uint32_t mCodepoint = 0; ///< Unicode scalar value for TextInput.
-		int mMouseX = 0; ///< Client-relative pixel position (virtual position while locked).
-		int mMouseY = 0; ///< Client-relative pixel position (virtual position while locked).
+		int mMouseX = 0; ///< MouseMove/MouseButton client pixel X (virtual position while locked).
+		int mMouseY = 0; ///< MouseMove/MouseButton client pixel Y (virtual position while locked).
 		int mDeltaX = 0; ///< Relative horizontal mouse motion in pixels.
 		int mDeltaY = 0; ///< Relative vertical mouse motion in pixels.
 		int mButton = 0; ///< One of MOUSE_BUTTON_* for MouseButton.

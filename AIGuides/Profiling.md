@@ -26,9 +26,16 @@ desc.EnableProfiling = true;
 Nuclear::Profiling::ProfilingModule::Get().SetEnabled(true);
 ```
 
-Open **Window > Performance & Memory Profiler** in the editor, or check **Performance & Memory Profiler** in the sample selector, then enable **Capture**. Tools can call `DrawProfilerWindow(bool* open)` inside their own active ImGui frame. The window shows frame timing history, CPU scope totals by thread, pipeline counters, process memory, selected-adapter memory budgets, and explicit allocation categories.
+Open **Window > Performance & Memory Profiler** in the editor, then enable **Capture**.
+Tools can call `DrawProfilerWindow(bool* open)` inside their own active ImGui frame.
+That detailed window shows frame timing history, CPU scope totals by thread, pipeline
+counters, process memory, selected-adapter memory budgets, and explicit allocation categories.
+The sample selector uses [retained UI](UI.md#retained-sample-selector): enable
+**Performance & memory** for its compact process CPU, working-set, GPU memory/frame,
+and tracked-allocation readouts. **Capture performance** and **Clear history**
+control the same profiling module without depending on an ImGui context.
 
-The engine starts capture after event dispatch and before queued main-thread work/module updates; it records client Update/Render CPU regions. GPU frame queries end before Present, while CPU frame timing ends after Present and therefore includes presentation blocking. Direct `Engine::BeginFrame`/`EndFrame` calls use the same capture boundary. Event dispatch and any work before `BeginFrame` are not included. The UI's FPS is derived from captured CPU wall time and is not a GPU utilization measurement.
+The engine starts capture after event dispatch and before queued main-thread work/module updates; it records client Update/Render CPU regions. GPU frame queries end before Present, while CPU frame timing ends after Present and therefore includes presentation blocking. Direct `Engine::BeginFrame`/`EndFrame` calls use the same capture boundary. Event dispatch and any work before `BeginFrame` are not included. The detailed profiler's FPS is derived from captured CPU wall time; the sample selector footer uses engine frame delta time. Neither is a GPU utilization measurement.
 
 `GetSnapshot()` returns an owned, mutex-consistent copy. History retains at most **240 completed frames**, with at most **2048 CPU scope records per frame**. Process/system/selected-GPU memory counters are sampled at most every **500 ms** during capture. CPU utilization needs two interval samples; process CPU is normalized to all logical processors, from 0 to 100 percent. A saturated single core on a 16-thread machine is roughly 6.25 percent of machine capacity.
 

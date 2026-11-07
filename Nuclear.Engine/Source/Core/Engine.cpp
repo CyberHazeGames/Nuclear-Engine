@@ -27,6 +27,7 @@
 #include <Threading/DelegateTask.h>
 #include <Fallbacks/FallbacksModule.h>
 #include <Profiling/ProfilingModule.h>
+#include <UI/UIModule.h>
 
 #include <Assets/AssetManager.h>
 #include <Assets/AssetLibrary.h>
@@ -118,6 +119,7 @@ namespace Nuclear
 			{
 				Graphics::GraphicsModuleDesc graphicsDesc;
 				graphicsDesc.pWindowHandle = GetMainWindow();
+				graphicsDesc.InitImGui = desc.EnableImGui;
 				Graphics::GraphicsModule::Get().SetStartupDesc(graphicsDesc);
 				if (!registerRuntime("Graphics", {}, Graphics::GraphicsModule::Get()))
 				{
@@ -206,6 +208,13 @@ namespace Nuclear
 			if (!modules.RegisterModule({ "Assets", ModuleType::Runtime, std::move(assetDependencies) },
 				std::make_unique<CallbackModule>([]() { Assets::AssetManager::Get().Initialize(); return true; }, []() {})))
 				return failStartup();
+			// UI loads its default font after Assets initialization. Do not add it to
+			// assetDependencies: Assets itself must precede UI to avoid a cycle.
+			if (desc.AutoInitUIModule && desc.AutoInitGraphicsModule &&
+				!modules.RegisterModule({ "UI", ModuleType::Runtime, { "Graphics", "Assets" } }, UI::UIModule::Get()))
+			{
+				return failStartup();
+			}
 			if (!desc.mModulePluginDirectory.empty() && !modules.LoadPlugins(desc.mModulePluginDirectory))
 			{
 				NUCLEAR_FATAL("[Engine] Module plugin loading failed: {0}", modules.GetLastError());
@@ -237,6 +246,7 @@ namespace Nuclear
 		void Engine::Shutdown()
 		{
 			NUCLEAR_INFO("[Engine] Shutting Down Engine.");
+			UI::UIModule::Get().GetContext().Clear();
 			Assets::AssetLibrary::Get().Clear();
 			pClient = nullptr;
 			if (pModules) pModules->ShutdownModules();
@@ -261,8 +271,15 @@ namespace Nuclear
 
 		void Engine::EndFrame()
 		{
+			UI::UIModule::Get().Render();
 			if (ImGui::GetCurrentContext())
 			{
+				// The dedicated UI renderer uses no depth target. Rebind the legacy
+				// renderer's target explicitly before drawing editor/debug overlays.
+				auto& graphics = Graphics::GraphicsModule::Get();
+				auto* target = graphics.GetSwapChain()->GetCurrentBackBufferRTV();
+				graphics.GetContext()->SetRenderTargets(1, &target, graphics.GetSwapChain()->GetDepthBufferDSV(),
+					Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 				ImGui::Render();
 				ImGui_Impl_RenderDrawData(ImGui::GetDrawData());
 			}
@@ -300,6 +317,7 @@ namespace Nuclear
 
 		void Engine::EndClient()
 		{
+			UI::UIModule::Get().GetContext().Clear();
 			if (pClient != nullptr)
 			{
 				SetState(Engine::State::ExitingRendering);
@@ -363,6 +381,22 @@ namespace Nuclear
 					{
 						continue;
 					}
+					auto& ui = UI::UIModule::Get();
+					bool uiHandled = false;
+					if (ui.IsInitialized())
+					{
+						auto& context = ui.GetContext();
+						if (event.mType == Platform::EventType::WindowResize)
+							context.SetViewport(static_cast<float>(event.mWidth), static_cast<float>(event.mHeight), context.GetScale());
+						const bool pointerEvent = event.mType == Platform::EventType::MouseMove ||
+							event.mType == Platform::EventType::MouseButton || event.mType == Platform::EventType::MouseWheel;
+						const bool keyEvent = event.mType == Platform::EventType::Key || event.mType == Platform::EventType::TextInput;
+						const bool debugUIOwnsInput = ImGui::GetCurrentContext() && !context.GetCapturedWidget() &&
+							((pointerEvent && ImGui::GetIO().WantCaptureMouse) || (keyEvent && ImGui::GetIO().WantCaptureKeyboard));
+						if (debugUIOwnsInput) context.ResetInput();
+						else uiHandled = context.ProcessEvent(event);
+					}
+					if (!pClient) break;
 					switch (event.mType)
 					{
 					case Platform::EventType::Quit:
@@ -377,10 +411,10 @@ namespace Nuclear
 						// when cursor modes switch or focus changes.
 						mouseX += event.mDeltaX;
 						mouseY += event.mDeltaY;
-						pClient->OnMouseMovement(mouseX, mouseY);
+						if (!uiHandled) pClient->OnMouseMovement(mouseX, mouseY);
 						break;
 					case Platform::EventType::MouseWheel:
-						pClient->OnMouseScroll(event.mWheelX, event.mWheelY);
+						if (!uiHandled) pClient->OnMouseScroll(event.mWheelX, event.mWheelY);
 						break;
 					default:
 						break;

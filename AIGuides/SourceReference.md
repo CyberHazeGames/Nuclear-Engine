@@ -51,6 +51,15 @@ Start with the owning row, read the declaration and implementation, then search 
 | IBL/post effects | [ImageBasedLighting.cpp](../Nuclear.Engine/Source/Rendering/ImageBasedLighting.cpp), [Bloom.cpp](../Nuclear.Engine/Source/Rendering/PostProcessingEffects/Bloom.cpp), [PBR shaders](../Assets/NuclearEngine/Shaders/PBR) | Environment capture, BRDF resources, bloom, PBR shader descriptions |
 | Animation | [Animator.cpp](../Nuclear.Engine/Source/Animation/Animator.cpp), [AnimationClip.cpp](../Nuclear.Engine/Source/Animation/AnimationClip.cpp), [Bone.cpp](../Nuclear.Engine/Source/Animation/Bone.cpp), [Animations.h](../Nuclear.Engine/include/Assets/Animations.h) | Imported clips, bone transforms, playback |
 
+## Runtime UI
+
+| Topic | Primary source | Follow-up |
+| --- | --- | --- |
+| Retained widgets and slots | [Widget.h](../Nuclear.Engine/include/UI/Widget.h), [PanelWidget.h](../Nuclear.Engine/include/UI/PanelWidget.h), [UserWidget.h](../Nuclear.Engine/include/UI/UserWidget.h), [Slot.h](../Nuclear.Engine/include/UI/Slot.h), [Widgets.h](../Nuclear.Engine/include/UI/Widgets.h) | Each widget has a same-named header/source pair; Widgets.h aggregates includes only |
+| Input and viewport | [UIContext.cpp](../Nuclear.Engine/Source/UI/UIContext.cpp), [UIModule.cpp](../Nuclear.Engine/Source/UI/UIModule.cpp) | Stable handles, focus/capture, input modes, engine lifecycle |
+| Renderer and text | [UIRenderer.cpp](../Nuclear.Engine/Source/UI/UIRenderer.cpp), [DrawList.cpp](../Nuclear.Engine/Source/UI/DrawList.cpp), [Font.cpp](../Nuclear.Engine/Source/Assets/Font.cpp) | Diligent quads, SDF atlas, clipping, batching, UTF-8 layout |
+| Sample and checks | [UISample.cpp](../Samples/UISample.cpp), [UIShowcaseWidget.cpp](../Samples/UIShowcaseWidget.cpp), [UITests.cpp](../Nuclear.Engine/Tests/UITests.cpp) | `Samples.exe --ui`, headless and GPU checks; [UI.md](UI.md) |
+
 ## Scripting, physics, audio, and editor
 
 | Topic | Primary source | Follow-up |

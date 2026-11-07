@@ -21,6 +21,10 @@ namespace Nuclear
 			bool AutoSelectRenderer = true;
 
 			bool AutoInitGraphicsModule = true;
+			/// Enables retained viewport UI when Graphics is enabled; independent of ImGui.
+			bool AutoInitUIModule = true;
+			/// Enables the existing editor/debug ImGui context and renderer.
+			bool EnableImGui = true;
 			bool AutoInitAudioModule = true;
 			bool AutoInitPhysXModule = true;
 			bool AutoInitScriptingModule = true;

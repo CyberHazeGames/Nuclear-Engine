@@ -16,6 +16,12 @@ namespace Nuclear
 		}
 		void Font::Create(const FontCreationDesc& desc)
 		{
+			mTextureView.Release();
+			SetState(State::Unknown);
+			if (!desc.Data || !desc.AtlasWidth || !desc.AtlasHeight || !Graphics::GraphicsModule::Get().GetDevice())
+			{
+				return;
+			}
 			Diligent::TextureDesc TexDesc;
 			TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
 			TexDesc.Width = desc.AtlasWidth;
@@ -37,8 +43,24 @@ namespace Nuclear
 			Diligent::RefCntAutoPtr<Diligent::ITexture> mTexture;
 			Graphics::GraphicsModule::Get().GetDevice()->CreateTexture(TexDesc, &TexData, &mTexture);
 
-			mTextureView = mTexture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+			if (mTexture)
+			{
+				mTextureView = mTexture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+				SetState(State::Created);
+			}
 		
+		}
+		const FontCharacter* Font::FindCharacter(Uint32 codepoint) const
+		{
+			auto found = Characters.find(codepoint);
+			if (found == Characters.end()) found = Characters.find('?');
+			return found == Characters.end() ? nullptr : &found->second;
+		}
+
+		float Font::GetKerning(Uint32 previous, Uint32 current) const
+		{
+			auto found = Kerning.find((Uint64(previous) << 32) | current);
+			return found == Kerning.end() ? 0 : found->second;
 		}
 	}
 }

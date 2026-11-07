@@ -127,6 +127,40 @@ Sample1 and the selector import the supplied vampire Collada model as `dancing_v
 
 ## Choosing validation
 
+On 2026-11-08, the UI class-per-file reorganization passed the full Debug x64
+solution build and independent compilation of all 26 public UI headers. Existing
+headless UI tests, both D3D11 UI GPU modes, and both retained-selector modes passed.
+The sample and both focused test projects now compile `UISample.cpp` and
+`UIShowcaseWidget.cpp` explicitly. This refactor did not validate a full Release
+engine build or other rendering backends.
+
+The retained sample-selector migration was validated on 2026-11-07 with the full
+Debug x64 solution build and the separate `Samples/Samples.SelectorTests.vcxproj`
+project. Run `Samples.SelectorTests.exe` from `Samples/`, with optional `--imgui`.
+Both D3D11 modes passed VSync/widget and capture toggles, expanded-panel keyboard
+reachability, scaling from 1280x720 to 960x540, native keyboard/mouse launching of
+Runtime UI, clear-history, queued asset-import cancellation, sample return, and
+fresh-selector reload. Readback images were visually
+reviewed. The test disables audio/physics/scripting/threading/3D scene rendering
+and does not import sample libraries or launch the other content-dependent samples.
+
+Runtime UI has a separate `Nuclear.Engine/Nuclear.UI.Tests.vcxproj` project with
+headless layout/input tests and optional D3D11 readback checks. See [UI.md](UI.md#validation-and-launch)
+for commands. The interactive `Samples.exe --ui` path runs retained widgets with
+ImGui, audio, physics, scripting, worker threads, and 3D scene rendering disabled.
+
+On 2026-11-07, the full Debug x64 solution built with retained UI. Debug headless
+UI checks passed; D3D11 GPU checks passed with ImGui disabled and enabled (two
+30-frame clients per mode). Readback checked alpha blending, painter order,
+clipping, and SDF text; lifecycle checks covered resize, minimize/restore, scaling,
+font-library clearing, client reload, and shutdown. Synthetic platform mouse events
+activated retained controls through engine routing. Platform smoke tests passed in
+Debug and Release after adding mouse-button coordinates. Other UI rendering
+backends and a full Release engine build were not validated.
+The standalone `Samples.exe --ui` entry point reached rendering and completed
+graceful shutdown with exit code 0 after a normal engine-window close message;
+this automated launch used a hidden window.
+
 Profiling adds the Windows SDK's `dxgi.lib`/`psapi.lib` to Nuclear.Platform and optional Diligent GPU query features. See [Profiling.md](Profiling.md#validation) for separate platform diagnostics, CPU/accounting, and GPU test projects. On 2026-11-06 the diagnostics executable passed in Debug and Release; CPU/accounting tests and the 70-frame D3D11 GPU/UI test passed in Debug, and the full Debug solution built. This does not validate a full Release engine build or GPU query behavior on the other rendering backends.
 
 The [networking test project](../Nuclear.Platform/Nuclear.Platform.NetworkTests.vcxproj) builds a headless loopback executable separately from the solution's default projects. See [Networking.md](Networking.md#validation) for Debug/Release build/run commands. Nuclear.Platform links the Windows SDK's `ws2_32.lib`; no additional third-party networking SDK or runtime distribution is required.
