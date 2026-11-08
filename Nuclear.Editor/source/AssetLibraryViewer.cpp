@@ -1,160 +1,220 @@
-#include "AssetLibraryViewer.h"
-#include "FileDialog.h"
+#include <AssetLibraryViewer.h>
+#include <EditorWidgets.h>
+#include <AssetDocument.h>
+#include <algorithm>
+#include <cctype>
+#include <Threading/ThreadingModule.h>
+#include <Fallbacks/FallbacksModule.h>
 namespace Nuclear::Editor
 {
-	AssetLibraryViewer::AssetLibraryViewer(NuclearEditor* editor)
-	{
-		mEditorInstance = editor;
-		pActiveProject = nullptr;
-	}
 	void AssetLibraryViewer::SetProject(Project* project)
 	{
-		pActiveProject = project;
-
-		mPath = Assets::AssetLibrary::Get().GetPath();
-	}
-	std::string SplitFilename(const std::string& str)
-	{
-		std::size_t found = str.find_last_of("/");
-		return str.substr(found + 1);
+		pProject = project;
 	}
 
-	void TextureViewer(Assets::Texture* img)
+	void AssetLibraryViewer::Update()
 	{
-		ImGui::Begin("Asset Info");
-
-		ImVec2 tex_sz(128.f, 128.f);
-		ImGui::Text(SplitFilename(img->GetName()).c_str());
-
-		ImGui::Separator();
-		ImGui::Image(img->GetTextureView(), tex_sz);
-
-		ImGui::Text("Path: %s", img->GetName().c_str());
-		ImGui::Text("Width: %i", img->GetWidth(), " - Height: %i", img->GetHeight());
-
-
-		ImGui::End();
-	}
-
-	void AssetLibraryViewer::SetPath(const std::filesystem::path& path)
-	{
-		mPath = path;
-		// Remove ending / if any
-		if (mPath.wstring().back() == std::filesystem::path::preferred_separator)
-			mPath = mPath.parent_path();
-	}
-
-	void AssetLibraryViewer::Render()
-	{
-		if (ImGui::Begin("Assets Library"))
+		if (mPendingImport.empty())
+			return;
+		auto path = std::exchange(mPendingImport, {});
+		std::string extension = path.extension().string();
+		std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) {
+			return char(std::tolower(c));
+		});
+		Assets::IAsset* result = nullptr;
+		auto& manager = Assets::AssetManager::Get();
+		try
 		{
-			ImVec2 tex_sz(128.f, 128.f);
-
-			if (ImGui::BeginTabBar("Asset Library"))
+			if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp" ||
+				extension == ".tga" || extension == ".hdr")
 			{
-				ImGuiStyle& style = ImGui::GetStyle();
-				float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
-				static char* file_dialog_buffer = nullptr;
-				static char path[500] = "";
-
-				ImGui::PushID("imprtbttn");
-				ImGui::PushStyleColor(ImGuiCol_Tab, (ImVec4)ImColor::HSV(1.0f, 0.6f, 0.6f));
-				ImGui::PushStyleColor(ImGuiCol_TabHovered, (ImVec4)ImColor::HSV(1.0f, 0.7f, 0.7f));
-				ImGui::PushStyleColor(ImGuiCol_TabActive, (ImVec4)ImColor::HSV(1.0f, 0.8f, 0.8f));
-				if (ImGui::TabItemButton("Import"))
-				{
-
-					file_dialog_buffer = path;
-					FileDialog::file_dialog_open = true;
-				}
-				ImGui::PopStyleColor(3);
-				ImGui::PopID();
-
-				if (ImGui::BeginTabItem("Textures"))
-				{
-					static int count = 0;
-					static Assets::Texture* img = nullptr;
-					for (auto& i : Assets::AssetLibrary::Get().mImportedTextures.mData)
-					{
-						ImGui::PushID(count);
-						if (i.second.GetTextureView())
-						{
-							ImGui::BeginGroup();
-							{
-								ImGui::Image(i.second.GetTextureView(), tex_sz);
-								ImGui::Text(SplitFilename(i.second.GetName()).c_str());
-								ImGui::EndGroup();
-								if (ImGui::IsItemClicked())
-									img = &i.second;
-							}
-						}
-						else
-						{
-							//ERROR
-						}
-
-						float last_button_x2 = ImGui::GetItemRectMax().x;
-						float next_button_x2 = last_button_x2 + style.ItemSpacing.x + tex_sz.x; // Expected position if next button was on same line
-						if (count + 1 < Assets::AssetLibrary::Get().mImportedTextures.mData.size() && next_button_x2 < window_visible_x2)
-							ImGui::SameLine();
-						ImGui::PopID();
-
-						count++;
-					}
-					count = 0;
-					ImGui::EndTabItem();
-
-					if (img)
-					{
-						if (img->GetState() == Assets::IAsset::State::Created)
-						{
-							TextureViewer(img);
-						}
-					}
-				}
-				if (ImGui::BeginTabItem("Meshes"))
-				{
-					//Should show mesh icon only
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("Materials"))
-				{
-					//Should show material rendered on a sphere
-					ImGui::EndTabItem();
-				}
-		
-
-				ImGui::EndTabBar();
-
-				if (FileDialog::file_dialog_open)
-				{
-					FileDialog::ShowFileDialog(&FileDialog::file_dialog_open, file_dialog_buffer, sizeof(file_dialog_buffer), FileDialog::FileDialogType::OpenFile);
-					if (!FileDialog::file_dialog_open)
-					{
-						Assets::AssetManager::Get().Import(path);
-					}
-				}
+				Assets::TextureImportingDesc desc;
+				desc.mCommonOptions.mAsyncImport = false;
+				desc.mCommonOptions.mLoadOnly = true;
+				result = manager.Import<Assets::Texture>(path.string(), desc);
+				if (result == Fallbacks::FallbacksModule::Get().GetDefaultBlackImage())
+					result = nullptr;
 			}
-
-
-
-			/*static char* file_dialog_buffer = nullptr;
-			static char path[500] = "";
-
-			ImGui::TextUnformatted("Path: ");
-			ImGui::InputText("##path", path, sizeof(path));
-			ImGui::SameLine();
-			if (ImGui::Button("Browse##path")) {
-				file_dialog_buffer = path;
-				FileDialog::file_dialog_open = true;
-				FileDialog::file_dialog_open_type = FileDialog::FileDialogType::SelectFolder;
+			else if (extension == ".obj" || extension == ".fbx" || extension == ".dae" ||
+					 extension == ".gltf" || extension == ".glb")
+			{
+				Assets::MeshImportingDesc desc;
+				desc.mImportMaterial = false;
+				desc.mImportAnimations = false;
+				desc.mCommonOptions.mAsyncImport = false;
+				desc.mCommonOptions.mLoadOnly = true;
+				result = manager.Import<Assets::Mesh>(path.string(), desc);
+				// Synchronous mesh decoding still queues its GPU creation on the main thread.
+				auto& threading = Threading::ThreadingModule::Get();
+				while (!threading.GetMainTasks().empty())
+					threading.ExecuteMainThreadTasks(1);
 			}
-
-			if (FileDialog::file_dialog_open) {
-				FileDialog::ShowFileDialog(&FileDialog::file_dialog_open, file_dialog_buffer, sizeof(file_dialog_buffer), FileDialog::file_dialog_open_type);
-			}*/
-			ImGui::End();
+			else if (extension == ".nuclearshader")
+			{
+				Assets::ShaderImportingDesc desc;
+				desc.mCommonOptions.mAsyncImport = false;
+				desc.mCommonOptions.mLoadOnly = true;
+				result = manager.Import<Assets::Shader>(path.string(), desc);
+			}
+			else if (extension == ".ttf")
+			{
+				Assets::FontImportingDesc desc;
+				result = manager.Import<Assets::Font>(path.string(), desc);
+			}
+			else
+			{
+				mStatus = "Supported: textures, OBJ/FBX/DAE/glTF geometry, NuclearShader and TTF.";
+				if (OnChanged)
+					OnChanged();
+				return;
+			}
+			mStatus = result && result->GetState() == Assets::IAsset::State::Created
+						  ? "Resource created: " + path.filename().string()
+						  : "Import did not create a ready resource. See NuclearEngine.log.";
 		}
+		catch (const std::exception& error)
+		{
+			mStatus = std::string("Import failed: ") + error.what();
+		}
+		if (OnChanged)
+			OnChanged();
 	}
-}
+
+	std::unique_ptr<UI::Widget> AssetLibraryViewer::Build()
+	{
+		auto root = std::make_unique<UI::VerticalBox>();
+		root->SetSpacing(8);
+		auto& tabs = root->Add<UI::HorizontalBox>();
+		tabs.SetSpacing(6);
+		const char* names[] = {"Files", "Textures", "Meshes", "Materials", "Scenes"};
+		for (int i = 0; i < 5; ++i)
+			Action(tabs, names[i], [this, i]() {
+				mCategory = i;
+				if (OnChanged)
+					OnChanged();
+			});
+		Label(*root, mStatus, 13).SetWrap(true);
+		auto& scroll = root->Add<UI::ScrollBox>();
+		Fill(*root, scroll);
+		auto& content = scroll.Add<UI::VerticalBox>();
+		content.SetSpacing(6);
+		if (!pProject)
+		{
+			Label(content, "Create a project to browse assets.");
+			return root;
+		}
+		if (mCategory == 0)
+		{
+			auto& path = content.Add<UI::TextBox>(pProject->GetPath().string());
+			path.OnCommitted = [this](const std::string& value) {
+				std::error_code error;
+				if (std::filesystem::is_directory(value, error))
+					pProject->SetPath(value);
+				else
+					mStatus = "Directory is unavailable.";
+				if (OnChanged)
+					OnChanged();
+			};
+			Action(content, ".. / Parent directory", [this]() {
+				pProject->SetPath(pProject->GetPath().parent_path());
+				if (OnChanged)
+					OnChanged();
+			});
+			std::error_code error;
+			std::vector<std::filesystem::path> entries;
+			for (std::filesystem::directory_iterator it(pProject->GetPath(), error), end; !error && it != end;
+				 it.increment(error))
+				entries.push_back(it->path());
+			std::sort(entries.begin(), entries.end());
+			if (error)
+				Label(content, "Cannot read this directory: " + error.message()).SetWrap(true);
+			for (const auto& entry : entries)
+			{
+				bool directory = std::filesystem::is_directory(entry, error);
+				Action(content, (directory ? "[Folder] " : "Import / ") + entry.filename().string(),
+					   [this, entry, directory]() {
+						   if (directory)
+							   pProject->SetPath(entry);
+						   else
+						   {
+							   mPendingImport = entry;
+							   mStatus = "Import queued: " + entry.filename().string();
+						   }
+						   if (OnChanged)
+							   OnChanged();
+					   });
+			}
+		}
+		else
+		{
+			auto addMap = [this, &content](auto& map, bool textures) {
+				std::vector<Assets::IAsset*> assets;
+				for (auto& [id, asset] : map.mData)
+					assets.push_back(&asset);
+				std::sort(assets.begin(), assets.end(), [](auto* a, auto* b) {
+					return a->GetName() < b->GetName();
+				});
+				if (assets.empty())
+					Label(content, "No assets in this category.");
+				for (auto* asset : assets)
+				{
+					const auto title = AssetDocument::GetTitle(asset->GetType(), asset->GetName());
+					auto& card = Section(content, title);
+					Label(card, "State / " + std::to_string(static_cast<int>(asset->GetState())), 12);
+					if (asset->GetType() == Assets::AssetType::Texture || asset->GetType() == Assets::AssetType::Mesh ||
+						asset->GetType() == Assets::AssetType::Material)
+					{
+						const auto id = asset->GetUUID();
+						const auto type = asset->GetType();
+						Action(card, "Open / " + title, [this, id, type]() {
+							if (OnAssetOpened) OnAssetOpened(type, id);
+						});
+					}
+					if (asset->GetType() == Assets::AssetType::Mesh &&
+						asset->GetState() == Assets::IAsset::State::Created)
+					{
+						const auto id = asset->GetUUID();
+						Action(card, "Add to scene / " + asset->GetName(), [this, id]() {
+							auto* mesh = Assets::AssetLibrary::Get().mImportedMeshes.GetAsset(id);
+							if (!mesh || mesh->GetState() != Assets::IAsset::State::Created)
+								return;
+							auto entity = Core::Scene::Get().CreateEntity(mesh->GetName());
+							entity.AddComponent<Components::MeshComponent>(mesh,
+																		   pProject->GetDefaultMaterial());
+							if (OnEntityAdded)
+								OnEntityAdded(entity.GetEntityID());
+						});
+					}
+					if (textures)
+					{
+						auto* texture = static_cast<Assets::Texture*>(asset);
+						if (texture->GetState() == Assets::IAsset::State::Created &&
+							texture->GetTextureView())
+						{
+							auto& preview = card.Add<UI::Image>();
+							preview.SetBrush({texture});
+							preview.SetImageSize({96, 96});
+							auto slot = card.GetSlot(preview.GetId());
+							slot.Horizontal = UI::Alignment::Start;
+							card.SetSlot(preview.GetId(), slot);
+							Label(card,
+								  std::to_string(texture->GetWidth()) + " x " +
+									  std::to_string(texture->GetHeight()),
+								  12);
+						}
+					}
+				}
+			};
+			auto& library = Assets::AssetLibrary::Get();
+			if (mCategory == 1)
+				addMap(library.mImportedTextures, true);
+			else if (mCategory == 2)
+				addMap(library.mImportedMeshes, false);
+			else if (mCategory == 3)
+				addMap(library.mImportedMaterials, false);
+			else
+				addMap(library.mImportedScenes, false);
+		}
+		return root;
+	}
+} // namespace Nuclear::Editor

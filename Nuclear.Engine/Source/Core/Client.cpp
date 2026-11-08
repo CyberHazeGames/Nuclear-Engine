@@ -53,5 +53,8 @@ namespace Nuclear {
 		void Client::OnWindowResize(int width, int height)
 		{
 		}
+		void Client::OnAuxiliaryWindowEvent(const Platform::Event& event)
+		{
+		}
 	}
 }

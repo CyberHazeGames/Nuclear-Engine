@@ -1,4 +1,5 @@
 #include <UI/UIContext.h>
+#include <UI/ScrollBox.h>
 #include <cmath>
 #include <stdexcept>
 
@@ -160,7 +161,18 @@ namespace Nuclear::UI
 		if (auto* widget = Find(previous))
 			widget->OnInput({InputEvent::Type::Cancel});
 		if (auto* widget = Find(id); widget && widget->IsFocusable() && widget->IsEnabled() && widget->IsVisible())
+		{
 			mFocus = id;
+			Layout();
+			for (auto* parent = widget->GetParent(); parent; parent = parent->GetParent())
+			{
+				if (auto* scroll = dynamic_cast<ScrollBox*>(parent))
+				{
+					scroll->ScrollIntoView(*widget);
+					Layout();
+				}
+			}
+		}
 	}
 
 	void UIContext::CancelInput()
@@ -345,9 +357,19 @@ namespace Nuclear::UI
 					}
 				}
 				else if (event.mType == Platform::EventType::MouseWheel)
-					handled = WantsMouse();
+				{
+					UpdateHover(mPointer);
+					input.EventType = InputEvent::Type::Wheel;
+					input.Position = mPointer;
+					input.WheelY = event.mWheelY;
+					handled = Dispatch(mCapture ? mCapture : mHover, input) || WantsMouse();
+				}
 				else if (event.mType == Platform::EventType::TextInput)
-					handled = WantsKeyboard();
+				{
+					input.EventType = InputEvent::Type::Text;
+					input.Codepoint = event.mCodepoint;
+					handled = Dispatch(mFocus, input) || WantsKeyboard();
+				}
 			}
 		}
 		catch (...)

@@ -15,6 +15,8 @@
 #include <UI/SizeBox.h>
 #include <UI/Slider.h>
 #include <UI/TextBlock.h>
+#include <UI/TextBox.h>
+#include <UI/ScrollBox.h>
 #include <UI/UserWidget.h>
 #include <UI/VerticalBox.h>
 #include <UI/Widget.h>

@@ -2,7 +2,7 @@
 
 ## Startup and client lifecycle
 
-[Samples/Main.cpp](../Samples/Main.cpp) configures `Core::EngineStartupDesc`, starts the engine, registers `@CommonAssets@`, and loads a `SampleSelector` client. [The editor entry point](../Nuclear.Editor/source/Nuclear.Editor.cpp) uses the same engine lifecycle with its own client and asset alias.
+[Samples/Main.cpp](../Samples/Main.cpp) configures `Core::EngineStartupDesc`, starts the engine, registers `@CommonAssets@`, and loads a `SampleSelector` client. [The editor entry point](../Nuclear.Editor/source/Nuclear.Editor.cpp) uses the same engine lifecycle with a retained editor client and no script assembly requirement.
 
 [Engine.cpp](../Nuclear.Engine/Source/Core/Engine.cpp) is the central lifecycle implementation:
 
@@ -11,7 +11,7 @@
 3. Register enabled engine modules with `ModuleManager`, resolve their dependencies, and run load, initialize, and start phases in dependency order. Initialization failure rolls back loaded modules.
 4. Initialize the asset manager after its enabled module dependencies. The fallback module creates solid black, grey, white, and flat-normal textures synchronously in memory, without external image files.
 5. `LoadClient` calls client `Initialize`, then `Load`, then enters the blocking main loop.
-6. Each frame handles portable Nuclear.Platform events, executes up to one queued main-thread task when threading is enabled, updates input/timing, updates registered modules, starts ImGui, calls client `Update` and `Render`, then renders ImGui and presents.
+6. Each frame handles portable Nuclear.Platform events, executes up to one queued main-thread task when threading is enabled, updates input/timing, updates registered modules, starts optional ImGui, calls client `Update` and `Render`, then draws retained UI, optional ImGui and presents.
 7. `EndClient` invokes `ExitRendering` and `Shutdown`. Engine shutdown stops, shuts down, and unloads modules in reverse dependency order.
 
 `Core::Client` is the application extension point. Its default callbacks are empty: the engine does not automatically update the scene's systems on behalf of every client. Inspect a sample's `Render`/`Update` methods to see what it drives.
@@ -30,7 +30,7 @@ Networking transport is exposed separately through [Nuclear::Platform::Networkin
 
 ## Profiling and diagnostics
 
-[Platform diagnostics](Profiling.md) provides OS CPU/process/system/GPU memory queries. The engine's `ProfilingModule` registers after Graphics (when enabled) and releases its bounded GPU query pools before graphics shutdown. It is registered by default; capture defaults off and can be enabled through `EngineStartupDesc::EnableProfiling` or the profiler UI. Frame scopes, asynchronous query results, periodic OS counters, and explicit allocation accounting remain separate measurements with validity flags. Diligent query features are requested as optional. The editor Window menu exposes the detailed ImGui performance/memory tool; the retained sample selector provides a compact summary and capture/history controls through the same module. See [Profiling.md](Profiling.md) for units, thread/lifetime contracts, bounds, and validated backends.
+[Platform diagnostics](Profiling.md) provides OS CPU/process/system/GPU memory queries. The engine's `ProfilingModule` registers after Graphics (when enabled) and releases its bounded GPU query pools before graphics shutdown. It is registered by default; capture defaults off and can be enabled through `EngineStartupDesc::EnableProfiling` or the profiler UI. Frame scopes, asynchronous query results, periodic OS counters, and explicit allocation accounting remain separate measurements with validity flags. Diligent query features are requested as optional. The retained editor performance panel exposes capture, frame/scope/pipeline counters and memory data; the retained sample selector provides a compact summary and capture/history controls through the same module. See [Profiling.md](Profiling.md) for units, thread/lifetime contracts, bounds, and validated backends.
 
 ## Scene, entities, and systems
 
@@ -84,6 +84,16 @@ and compact diagnostics. Its callbacks queue a selection; the outer loop in
 `Samples/Main.cpp` ends the selector and owns the next client, avoiding nested
 engine loops during UI input dispatch.
 
+The retained editor adds a session workspace controller with top-level document
+tabs, document-owned dock layouts and client-owned secondary native windows. The
+viewport's hierarchy/inspector/tools stay in its layout; each asset document starts
+with its own content and can register its own tools later. Transfers of whole
+widget trees run outside dispatch through `PanelWidget::TakeChild`. Each secondary
+window owns its UI context, renderer and a swap chain on the shared graphics device;
+`Client::OnAuxiliaryWindowEvent` routes its events separately from the main UI.
+See [Editor.md](Editor.md#document-tabs-and-docking) for ownership, recovery and
+backend/persistence limits.
+
 ## Scripting, physics, audio, and editor
 
 The engine [scripting module](../Nuclear.Engine/include/Scripting/ScriptingModule.h) owns a backend registry and selects one registered backend at initialization. [IScriptingBackend](../Nuclear.Engine/include/Scripting/IScriptingBackend.h) and opaque class/object wrappers keep engine script assets and components independent of Nuclear.Managed. The composition root in `Engine::Start` registers C# before initializing scripting. [Scripting.CSharp](../Plugins/Scripting.CSharp/Nuclear.Scripting.CSharp.vcxproj) is a static library linked into Nuclear.Engine; its manifest is metadata and scripting backends are not dynamically discovered. [Scripting.Lua](../Plugins/Scripting.Lua/README.md) has a buildable interface scaffold and is deliberately unregistered until a Lua runtime exists.
@@ -96,4 +106,4 @@ The C# backend's `InitBindings` uploads native callbacks to the unmanaged Cdecl 
 
 `PhysXModule` owns SDK-level physics objects; `PhysXSystem` owns a simulation scene and connects collider/rigid-body components to actors. `AudioModule` selects and loads an audio backend DLL at runtime; `AudioSystem` connects source/listener components to it. [XAudio2](../Plugins/Audio.XAudio2/Nuclear.Audio.XAudio2.vcxproj) and [OpenAL](../Plugins/Audio.OpenAL/Nuclear.Audio.OpenAL.vcxproj) are separate DLL projects. `EngineStartupDesc.mAudioBackendName` selects `XAudio2` by default or `OpenAL`; `mAudioPluginDirectory` overrides the executable directory. The [audio plugin ABI](../Nuclear.Engine/include/Audio/AudioBackendPlugin.h) checks size, version, name, and factory functions before constructing the backend. Audio shutdown destroys its backend before unloading the DLL. Plugins are selected by DLL name; their JSON manifests are metadata and are not scanned.
 
-The editor uses the same engine and ECS, with inspectors and panels under `Nuclear.Editor/include` and `source`. It is not a separate authoritative scene model. Consult [KnownLimitations.md](KnownLimitations.md) before assuming a complete editor or scripting workflow.
+The [editor](Editor.md) uses the same engine and ECS, with retained inspectors and panels under `Nuclear.Editor/include` and `source`. Its client explicitly disables ImGui and runtime audio/physics/scripts/worker initialization. An editor-owned RenderSystem renders to a camera texture sampled by a retained widget; it does not drive gameplay systems. It is not a separate authoritative scene model. Consult [KnownLimitations.md](KnownLimitations.md) before assuming a complete editor or scripting workflow.

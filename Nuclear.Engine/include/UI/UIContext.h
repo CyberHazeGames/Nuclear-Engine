@@ -79,6 +79,8 @@ namespace Nuclear::UI
 		void Defer(std::function<void()> mutation);
 		/// Cancels input targeting a widget/subtree before visibility, enablement, or removal changes.
 		void CancelSubtree(Widget& widget);
+		/// True while dispatching input or deferred tree mutations; ownership transfers must wait for Update.
+		bool IsDispatching() const { return mDispatchDepth != 0; }
 
 	private:
 		/// Owned root with stable paint ordering.

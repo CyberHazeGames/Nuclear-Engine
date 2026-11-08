@@ -1,29 +1,24 @@
-// Nuclear.Editor.cpp : This file contains the 'main' function. Program execution begins and ends there.
-
-#include <Nuclear.Editor.h>
-
-#pragma comment(lib,"Nuclear.Engine.lib")
+#include <NuclearEditor.h>
+#pragma comment(lib, "Nuclear.Engine.lib")
 
 int main()
 {
 	Core::EngineStartupDesc desc;
-	desc.mEngineWindowDesc.WindowWidth = 1280;
-	desc.mEngineWindowDesc.WindowHeight = 720;
-	desc.mScriptingClientDllName = "EditorClient.dll";
-	desc.mScriptingAssemblyNamespace = "Editor";
+	desc.mEngineWindowDesc.WindowWidth = 1440;
+	desc.mEngineWindowDesc.WindowHeight = 900;
+	desc.mEngineWindowDesc.Title = "Nuclear Editor";
 	desc.mAssetsLibraryPath = "../Assets/";
-	Core::Engine::Get().Start(desc);
-
-	Core::Path::mReservedPaths["@EditorAssets@"] = "../Assets/NuclearEditor";
-	Core::Path::mReservedPaths["@CommonAssets@"] = "../Assets/Common";
-
-	while (!Core::Engine::Get().ShouldClose())
-	{
-		NuclearEditor editor;
-		Core::Engine::Get().LoadClient(&editor);
-	}
-	Core::Engine::Get().EndClient();
-	Core::Engine::Get().Shutdown();
-
+	desc.EnableImGui = false;
+	desc.AutoInitAudioModule = false;
+	desc.AutoInitPhysXModule = false;
+	desc.AutoInitScriptingModule = false;
+	desc.AutoInitThreadingModule = false;
+	auto& engine = Core::Engine::Get();
+	if (!engine.Start(desc))
+		return 1;
+	NuclearEditor editor;
+	engine.LoadClient(&editor);
+	engine.EndClient();
+	engine.Shutdown();
 	return 0;
 }

@@ -121,7 +121,7 @@ namespace Nuclear
 				}
 
 
-				result->mState = IAsset::State::Loaded;
+				// CreateImage already marked the successfully uploaded texture Created.
 				NUCLEAR_TRACE("[Assets] Imported: {0} ", Path.GetInputPath());
 
 				//TODO:EXPORT

@@ -379,6 +379,7 @@ namespace Nuclear
 					Graphics::ImGuiPlatform::ProcessEvent(event);
 					if (event.pWindow && event.pWindow != &MainWindow)
 					{
+						pClient->OnAuxiliaryWindowEvent(event);
 						continue;
 					}
 					auto& ui = UI::UIModule::Get();

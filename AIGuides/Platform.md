@@ -23,6 +23,16 @@ Only **Windows x64** is implemented. Public headers under [Nuclear.Platform/incl
 
 The platform API is intended for the window/event thread. Window objects cannot be copied. Native handles, queued event window pointers, and library symbol addresses are borrowed and must not outlive their owners. Destroying a window removes its queued events. Repeated `Destroy()` and `Shutdown()` calls are safe; shutdown refuses to unregister the backend while windows remain alive.
 
+`Window::ClientToScreen` and `ScreenToClient` convert signed pixel coordinates
+through the desktop for cross-window drag/drop. They return false for an empty
+window without modifying coordinates. Secondary retained editor windows use these
+portable helpers; native handles remain at the foundation/graphics boundaries.
+The engine forwards secondary events to `Client::OnAuxiliaryWindowEvent` rather
+than sending them through the main UI context or closing the engine. Clients own
+secondary-window close/resize/input behavior and release their swap chains before
+destroying the corresponding platform windows. This is separate from ImGui native
+viewports, which remain unsupported by the legacy backend.
+
 ## Engine boundaries and compatibility
 
 - Existing engine includes `Platform/Window.h` and `Platform/Input.h` forward to the foundation headers. Callers must add `Nuclear.Platform/include` to their include directories and link `Nuclear.Platform.lib`; the engine, samples, and editor projects reference the foundation project directly. Ship `Nuclear.Platform.dll` beside their executables.

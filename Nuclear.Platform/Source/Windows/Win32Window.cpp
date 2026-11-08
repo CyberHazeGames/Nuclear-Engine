@@ -1,6 +1,29 @@
 #include "Win32Platform.h"
 #include <algorithm>
 
+namespace Nuclear::Platform
+{
+	bool Window::ClientToScreen(int& x, int& y) const
+	{
+		POINT point{x, y};
+		if (!pWindow || !::ClientToScreen(static_cast<HWND>(pWindow), &point))
+			return false;
+		x = point.x;
+		y = point.y;
+		return true;
+	}
+
+	bool Window::ScreenToClient(int& x, int& y) const
+	{
+		POINT point{x, y};
+		if (!pWindow || !::ScreenToClient(static_cast<HWND>(pWindow), &point))
+			return false;
+		x = point.x;
+		y = point.y;
+		return true;
+	}
+}
+
 namespace Nuclear::Platform::Detail
 {
 	LRESULT CALLBACK WindowProcedure(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)

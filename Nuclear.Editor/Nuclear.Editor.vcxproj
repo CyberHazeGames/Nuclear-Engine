@@ -98,20 +98,38 @@
     <ClCompile Include="source\EntityEditor.cpp" />
     <ClCompile Include="source\Project.cpp" />
     <ClCompile Include="source\EditorUI.cpp" />
+    <ClCompile Include="source\EditorWidgets.cpp" />
+    <ClCompile Include="source\EditorTabStrip.cpp" />
+    <ClCompile Include="source\EditorDockArea.cpp" />
+    <ClCompile Include="source\EditorDockLayout.cpp" />
+    <ClCompile Include="source\EditorFloatingWindow.cpp" />
+    <ClCompile Include="source\EditorWorkspace.cpp" />
+    <ClCompile Include="source\AssetDocument.cpp" />
+    <ClCompile Include="source\GameViewPort.cpp" />
+    <ClCompile Include="source\TransformGizmo.cpp" />
+    <ClCompile Include="source\NuclearEditor.cpp" />
     <ClCompile Include="source\Nuclear.Editor.cpp" />
     <ClCompile Include="source\UILayers\LoggerView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="include\Nuclear.Editor.h" />
+    <ClInclude Include="include\Nuclear.Editor.h" />
+    <ClInclude Include="include\NuclearEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\EditorUILayer.h" />
-    <ClInclude Include="include\FileDialog.h" />
     <ClInclude Include="include\AssetLibraryViewer.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\EditorUI.h" />
+    <ClInclude Include="include\EditorWidgets.h" />
+    <ClInclude Include="include\EditorTabStrip.h" />
+    <ClInclude Include="include\EditorDockArea.h" />
+    <ClInclude Include="include\EditorDockLayout.h" />
+    <ClInclude Include="include\EditorFloatingWindow.h" />
+    <ClInclude Include="include\EditorWorkspace.h" />
+    <ClInclude Include="include\AssetDocument.h" />
     <ClInclude Include="include\EntityEditor.h" />
     <ClInclude Include="include\GameViewPort.h" />
+    <ClInclude Include="include\TransformGizmo.h" />
     <ClInclude Include="include\Project.h" />
     <ClInclude Include="include\ProjectTemplate.h" />
     <ClInclude Include="include\SystemsEditor.h" />
@@ -119,6 +137,9 @@
     <ClInclude Include="include\UILayers\LoggerView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nuclear.Engine\Nuclear.Engine.vcxproj">
+      <Project>{1E657253-3D76-4C77-A747-4D85EEFA91DA}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Nuclear.Platform\Nuclear.Platform.vcxproj">
       <Project>{D9AF2902-8042-45CD-AD9E-1234F7EA3B80}</Project>
     </ProjectReference>

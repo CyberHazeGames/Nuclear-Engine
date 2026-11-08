@@ -1,31 +1,11 @@
-#include "EditorUILayer.h"
-
-#include <sstream>
-
+#pragma once
+#include <string>
 namespace Nuclear::Editor
 {
-
-	enum class LogLevel
+	/// Reads a bounded tail of the current session log without owning or modifying the file.
+	class LoggerView
 	{
-		None,
-		Trace,
-		Info,
-		Warn,
-		Error,
-		Fatal,
-		All,
+	  public:
+		std::string Read() const; ///< Returns at most 16 KiB, discarding an incomplete first line.
 	};
-
-	class LoggerView : public EditorUILayer
-	{
-	public:
-		virtual ~LoggerView();
-
-		virtual void Init() override;
-		virtual void Update() override;
-
-	private:
-
-	};
-
-}
+} // namespace Nuclear::Editor

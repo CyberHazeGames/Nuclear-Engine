@@ -63,6 +63,12 @@ namespace Nuclear
 				return mAdapterAttribs;
 			}
 			void ResizeSwapChain(Uint32 Width, Uint32 Height);
+			/// Creates an additional swap chain on the existing device/context for a live borrowed window.
+			/// Returns a caller-owned reference through result, or false with null result on failure.
+			/// Supports D3D11, D3D12 and Vulkan; OpenGL's window-bound context is not supported here.
+			/// Release the returned swap chain before destroying the window or shutting down Graphics.
+			bool CreateWindowSwapChain(Platform::Window& window, const Diligent::SwapChainDesc& desc,
+				Diligent::ISwapChain** result);
 
 			bool CreateMesh(Assets::Mesh* result);
 

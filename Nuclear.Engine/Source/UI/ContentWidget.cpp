@@ -27,8 +27,10 @@ namespace Nuclear::UI
 						return;
 					if (!content->mChildren.empty())
 					{
+						// Cancellation resolves focus/capture through the attached tree. Keep
+						// its child entry intact until those lookups and callbacks have finished.
+						context->CancelSubtree(*content->mChildren.front().Child);
 						auto old = std::move(content->mChildren.front().Child);
-						context->CancelSubtree(*old);
 						content->mChildren.clear();
 						old->Attach(nullptr, nullptr);
 					}

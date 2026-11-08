@@ -2,7 +2,7 @@
 
 `Nuclear::UI` is a retained screen-space widget system inspired by UMG's widget trees,
 panel slots, and reusable compositions. It renders directly through Diligent. It does
-not use ImGui types, font atlases, drawing, or input state. Existing editor/debug
+not use ImGui types, font atlases, drawing, or input state. The editor uses this system throughout; legacy sample/debug
 ImGui remains a separate optional overlay.
 
 ## Source and lifetime
@@ -48,6 +48,13 @@ cancels pending presses before destruction. Callbacks should request destruction
 through the context or owning panel rather than deleting borrowed widget pointers.
 Custom measure/arrange/paint hooks should not mutate the tree.
 
+`PanelWidget::TakeChild(id)` transfers an immediate child's owning pointer outside
+dispatch. It cancels focus/capture, detaches context/parent registration, and
+preserves the widget identity and contents. Absent IDs return null. Transfers
+during input or deferred mutations throw `logic_error`; queue such operations for
+client Update instead. `UIContext::IsDispatching()` exposes that guard. The editor
+uses this contract to move whole tab trees between dock groups and native windows.
+
 `AutoInitUIModule` defaults true and registers UI only when automatic Graphics is
 enabled. UI declares dependencies on Graphics and Assets; it is deliberately not
 added to the list of modules that Assets itself depends on. The module creates its
@@ -81,6 +88,8 @@ until an ancestor clip or viewport boundary is reached.
 | `SizeBox` | Single-child desired-size constraint wrapper |
 | `Border` | Tinted solid/texture background with one padded content child |
 | `TextBlock` | Font, em size, color, line alignment, newlines, word/glyph wrapping |
+| `TextBox` | Single-line UTF-8 editing, cursor/deletion keys, Ctrl+A/C/X/V, Enter commit |
+| `ScrollBox` | Clipped vertical content, wheel and PageUp/PageDown, automatic focus reveal |
 | `Image` | Borrowed texture brush, tint, UV region, and desired size |
 | `Button` | Single child, state palette, focus outline, release activation |
 | `CheckBox` | Button behavior, checked indicator, and `OnChanged(bool)` |
@@ -129,6 +138,8 @@ Sliders retain capture outside their bounds and clamp values. Tab and Shift+Tab
 traverse visible enabled focusable widgets; focused buttons activate on Enter/Space
 release. Focus loss, hiding/disabling a subtree, removal, and minimized dimensions
 cancel active input. Other-window events are not sent to the main viewport context.
+The engine forwards them to `Client::OnAuxiliaryWindowEvent`; clients can route them
+to an independent UIContext for each secondary native window.
 
 `GameOnly` bypasses UI; `UIOnly` reserves mouse/keyboard for UI; `GameAndUI` reserves
 input when a control is hovered, captured, or focused. These policies do not change
@@ -140,7 +151,22 @@ mode explicitly when opening menus.
 Existing ImGui input capture takes precedence when no retained widget owns pointer
 capture. The engine resets retained input when ImGui takes ownership. ImGui capture
 flags reflect its frame state; this is coexistence support, not a replacement
-editor designer or a general gameplay input-action system.
+general gameplay input-action system.
+
+`TextBox` accepts platform Unicode scalar events and stores UTF-8. Left/Right,
+Home/End, Backspace/Delete and pointer placement use codepoint boundaries. Ctrl+A
+selects the whole line; Ctrl+C/X/V uses the platform clipboard. User insertion is
+limited to 4096 bytes. `OnChanged` reports edits and `OnCommitted` reports Enter
+without repeat; programmatic `SetText` is silent. This is a single-line editor with
+whole-line selection, not an IME composition or arbitrary-range selection system.
+Numeric editor fields validate and commit on Enter. `ScrollBox` owns one content
+widget, measures its natural height, clips painting/hit testing, and clamps its
+logical offset after resize. Wheel events bubble through children and at scroll
+boundaries. Tab focus reveals clipped descendants, including nested scroll views.
+
+Replacing focused `ContentWidget` content cancels focus/capture while the old child
+is still reachable from the attached tree, then detaches it. Keep that ordering:
+focus cancellation resolves stable widget IDs through the context.
 
 ## Rendering and fonts
 
@@ -151,6 +177,13 @@ back buffer without clearing, after client scene/postprocessing rendering and be
 optional ImGui/presentation. The UI PSO disables depth, uses straight-alpha color
 blending, and owns a white texture for solid brushes. Colors are linear RGBA;
 texture sRGB decoding and render-target encoding follow Diligent texture formats.
+
+`UIRenderer::Render` accepts an optional borrowed render-target view for a secondary
+window. It must use the renderer's initialized main swap-chain color format. Null
+retains the normal main-buffer behavior. The caller owns clearing/presentation;
+capture framebuffer readbacks before presenting buffers whose contents may be
+discarded. The editor creates an independent context/renderer per floating window
+and shares the graphics device; UIModule still owns only the main viewport service.
 
 The existing font importer now preserves fractional advances, plane bounds, atlas
 UVs, ascender/line metrics, and pair kerning. The retained text shader samples its
@@ -166,9 +199,9 @@ that font cannot load, labels reserve approximate layout space and emit no glyph
 shapes and controls remain usable. Null or uncreated image textures use a solid
 tinted brush. Explicit borrowed fonts/textures still require caller lifetime care.
 
-The first version has no visual designer, serialized widget assets, scene component,
-C# bindings, editable text, scrolling, animation, world-space widgets, multiple native
-viewports, accessibility integration, complex-script shaping, RTL layout, or automatic
+The system has no visual designer, serialized widget assets, scene component,
+C# bindings, animation, world-space widgets, automatic secondary-window management,
+accessibility integration, complex-script shaping, RTL layout, or automatic
 Unicode font fallback. It adds no third-party dependencies.
 
 ## Validation and launch
@@ -179,8 +212,8 @@ Unicode font fallback. It adds no third-party dependencies.
 entirely from retained widgets. Navigation covers Runtime UI, Samples 1–5, and
 Playground. Tools include VSync, a collapsible performance/memory summary, capture
 and clear-history controls, and the existing models/PBR asset-library import action.
-Frame timing uses engine delta time, independently of ImGui. The editor's detailed
-ImGui profiler remains available separately.
+Frame timing uses engine delta time, independently of ImGui. The editor's retained
+performance panel reads the same capture module; see [Editor.md](Editor.md).
 
 Selection callbacks only record a choice. The selector ends itself from Render;
 [Main.cpp](../Samples/Main.cpp) then owns and loads the selected client after the

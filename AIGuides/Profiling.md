@@ -26,7 +26,9 @@ desc.EnableProfiling = true;
 Nuclear::Profiling::ProfilingModule::Get().SetEnabled(true);
 ```
 
-Open **Window > Performance & Memory Profiler** in the editor, then enable **Capture**.
+Enable **Capture** in the editor retained **Performance / Session Log** panel.
+It displays completed frame timing, CPU scopes, pipeline counts, process and GPU
+memory, explicit allocation categories and dropped-query counts in a scroll view.
 Tools can call `DrawProfilerWindow(bool* open)` inside their own active ImGui frame.
 That detailed window shows frame timing history, CPU scope totals by thread, pipeline
 counters, process memory, selected-adapter memory budgets, and explicit allocation categories.

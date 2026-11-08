@@ -150,6 +150,8 @@
     <ClInclude Include="include\UI\SizeBox.h" />
     <ClInclude Include="include\UI\Border.h" />
     <ClInclude Include="include\UI\TextBlock.h" />
+    <ClInclude Include="include\UI\TextBox.h" />
+    <ClInclude Include="include\UI\ScrollBox.h" />
     <ClInclude Include="include\UI\Image.h" />
     <ClInclude Include="include\UI\Button.h" />
     <ClInclude Include="include\UI\CheckBox.h" />
@@ -637,6 +639,8 @@
     <ClCompile Include="Source\UI\SizeBox.cpp" />
     <ClCompile Include="Source\UI\Border.cpp" />
     <ClCompile Include="Source\UI\TextBlock.cpp" />
+    <ClCompile Include="Source\UI\TextBox.cpp" />
+    <ClCompile Include="Source\UI\ScrollBox.cpp" />
     <ClCompile Include="Source\UI\Image.cpp" />
     <ClCompile Include="Source\UI\Button.cpp" />
     <ClCompile Include="Source\UI\CheckBox.cpp" />

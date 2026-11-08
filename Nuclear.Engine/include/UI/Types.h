@@ -91,6 +91,8 @@ namespace Nuclear::UI
 			PointerUp,
 			KeyDown,
 			KeyUp,
+			Text,
+			Wheel,
 			Cancel
 		};
 		Type EventType = Type::Cancel; ///< Payload discriminator.
@@ -98,6 +100,8 @@ namespace Nuclear::UI
 		int Key = 0; ///< Platform physical key identifier.
 		int Button = 0; ///< Platform mouse button identifier.
 		bool Repeat = false; ///< Keyboard auto-repeat.
+		Uint32 Codepoint = 0; ///< Unicode scalar for Text events.
+		float WheelY = 0; ///< Vertical wheel steps, positive upward.
 	};
 
 	/// A widget's reply; capture/focus apply to the widget that handled the event.

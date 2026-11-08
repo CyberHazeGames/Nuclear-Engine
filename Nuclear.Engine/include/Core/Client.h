@@ -2,6 +2,8 @@
 #include <NE_Common.h>
 #include <string>
 
+namespace Nuclear::Platform { struct Event; }
+
 namespace Nuclear
 {
 	namespace Assets {
@@ -51,6 +53,10 @@ namespace Nuclear
 			virtual void OnMouseMovement(int xpos, int ypos);
 			/// Receives nonzero client dimensions in pixels; minimized sizes are skipped.
 			virtual void OnWindowResize(int width, int height);
+			/// Receives events belonging to client-owned secondary native windows on the engine thread.
+			/// The origin window is borrowed and must stay alive until its queued events are handled.
+			/// Main-window and process Quit events follow the normal engine routing instead.
+			virtual void OnAuxiliaryWindowEvent(const Platform::Event& event);
 
 			// Helper Functions
 			virtual void LoadFinishUp();

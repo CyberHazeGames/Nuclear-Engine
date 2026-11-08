@@ -125,7 +125,59 @@ The samples resolve `@CommonAssets@` to `Assets/Common/` when launched from `Sam
 
 Sample1 and the selector import the supplied vampire Collada model as `dancing_vampire.dae`. This content set does not supply Bob, CrytekSponza, shaderball, `crate_normal.png`, `arial.ttf`, or the requested `str3.mp3`; provide those separately where used. Moving source content does not generate the imported assets required by Samples 2–5. The selector's **Build Assets Library** action performs imports and also needs its other model inputs. Most source content is ignored by Git; its presence locally does not make a clean checkout complete.
 
+## Retained editor validation
+
+On 2026-11-08, the full Debug x64 solution build passed after replacing the editor
+with retained UI. The separate `Nuclear.Editor/Nuclear.Editor.Tests.vcxproj` build
+and executable passed D3D11 framebuffer checks at 1440x900 and 960x600, toolbar
+creation/deletion, entity rename and numeric position editing, component addition,
+modal focus isolation/cancel/create, capture/history, local OBJ geometry import and
+instantiation, and workspace teardown/reload. Scene pixel coverage was checked
+separately from UI glyph coverage; both readbacks were visually reviewed.
+
+Debug headless UI tests passed including Unicode editing/deletion, focused-content
+replacement and scrolling/focus-reveal regressions. `Nuclear.UI.Tests.exe --gpu
+--imgui` passed its existing 60-frame D3D11 readback/lifecycle/native-button checks.
+The actual `Nuclear.Editor.exe`, launched from `Nuclear.Editor/`, reached its
+rendering loop and shut down normally with exit code 0 after a window-close
+message. That launch used a hidden window. See [Editor.md](Editor.md) for startup
+configuration, the test project and session-authoring limitations.
+
+The subsequent editor gizmo checks passed in Debug: all world axes and operations,
+free move/uniform and mirrored scale, edge-on rotation, invalid/hidden pivots,
+scaled input, Escape/focus/Tab/resize cancellation, deleted targets, and live
+inspector synchronization. D3D11 checks additionally exercised drag commit outside
+the viewport and right-button camera look. Move, rotation and scale framebuffer
+readbacks were visually reviewed. These checks use the existing editor test project;
+no engine dependency or backend was added for gizmos.
+
+These checks do not validate a full Release engine build, other rendering backends,
+physical mouse/keyboard feel, clipboard interoperability, arbitrary model formats,
+material/animation importing, runtime physics/audio/scripts, or disk project
+persistence. The build retains existing dependency PDB/runtime-library warnings;
+shader compilation reports existing loop-unroll warnings.
+
 ## Choosing validation
+
+The document-workspace isolation follow-up on 2026-11-08 passed Debug editor and
+focused editor-test builds. The D3D11 integration run checks asset viewers without
+viewport panels, preserved per-document docking/control state, custom-tool ownership
+and scoped Window/reset actions, whole-document native transfer, and typed fallback
+titles for empty/whitespace texture/mesh/material names. Existing viewport/gizmo,
+import, modal and teardown/reload checks also passed. These focused checks do not
+establish other graphics backends or a Release engine build.
+
+The editor docking change on 2026-11-08 passed the full Debug x64 solution build,
+the focused editor tests, headless UI tests, the 60-frame D3D11 UI test with ImGui,
+and Windows platform smoke tests in Debug and Release. The editor tests exercise
+asset documents, tab reuse/close/reorder, state-preserving docking, splitters,
+native-window rendering/input/resize, cross-window redocking, window close,
+panel recovery/reset, modal isolation and teardown with a floating panel open.
+The actual Debug editor also reached rendering and exited normally after a window
+close message in a hidden launch. See [Editor.md](Editor.md#document-tabs-and-docking)
+for use and ownership. Secondary D3D12/Vulkan swap-chain paths are source-level
+implementations only; OpenGL tear-off is unavailable. Full Release engine builds,
+physical drag feel, automatic DPI and saved layouts were not validated.
 
 On 2026-11-08, the UI class-per-file reorganization passed the full Debug x64
 solution build and independent compilation of all 26 public UI headers. Existing

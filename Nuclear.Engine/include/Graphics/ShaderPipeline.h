@@ -32,6 +32,8 @@ namespace Nuclear
 
 			void BuildVariants();
 
+			/// Recreates GPU objects and reflection for the supplied scene bindings on the render thread.
+			/// Variant addresses remain stable; callers must refresh mesh/material bindings after rebaking.
 			bool Bake(ShaderPipelineBakingDesc& bakingdesc);
 
 			Uint32 GetHashedKey(const std::string& Key);

@@ -79,6 +79,11 @@ namespace Nuclear
 
 		bool ShaderPipeline::Bake(ShaderPipelineBakingDesc& bakingdesc)
 		{
+			// Keep variant addresses stable for mesh controllers while releasing the previous
+			// GPU objects and reflection before recreating them for the current scene.
+			for (auto& [key, variant] : mVariants)
+				variant = ShaderPipelineVariant{};
+
 			if (pParentShader->mBuildDesc.mType == ShaderType::Rendering3D)
 			{
 				bool hasdeffered = false;

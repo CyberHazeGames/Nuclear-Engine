@@ -55,6 +55,25 @@ namespace Nuclear::UI
 		std::erase_if(mChildren, [id](const ChildEntry& entry) { return entry.Child->GetId() == id; });
 	}
 
+	std::unique_ptr<Widget> PanelWidget::TakeChild(WidgetId id)
+	{
+		if (GetContext() && GetContext()->IsDispatching())
+			throw std::logic_error("UI ownership transfers must run outside dispatch");
+		for (auto iterator = mChildren.begin(); iterator != mChildren.end(); ++iterator)
+		{
+			if (iterator->Child->GetId() != id)
+				continue;
+			if (GetContext())
+				GetContext()->CancelSubtree(*iterator->Child);
+			auto child = std::move(iterator->Child);
+			mChildren.erase(iterator);
+			child->Attach(nullptr, nullptr);
+			InvalidateLayout();
+			return child;
+		}
+		return nullptr;
+	}
+
 	bool PanelWidget::SetSlot(WidgetId id, const Slot& slot)
 	{
 		for (auto& entry : mChildren)

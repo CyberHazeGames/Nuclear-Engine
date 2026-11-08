@@ -10,6 +10,7 @@ These notes help future agents navigate and change this repository without repea
 | [Platform.md](Platform.md) | Native windows, events, input, clipboard, DLL loading, or future platform backends |
 | [Networking.md](Networking.md) | UDP/TCP sockets, addresses, readiness, networking lifetime, or future replication transport |
 | [Profiling.md](Profiling.md) | CPU/GPU queries, memory diagnostics, frame capture, allocation accounting, or profiler UI |
+| [Editor.md](Editor.md) | Retained editor workspace, scene preview, authoring tools, imports and validation |
 | [UI.md](UI.md) | Retained runtime widgets, layout, Diligent UI rendering, fonts, focus, input modes, and the UI sample |
 | [SourceReference.md](SourceReference.md) | Finding a subsystem's files, entry points, or related implementation |
 | [KnowledgeGraph.md](KnowledgeGraph.md) | Exploring the Graphify graph, querying relationships, or refreshing the local index |
@@ -25,7 +26,7 @@ Read the root [AGENTS.md](../AGENTS.md) first. For a small task, follow the rele
 | `Nuclear.Platform/` | Independent native platform foundation DLL, currently Windows x64 only |
 | `Plugins/Scripting.CSharp/`, `Plugins/Scripting.Lua/` | Static C# scripting backend and unregistered Lua scaffold |
 | `Plugins/Audio.XAudio2/`, `Plugins/Audio.OpenAL/` | Runtime loaded audio backend DLLs |
-| `Nuclear.Editor/` | Native ImGui editor application; still work in progress |
+| `Nuclear.Editor/` | Native retained-UI editor application; session authoring remains work in progress |
 | `Nuclear.Managed/`, `Nuclear.Managed.Native/` | Included .NET 10 bridge source fork; C# assembly and native host library |
 | `Nuclear.ScriptCore/` | C# engine-facing API, targeting .NET 10 through Nuclear.Managed |
 | `Samples/` | Native sample executable and mostly header-defined sample clients |

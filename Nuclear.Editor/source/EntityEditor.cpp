@@ -1,355 +1,237 @@
-#include "EntityEditor.h"
+#include <EntityEditor.h>
+#include <EditorWidgets.h>
+#include <cmath>
 namespace Nuclear::Editor
 {
-	template <class ...Component>
-	std::vector<entt::id_type> GetAllComponentsHashes()
+	namespace
 	{
-		std::vector<entt::id_type> result;
-		((result.push_back(entt::type_id<Component>().hash())), ...);
-		return result;
-	}
-	EntityEditor::EntityEditor()
-	{
-		AllComponentsIDs = GetAllComponentsHashes<ALL_COMPONENTS>();
-	}
-
-
-	template<typename... Components>
-	std::vector<entt::id_type> GetAvailableComponents(entt::entity& entity, entt::registry& reg, const std::vector<entt::id_type>& AllComponentsIDs)
-	{
-		std::vector<entt::id_type> all_comp_vec(AllComponentsIDs);
-
-		std::vector<entt::id_type> entity_comp_vec;
-		for (auto [id, storage] : reg.storage())
+		template <class T> T* Component(entt::entity entity)
 		{
-			if (storage.contains(entity))
+			auto& registry = Core::Scene::Get().GetRegistry();
+			return registry.valid(entity) ? registry.try_get<T>(entity) : nullptr;
+		}
+		void Toggle(UI::PanelWidget& parent, const std::string& title, bool value,
+					std::function<void(bool)> setter)
+		{
+			auto& check = parent.Add<UI::CheckBox>();
+			check.SetChecked(value);
+			Label(check, title);
+			check.OnChanged = std::move(setter);
+		}
+		template <class T>
+		void AddComponent(UI::PanelWidget& parent, entt::entity entity, const std::string& title,
+						  const std::function<void(bool)>& changed)
+		{
+			if (Component<T>(entity))
+				return;
+			Action(parent, title, [entity, changed]() {
+				auto& registry = Core::Scene::Get().GetRegistry();
+				if (registry.valid(entity) && !registry.all_of<T>(entity))
+					registry.emplace<T>(entity);
+				changed(true);
+			});
+		}
+	} // namespace
+	std::unique_ptr<UI::Widget> EntityEditor::Build(entt::entity entity, std::function<void(bool)> changed)
+	{
+		auto root = std::make_unique<UI::VerticalBox>();
+		root->SetSpacing(12);
+		auto* info = Component<Components::EntityInfoComponent>(entity);
+		if (!info)
+		{
+			Label(*root, "Select an entity in the hierarchy.").SetWrap(true);
+			return root;
+		}
+		Label(*root, "ENTITY / " + std::to_string(static_cast<Uint32>(entity)), 13);
+		auto& name = root->Add<UI::TextBox>(info->mName);
+		name.OnCommitted = [entity, changed](const std::string& value) {
+			if (auto* info = Component<Components::EntityInfoComponent>(entity))
+				info->mName = value.empty() ? "Entity" : value;
+			changed(false);
+		};
+		auto& componentMenu = root->Add<UI::VerticalBox>();
+		componentMenu.SetSpacing(4);
+		auto& componentButton = Action(componentMenu, "Add component  v", {});
+		auto& componentList = componentMenu.Add<UI::Border>();
+		componentList.SetBrush({nullptr, {.06f, .075f, .095f, 1}});
+		componentList.SetPadding({4, 4, 4, 4});
+		componentList.SetVisibility(UI::Visibility::Collapsed);
+		auto& add = componentList.Add<UI::VerticalBox>();
+		add.SetSpacing(2);
+		componentButton.OnClicked = [&componentList]() {
+			componentList.SetVisibility(componentList.GetVisibility() == UI::Visibility::Collapsed
+										? UI::Visibility::Visible
+											: UI::Visibility::Collapsed);
+		};
+		auto& transform = Section(*root, "TRANSFORM");
+		Label(transform, "Enter commits a value. Rotation is in degrees.", 12).SetWrap(true);
+		for (int group = 0; group < 3; ++group)
+		{
+			const char* names[] = {"POSITION", "ROTATION", "SCALE"};
+			Label(transform, names[group], 12);
+			auto& row = transform.Add<UI::HorizontalBox>();
+			row.SetSpacing(6);
+			auto value = group == 0	  ? info->mTransform.GetLocalPosition()
+						 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
+									  : info->mTransform.GetLocalScale();
+			for (int axis = 0; axis < 3; ++axis)
 			{
-				//id is hashed component 
-				entity_comp_vec.push_back(id);
+				auto& column = row.Add<UI::VerticalBox>();
+				Fill(row, column);
+				Number(column, std::string(1, "XYZ"[axis]), value[axis], [entity, group, axis](float number) {
+					auto* info = Component<Components::EntityInfoComponent>(entity);
+					if (!info)
+						return;
+					auto value = group == 0	  ? info->mTransform.GetLocalPosition()
+								 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
+											  : info->mTransform.GetLocalScale();
+					value[axis] = number;
+					if (group == 0)
+						info->mTransform.SetPosition(value);
+					else if (group == 1)
+						info->mTransform.SetRotation(Math::radians(value));
+					else
+						info->mTransform.SetScale(value);
+				});
 			}
 		}
-
-		//delete added components
-		for (auto j : entity_comp_vec)
+		if (auto* light = Component<Components::LightComponent>(entity))
 		{
-			for (auto it = all_comp_vec.begin(); it != all_comp_vec.end();)
-			{
-				if (*it == j)
-					it = all_comp_vec.erase(it);
-				else
-					++it;
-
-			}
+			auto& section = Section(*root, "LIGHT");
+			Number(
+				section, "Intensity", light->GetIntensity(),
+				[entity](float value) {
+					if (auto* light = Component<Components::LightComponent>(entity))
+						light->SetIntensity(value);
+				},
+				0, 100000);
+			auto vector = [&section, entity](const std::string& title, Math::Vector3 value, int property) {
+				Label(section, title, 13);
+				for (int axis = 0; axis < 3; ++axis)
+					Number(
+						section, std::string(1, "XYZ"[axis]), value[axis],
+						[entity, property, axis](float number) {
+							auto* light = Component<Components::LightComponent>(entity);
+							if (!light)
+								return;
+							auto current = property == 0 ? light->GetDirection()
+										   : property == 1
+											   ? Math::Vector3(light->GetColor().r, light->GetColor().g,
+															   light->GetColor().b)
+											   : light->GetAttenuation();
+							current[axis] = number;
+							if (property == 0)
+								light->SetDirection(current);
+							else if (property == 1)
+								light->SetColor(Graphics::Color(current.x, current.y, current.z, 1.0f));
+							else
+								light->SetAttenuation(current);
+						},
+						property == 0 ? -100000.0f : 0.0f);
+			};
+			vector("Direction", light->GetDirection(), 0);
+			auto color = light->GetColor();
+			vector("Color RGB", {color.r, color.g, color.b}, 1);
+			vector("Attenuation", light->GetAttenuation(), 2);
+			auto cone = light->GetSpotlightCone();
+			for (int axis = 0; axis < 2; ++axis)
+				Number(
+					section, axis == 0 ? "Inner cone (cosine)" : "Outer cone (cosine)", cone[axis],
+					[entity, axis](float number) {
+						if (auto* light = Component<Components::LightComponent>(entity))
+						{
+							auto cone = light->GetSpotlightCone();
+							cone[axis] = number;
+							light->SetSpotlightCone(cone);
+						}
+					},
+					-1, 1);
+			Number(
+				section, "Near plane", light->GetNearPlane(),
+				[entity](float value) {
+					if (auto* light = Component<Components::LightComponent>(entity))
+						light->SetNearPlane(value);
+				},
+				.001f);
+			Number(
+				section, "Far plane", light->GetFarPlane(),
+				[entity](float value) {
+					if (auto* light = Component<Components::LightComponent>(entity))
+						light->SetFarPlane(value);
+				},
+				.001f);
+			Number(
+				section, "Field of view (degrees)", light->GetFOV(),
+				[entity](float value) {
+					if (auto* light = Component<Components::LightComponent>(entity))
+						light->SetFOV(value);
+				},
+				1, 179);
+			Toggle(section, "Cast shadows", light->mCastShadows, [entity](bool value) {
+				if (auto* light = Component<Components::LightComponent>(entity))
+					light->mCastShadows = value;
+			});
 		}
-
-		return all_comp_vec;
-	}
-
-	template<typename Component>
-	const void AddComponentByHashImp(entt::entity& entity, entt::registry& reg, entt::id_type id)
-	{
-		if (entt::type_id<Component>().hash() == id)
+		if (auto* mesh = Component<Components::MeshComponent>(entity))
 		{
-			reg.emplace<Component>(entity);
+			auto& section = Section(*root, "MESH");
+			Label(section, mesh->GetMesh() ? mesh->GetMesh()->GetName() : "No mesh assigned").SetWrap(true);
+			Label(section, mesh->GetMaterial() ? mesh->GetMaterial()->GetName() : "No material assigned")
+				.SetWrap(true);
+			Toggle(section, "Visible", mesh->GetEnableRendering(), [entity](bool value) {
+				if (auto* mesh = Component<Components::MeshComponent>(entity))
+					mesh->SetEnableRendering(value);
+			});
+			Toggle(section, "Cast shadows", mesh->GetCastShadow(), [entity](bool value) {
+				if (auto* mesh = Component<Components::MeshComponent>(entity))
+					mesh->SetCastShadow(value);
+			});
+			Toggle(section, "Receive shadows", mesh->GetReceiveShadows(), [entity](bool value) {
+				if (auto* mesh = Component<Components::MeshComponent>(entity))
+					mesh->SetReceiveShadows(value);
+			});
 		}
+		if (auto* body = Component<Components::RigidBodyComponent>(entity))
+			Toggle(*root, "Kinematic (authoring)", body->isKinematic, [entity](bool value) {
+				if (auto* body = Component<Components::RigidBodyComponent>(entity))
+					body->isKinematic = value;
+			});
+		if (Component<Components::ColliderComponent>(entity))
+			Label(*root, "Collider / authoring data", 13);
+		if (Component<Components::CameraComponent>(entity))
+			Label(*root, "Camera / scene component", 13);
+		if (Component<Components::ScriptComponent>(entity))
+			Label(*root, "Script / runtime execution disabled", 13);
+		if (Component<Components::AudioListenerComponent>(entity))
+			Label(*root, "Audio listener / authoring data", 13);
+		if (Component<Components::AudioSourceComponent>(entity))
+			Label(*root, "Audio source / authoring data", 13);
+		AddComponent<Components::LightComponent>(add, entity, "Light", changed);
+		AddComponent<Components::MeshComponent>(add, entity, "Mesh", changed);
+		// Runtime service objects are not activated in the editor's authoring registry.
+		AddComponent<Components::RigidBodyComponent>(add, entity, "Rigid body", changed);
+		AddComponent<Components::ColliderComponent>(add, entity, "Collider", changed);
+		AddComponent<Components::ScriptComponent>(add, entity, "Script", changed);
+		AddComponent<Components::AudioListenerComponent>(add, entity, "Audio listener", changed);
+		AddComponent<Components::AudioSourceComponent>(add, entity, "Audio source", changed);
+		if (!Component<Components::CameraComponent>(entity))
+			Action(add, "Camera", [entity, changed]() {
+				auto& registry = Core::Scene::Get().GetRegistry();
+				if (!registry.valid(entity) || registry.all_of<Components::CameraComponent>(entity))
+					return;
+				Components::CameraComponentDesc desc;
+				desc.mInitRTs = false;
+				desc.mIsActiveCamera = false;
+				desc.mProjection = Math::perspective(Math::radians(45.0f), 1.0f, .1f, 100.f);
+				registry.emplace<Components::CameraComponent>(entity, desc);
+				changed(true);
+			});
+		if (Core::Scene::Get().GetRegistry().all_of<
+				Components::LightComponent, Components::MeshComponent, Components::RigidBodyComponent,
+				Components::ColliderComponent, Components::ScriptComponent,
+				Components::AudioListenerComponent, Components::AudioSourceComponent,
+				Components::CameraComponent>(entity))
+			Label(add, "All components added", 13);
+		return root;
 	}
-
-	template<typename... Component>
-	const void AddComponentByHash(entt::entity& entity, entt::registry& reg, entt::id_type id)
-	{
-		(AddComponentByHashImp<Component>(entity, reg, id), ...);
-	}
-
-	//For display only
-	//TODO: Move to engine
-	const std::string GetComponentName(entt::id_type id)
-	{
-		if (id == entt::type_id<Components::EntityInfoComponent>().hash())
-			return "Entity Info Component";
-		else if (id == entt::type_id<Components::CameraComponent>().hash())
-			return "Camera Component";
-		else if (id == entt::type_id<Components::MeshComponent>().hash())
-			return "Mesh Component";
-		else if (id == entt::type_id<Components::ColliderComponent>().hash())
-			return "Collider Component";
-		else if (id == entt::type_id<Components::RigidBodyComponent>().hash())
-			return "Rigid Body Component";
-		else if (id == entt::type_id<Components::LightComponent>().hash())
-			return "Light Component";
-		else if (id == entt::type_id<Components::ScriptComponent>().hash())
-			return "Script Component";
-		else if (id == entt::type_id<Components::AudioListenerComponent>().hash())
-			return "Audio Listener Component";
-		else if (id == entt::type_id<Components::AudioSourceComponent>().hash())
-			return "Audio Source Component";
-
-		return "Unknown / UnRegistered Component";
-	}
-
-
-	void EntityEditor::Render(entt::entity& entity, entt::registry& reg, Components::EntityInfoComponent& Einfo)
-	{
-		auto index = (Uint32)entity;
-
-		using namespace Graphics;
-		ImGui::Begin("Entity Editor");
-		{
-
-			ImGui::PushID(index);           // Push i to the id tack
-			{
-				ImGui::InputText("Name", (char*)Einfo.mName.c_str(), Einfo.mName.capacity() + 1);
-				if (ImGui::CollapsingHeader("Transform"))
-				{
-					Components::EntityInfoComponent* transform = reg.try_get< Components::EntityInfoComponent>(entity);
-
-					Math::Vector3 pos = transform->mTransform.GetLocalPosition();
-					ImGui::Text("Position"); ImGui::SameLine();
-					ImGui::DragFloat3("##Position", (float*)&pos, 0.2f);
-					if (pos != transform->mTransform.GetLocalPosition())
-					{
-						transform->mTransform.SetPosition(pos);
-					}
-
-					Math::Vector3 rot = transform->mTransform.GetLocalRotationEular();
-					ImGui::Text("Rotation"); ImGui::SameLine();
-					ImGui::DragFloat3("##Rotation", (float*)&rot, 0.2f);
-					if (rot != transform->mTransform.GetLocalRotationEular())
-					{
-						transform->mTransform.SetRotation(rot);
-					}
-
-					Math::Vector3 scale = transform->mTransform.GetLocalScale();
-					ImGui::Text("Scale"); ImGui::SameLine();
-					ImGui::DragFloat3("##Scale", (float*)&scale, 0.2f);
-					if (scale != transform->mTransform.GetLocalScale())
-					{
-						transform->mTransform.SetScale(scale);
-					}
-				}
-
-
-				//Collider
-				{
-					Components::ColliderComponent* colliderbody = reg.try_get< Components::ColliderComponent>(entity);
-					if (colliderbody)
-					{
-						if (ImGui::CollapsingHeader("Collider"))
-						{
-							//ImGui::Checkbox("iskinematic", &rigidbody->isKinematic);
-
-
-						}
-					}
-				}
-
-				//Rigid Body
-				{
-
-					Components::RigidBodyComponent* rigidbody = reg.try_get< Components::RigidBodyComponent>(entity);
-					if (rigidbody)
-					{
-						if (ImGui::CollapsingHeader("Rigidbody"))
-						{
-							ImGui::Checkbox("iskinematic", &rigidbody->isKinematic);
-
-
-						}
-					}
-				}
-				//Camera
-				{
-					Components::CameraComponent* camera = reg.try_get< Components::CameraComponent>(entity);
-					if (camera)
-					{
-						//if (ImGui::CollapsingHeader("Camera"))
-						//{
-						//	auto cameraptr = camera->GetCameraPtr();
-						//	ImGui::ColorEdit3("RenderTarget ClearColor", (float*)&cameraptr->RTClearColor);
-
-
-						//	for (auto it : cameraptr->GetAvailableCameraEffects())
-						//	{
-						//		ImGui::Checkbox(it.GetName().c_str(), &it.mValue);
-						//	}
-						//	//ImGui::DragFloat("Movement Speed", &Camera.MovementSpeed);
-						//	//ImGui::DragFloat("Mouse Sensitivity", &Camera.MouseSensitivity);
-						//	//ImGui::DragFloat("Zoom", &Camera.Zoom);
-
-
-						//}
-					}
-				}
-
-				{
-					Components::LightComponent* light = reg.try_get< Components::LightComponent>(entity);
-					if (light)
-					{
-						if (ImGui::CollapsingHeader("Light"))
-						{
-							ImVec4 lighdir = ImVec4(light->GetDirection().x, light->GetDirection().y, light->GetDirection().z, 1.00f);
-							if (ImGui::DragFloat3("Direction", (float*)&lighdir))
-							{
-								light->SetDirection(Math::Vector3(lighdir.x, lighdir.y, lighdir.z));
-							}
-
-							Graphics::Color color = light->GetColor();
-							if (ImGui::ColorEdit4("Color", (float*)&color))
-							{
-								light->SetColor(color);
-							}
-
-							ImVec2 cone = ImVec2(light->GetSpotlightCone().x, light->GetSpotlightCone().y);
-							if (ImGui::DragFloat2("Spotlight Cone", (float*)&cone))
-							{
-								light->SetSpotlightCone(Math::Vector2(cone.x, cone.y));
-							}
-
-							ImVec4 att = ImVec4(light->GetAttenuation().x, light->GetAttenuation().y, light->GetAttenuation().z, 1.00f);
-							if (ImGui::DragFloat3("Attenuation", (float*)&att))
-							{
-								light->SetAttenuation(Math::Vector3(att.x, att.y, att.z));
-							}
-
-							float f = light->GetIntensity();
-							if (ImGui::SliderFloat("Intensity", &f, 0.0f, 100.0f, "%.4f", ImGuiSliderFlags_None))
-							{
-								light->SetIntensity(f);
-							}
-
-							ImGui::Checkbox("Casts Shadows", &light->mCastShadows);
-
-							float np = light->GetNearPlane();
-							if (ImGui::SliderFloat("Near Plane", &np, 0.0f, 100.0f, "%.1f", ImGuiSliderFlags_None))
-							{
-								light->SetNearPlane(np);
-							}
-
-							float fp = light->GetFarPlane();
-							if (ImGui::SliderFloat("Far Plane", &fp, 0.0f, 100.0f, "%.1f", ImGuiSliderFlags_None))
-							{
-								light->SetFarPlane(fp);
-							}
-
-							float fov = light->GetFOV();
-							if (ImGui::SliderFloat("Fov", &fov, 0.0f, 100.0f, "%.1f", ImGuiSliderFlags_None))
-							{
-								light->SetFOV(fov);
-							}
-						}
-					}
-				}
-
-				//Mesh
-				{
-					Components::MeshComponent* meshcomponent = reg.try_get< Components::MeshComponent>(entity);
-					if (meshcomponent) {
-
-						if (ImGui::CollapsingHeader("Mesh"))
-						{
-							if (meshcomponent->GetRenderingVariant())
-							{
-								ImGui::Text("Active Rendering Variant name: %s", meshcomponent->GetRenderingVariant()->mName.c_str());
-								ImGui::Text("Shader AssetID: %i", meshcomponent->GetRenderingVariant()->mShaderAssetID);
-
-								ImGui::Text("RenderQueue: %i", meshcomponent->GetRenderQueue());
-
-								bool b = meshcomponent->GetEnableRendering();
-								if (ImGui::Checkbox("Enable Rendering", &b))
-								{
-									meshcomponent->SetEnableRendering(b);
-								}
-								bool castshadows = meshcomponent->GetCastShadow();
-								if (ImGui::Checkbox("Casts Shadow", &castshadows))
-								{
-									meshcomponent->SetCastShadow(castshadows);
-								}
-								bool recieveshadows = meshcomponent->GetReceiveShadows();
-								if (ImGui::Checkbox("Recieves Shadows", &recieveshadows))
-								{
-									meshcomponent->SetReceiveShadows(recieveshadows);
-								}
-							}
-							else {
-								ImGui::Text("No Active Rendering Variant...");
-							}						
-
-							if (meshcomponent->GetMesh())
-							{
-								if (meshcomponent->GetMesh()->GetName() != std::string(""))
-								{
-									ImGui::Text(meshcomponent->GetMesh()->GetName().c_str());
-								}
-								else {
-									ImGui::Text("Unnamed Mesh");
-								}
-							}
-							else {
-								ImGui::Text("No Mesh Assigned");
-							}
-							if (meshcomponent->GetMaterial())
-							{
-								if (meshcomponent->GetMaterial()->GetName() != std::string(""))
-								{
-									ImGui::Text(meshcomponent->GetMaterial()->GetName().c_str());
-								}
-								else {
-									ImGui::Text("Unnamed Material");
-								}
-
-								//for (auto &it : meshcomponent->mMaterial->mPixelShaderTextures)
-								//{
-								//	ImGui::Text(it.mName.c_str());
-
-								//	for (auto& it1 : it.mData)
-								//	{
-								//		//ImGui::Text(it1.mSlot);
-								//		if (it1.mTex.GetImage() != nullptr)
-								//		{
-								//			ImGui::Image(it1.mTex.GetImage()->mTextureView, { 256.f,256.f });
-								//		}
-								//	}
-								//}
-							}
-							else {
-								ImGui::Text("No Material Assigned");
-							}
-
-						}
-					}
-				}
-			}
-
-			//Add Component
-			{
-				// you may want to build a string using the "###" operator to preserve a constant ID with a variable label)
-				if (ImGui::Button("Add Component.."))
-					ImGui::OpenPopup("new_component_selector");
-				//	ImGui::SameLine();
-
-				if (ImGui::BeginPopup("new_component_selector"))
-				{
-					//First build vector of available components names
-					auto avail_comps = GetAvailableComponents<ALL_COMPONENTS>(entity, reg, AllComponentsIDs);
-
-					ImGui::Text("Available Components:");
-					ImGui::Separator();
-
-					for (auto i : avail_comps)
-					{
-						if (ImGui::Selectable(GetComponentName(i).c_str()))
-						{
-							AddComponentByHash<ALL_COMPONENTS>(entity, reg, i);
-						}
-					}
-
-					ImGui::EndPopup();
-				}
-
-			}
-			ImGui::PopID();
-
-
-		}
-		ImGui::End();
-	}
-}
+} // namespace Nuclear::Editor

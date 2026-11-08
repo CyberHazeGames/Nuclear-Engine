@@ -50,6 +50,10 @@ namespace Nuclear::Platform
 		void* GetNativeHandle() const;
 		/// Returns whether this window currently receives keyboard input.
 		bool HasFocus() const;
+		/// Converts client pixel coordinates to desktop coordinates; false if the window is not live.
+		bool ClientToScreen(int& x, int& y) const;
+		/// Converts desktop pixel coordinates to this window's client pixels; false if not live.
+		bool ScreenToClient(int& x, int& y) const;
 
 	private:
 		void* pWindow = nullptr; ///< Owned native handle, hidden from portable headers.

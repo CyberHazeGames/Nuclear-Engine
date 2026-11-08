@@ -23,6 +23,10 @@ namespace Nuclear::UI
 		}
 		/// Removes an immediate child by ID; no-op when absent.
 		void RemoveChild(WidgetId id);
+		/// Detaches an immediate child and transfers ownership, preserving its widget identity and contents.
+		/// Cancels subtree input before detaching. Returns null when absent; throws during context dispatch.
+		/// Call outside input callbacks, normally from the client's Update phase.
+		std::unique_ptr<Widget> TakeChild(WidgetId id);
 		/// Replaces slot values and invalidates layout; returns false if absent.
 		bool SetSlot(WidgetId id, const Slot& slot);
 		/// Returns a copy of the slot, or defaults if absent.

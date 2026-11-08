@@ -1,44 +1,28 @@
 #pragma once
 #include <Common.h>
 #include <filesystem>
-
-
 namespace Nuclear::Editor
 {
-
+	/// In-memory project identity. Disk project serialization is not implemented.
 	struct ProjectInfo
 	{
-		std::string mProjectName;
-
-
+		std::string mProjectName; ///< Display name owned by the project.
 	};
-
+	/// Session project model; scene and material assets are borrowed from the engine library.
 	class Project
 	{
-	public:
-		Project();
-
-		void Initalize(const ProjectInfo& info);
-
-		ProjectInfo GetProjectInfo() const;
-
-		//Assets::Scene* GetActiveScene();
-
-		Assets::Material* GetDefaultMaterial();
-		void SetDefaultMaterial(Assets::Material* mat);
-
-		void ShowProjectFolderView();
-
-		void SetPath(const std::filesystem::path& path);
-
-		void ImportAssetWindow(const std::string& path);
-
-		Assets::Scene* AddNewScene();
-	protected:
-
-		Assets::Material* mDefaultMaterial = nullptr;
-		ProjectInfo mInfo;
-		std::filesystem::path mPath;
-	//	Core::Parsers::XMLDocument mProjectXMLFile;
+	  public:
+		Project();								 ///< Starts browsing the current working directory.
+		void Initalize(const ProjectInfo& info); ///< Copies project identity.
+		ProjectInfo GetProjectInfo() const;		 ///< Returns a copy of project identity.
+		Assets::Material* GetDefaultMaterial();	 ///< Borrowed primitive material, or null.
+		void SetDefaultMaterial(Assets::Material* material); ///< Borrows a material for scene creation.
+		void SetPath(const std::filesystem::path& path);	 ///< Stores a normalized browsing path.
+		const std::filesystem::path& GetPath() const;		 ///< Borrowed browsing path.
+		Assets::Scene* AddNewScene(); ///< Creates and activates a library-owned empty scene.
+	  private:
+		Assets::Material* mDefaultMaterial = nullptr; ///< Borrowed for the editor session.
+		ProjectInfo mInfo;							  ///< Owned identity.
+		std::filesystem::path mPath;				  ///< Current asset directory.
 	};
-}
+} // namespace Nuclear::Editor

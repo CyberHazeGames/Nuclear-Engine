@@ -1,18 +1,14 @@
 #pragma once
 #include <Common.h>
-
-class NuclearEditor;
-
-namespace Nuclear::Editor {
+#include <functional>
+namespace Nuclear::Editor
+{
+	/// Builds an inspector for a validated ECS handle. Callbacks resolve components on each edit.
 	class EntityEditor
 	{
-	public:
-		EntityEditor();
-
-		void Render(entt::entity& entity, entt::registry& reg, Components::EntityInfoComponent& Einfo);
-
-
-	private:
-		std::vector<entt::id_type> AllComponentsIDs;
+	  public:
+		/// Returns an owning inspector tree. The callback requests panel refresh;
+		/// its argument is true when structural edits also require new renderer bindings.
+		std::unique_ptr<UI::Widget> Build(entt::entity entity, std::function<void(bool)> changed);
 	};
-}
+} // namespace Nuclear::Editor

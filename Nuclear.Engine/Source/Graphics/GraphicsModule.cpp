@@ -674,6 +674,37 @@ namespace Nuclear
 				pSwapChain->Resize(Width, Height);
 		}
 
+		bool GraphicsModule::CreateWindowSwapChain(Platform::Window& window, const SwapChainDesc& desc,
+			ISwapChain** result)
+		{
+			if (!result)
+				return false;
+			*result = nullptr;
+			if (!pDevice || !pContext || !window.GetNativeHandle())
+				return false;
+			NativeWindow nativeWindow;
+			nativeWindow.hWnd = window.GetNativeHandle();
+			switch (pDevice->GetDeviceInfo().Type)
+			{
+			case RENDER_DEVICE_TYPE_D3D11:
+				static_cast<IEngineFactoryD3D11*>(pEngineFactory)->CreateSwapChainD3D11(
+					pDevice, pContext, desc, FullScreenModeDesc{}, nativeWindow, result);
+				break;
+			case RENDER_DEVICE_TYPE_D3D12:
+				static_cast<IEngineFactoryD3D12*>(pEngineFactory)->CreateSwapChainD3D12(
+					pDevice, pContext, desc, FullScreenModeDesc{}, nativeWindow, result);
+				break;
+			case RENDER_DEVICE_TYPE_VULKAN:
+				static_cast<IEngineFactoryVk*>(pEngineFactory)->CreateSwapChainVk(
+					pDevice, pContext, desc, nativeWindow, result);
+				break;
+			default:
+				NUCLEAR_ERROR("[GraphicsModule] Secondary swap chains are unavailable on this backend.");
+				break;
+			}
+			return *result != nullptr;
+		}
+
 		bool GraphicsModule::InitializeDiligentEngine(Platform::Window* window, const RENDER_DEVICE_TYPE& type, const SwapChainDesc& SCDesc)
 		{
 			Uint32 NumDeferredCtx = 0;

@@ -62,6 +62,10 @@ static void RunChecks()
 	UnloadDynamicLibrary(library);
 
 	Window window;
+	int desktopX = -17;
+	int desktopY = 23;
+	Require(!window.ClientToScreen(desktopX, desktopY) && !window.ScreenToClient(desktopX, desktopY) &&
+		desktopX == -17 && desktopY == 23, "Empty-window coordinate conversion must fail without modifying input");
 	WindowDesc desc;
 	desc.WindowWidth = 640;
 	desc.WindowHeight = 360;
@@ -71,6 +75,8 @@ static void RunChecks()
 	window.Display(false);
 	auto handle = static_cast<HWND>(window.GetNativeHandle());
 	Require(IsWindow(handle), "Window did not expose a live HWND");
+	Require(window.ClientToScreen(desktopX, desktopY) && window.ScreenToClient(desktopX, desktopY) &&
+		desktopX == -17 && desktopY == 23, "Desktop/client coordinate round trip failed");
 	DrainEvents();
 
 	int width = 0;

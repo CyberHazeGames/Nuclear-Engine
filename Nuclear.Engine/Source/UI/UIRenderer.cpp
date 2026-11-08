@@ -130,7 +130,7 @@ namespace Nuclear::UI
 		return resources.Binding && resources.White;
 	}
 
-	void UIRenderer::Render(const DrawList& list, Vec2 pixelSize, float scale)
+	void UIRenderer::Render(const DrawList& list, Vec2 pixelSize, float scale, ITextureView* target)
 	{
 		auto& resources = *pResources;
 		if (!resources.Pipeline || list.Quads.empty() || pixelSize.x <= 0 || pixelSize.y <= 0 || scale <= 0)
@@ -187,7 +187,8 @@ namespace Nuclear::UI
 			}
 		}
 
-		auto* target = graphics.GetSwapChain()->GetCurrentBackBufferRTV();
+		if (!target)
+			target = graphics.GetSwapChain()->GetCurrentBackBufferRTV();
 		context->SetRenderTargets(1, &target, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		context->SetPipelineState(resources.Pipeline);
 		Viewport viewport;

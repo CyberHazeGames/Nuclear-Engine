@@ -183,6 +183,40 @@ namespace
 		Check(!context.WantsMouse(), "Minimized viewport suspends UI input");
 	}
 
+	void OwnershipTransferTests()
+	{
+		UIContext source;
+		UIContext destination;
+		source.SetViewport(300, 200);
+		destination.SetViewport(300, 200);
+		auto sourceRoot = std::make_unique<CanvasPanel>();
+		auto* original = sourceRoot.get();
+		auto& input = original->Add<TextBox>("preserved document contents");
+		const auto inputId = input.GetId();
+		source.AddToViewport(std::move(sourceRoot));
+		Click(source, 10, 10);
+		Check(source.GetFocusedWidget() == inputId, "Transfer starts with a focused input field");
+		auto contents = original->TakeChild(inputId);
+		Check(contents.get() == &input && !source.Find(inputId) && !source.GetFocusedWidget() &&
+			!input.GetContext() && !input.GetParent(), "Taking a child cancels input and releases the original context registration");
+		auto targetRoot = std::make_unique<CanvasPanel>();
+		targetRoot->AddChild(std::move(contents));
+		destination.AddToViewport(std::move(targetRoot));
+		Check(destination.Find(inputId) == &input && input.GetText() == "preserved document contents",
+			"Ownership transfer preserves the same widget identity and editing contents");
+		Check(!original->TakeChild(inputId), "Taking an absent child returns null");
+		auto& button = original->Add<Button>();
+		const auto buttonId = button.GetId();
+		bool rejected = false;
+		button.OnClicked = [&]() {
+			try { original->TakeChild(buttonId); }
+			catch (const std::logic_error&) { rejected = true; }
+		};
+		Click(source, 10, 10);
+		Check(rejected && source.Find(buttonId) == &button && !source.IsDispatching(),
+			"Synchronous ownership transfer during input dispatch is rejected without damaging the tree");
+	}
+
 	void ClippingAndTextTests()
 	{
 		UIContext context;
@@ -379,6 +413,80 @@ namespace
 		}
 	};
 
+	void EditorControlTests()
+	{
+		UIContext context;
+		context.SetViewport(240, 80);
+		auto input = std::make_unique<TextBox>("ab");
+		auto* text = input.get();
+		context.AddToViewport(std::move(input));
+		Click(context, 10, 10);
+		auto type = [&context](Uint32 codepoint)
+		{
+			Platform::Event event;
+			event.mType = Platform::EventType::TextInput;
+			event.mCodepoint = codepoint;
+			context.ProcessEvent(event);
+		};
+		type(0x1f600);
+		Check(text->GetText().size() == 6, "Text input encodes supplementary Unicode scalars");
+		Key(context, Platform::Input::KEYCODE_LEFT, true);
+		Key(context, Platform::Input::KEYCODE_DELETE, true);
+		Check(text->GetText() == "ab", "Delete removes an entire UTF-8 codepoint");
+		type(0xd800);
+		Check(text->GetText() == "ab", "Text editor rejects surrogate codepoints");
+		Key(context, Platform::Input::KEYCODE_LCTRL, true);
+		Key(context, Platform::Input::KEYCODE_A, true);
+		Key(context, Platform::Input::KEYCODE_LCTRL, false);
+		type('7');
+		Check(text->GetText() == "7", "Select all replaces the complete string");
+		const auto inputId = text->GetId();
+		text->OnCommitted = [&context, inputId](const std::string&) { context.RemoveFromViewport(inputId); };
+		Key(context, Platform::Input::KEYCODE_RETURN, true);
+		Check(!context.Find(inputId), "Text commit can remove its own widget safely");
+		auto host = std::make_unique<ContentWidget>();
+		auto* content = host.get();
+		auto& oldInput = host->Add<TextBox>("focused child");
+		const auto oldId = oldInput.GetId();
+		context.AddToViewport(std::move(host));
+		Click(context, 10, 10);
+		Check(context.GetFocusedWidget() == oldId, "Content replacement starts with focused child");
+		content->SetContent(std::make_unique<TextBox>("replacement"));
+		Check(!context.Find(oldId) && context.GetFocusedWidget() == 0,
+			"Replacing focused content cancels input before detaching the child");
+		context.Clear();
+
+		auto scroll = std::make_unique<ScrollBox>();
+		auto* viewport = scroll.get();
+		auto& column = scroll->Add<VerticalBox>();
+		column.SetSpacing(4);
+		Button* last = nullptr;
+		for (int index = 0; index < 12; ++index)
+		{
+			last = &column.Add<Button>();
+			last->SetSizeLimits({100, 30}, {100, 30});
+		}
+		context.AddToViewport(std::move(scroll));
+		context.Layout();
+		context.ProcessEvent(Mouse(Platform::EventType::MouseMove, 10, 10));
+		Platform::Event wheel;
+		wheel.mType = Platform::EventType::MouseWheel;
+		wheel.mWheelY = -2;
+		context.ProcessEvent(wheel);
+		context.Layout();
+		Check(Near(viewport->GetOffset(), 96), "Wheel bubbles from button to scroll viewport");
+		for (int index = 0; index < 13; ++index) Key(context, Platform::Input::KEYCODE_TAB, true);
+		context.Layout();
+		Check(context.GetFocusedWidget() == last->GetId(), "Tab reaches clipped scroll descendants");
+		Check(last->GetBounds().y >= 0 && last->GetBounds().y + last->GetBounds().Height <= 80.01f,
+			"Focused scroll descendant is brought into view");
+		viewport->SetOffset(100000);
+		float end = viewport->GetOffset();
+		context.SetViewport(240, 1000);
+		context.Layout();
+		Check(end > 0 && Near(viewport->GetOffset(), 0), "Resize clamps offset when content fits");
+	}
+
 	void GPUTests(bool enableImGui)
 	{
 		Core::EngineStartupDesc desc;
@@ -420,7 +528,9 @@ int main(int argc, char** argv)
 	{
 		LayoutTests();
 		InputTests();
+		OwnershipTransferTests();
 		ClippingAndTextTests();
+		EditorControlTests();
 		std::cout << "UI layout, input, clipping, lifetime, and text checks passed.\n";
 		if (argc > 1 && std::string(argv[1]) == "--gpu")
 			GPUTests(argc > 2 && std::string(argv[2]) == "--imgui");
