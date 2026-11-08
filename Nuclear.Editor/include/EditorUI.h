@@ -9,12 +9,14 @@
 #include <array>
 #include <EditorWorkspace.h>
 #include <EditorHistory.h>
+#include <optional>
 namespace Nuclear::Editor
 {
 	class GameViewPort;
 	class EditorTitleBar;
 	class SceneSettings;
 	class EditorSkybox;
+	class EditorSelectionRenderer;
 	/// Retained editor workspace. Owns session tools; viewport context owns all widgets.
 	class EditorUI
 	{
@@ -24,7 +26,7 @@ namespace Nuclear::Editor
 		void Initialize();					 ///< Creates a default session scene and attaches the workspace.
 		void Update(float deltaTime); ///< Applies requested panel changes, imports and diagnostic sampling.
 		void Render(float deltaTime); ///< Renders the scene to its offscreen camera target.
-		void Resize(int width, int height); ///< Updates logical workspace scaling after native resize.
+		void Resize(int width, int height); ///< Sets physical viewport dimensions and the main window's monitor DPI scale.
 		void Shutdown(); ///< Drops borrowed widgets and clears scene resources before client destruction.
 		void OnAuxiliaryWindowEvent(const Platform::Event& event); ///< Routes detached-window input/resize/close.
 		EditorWorkspace* GetWorkspace() const { return pWorkspace.get(); } ///< Borrowed workspace until Shutdown.
@@ -32,6 +34,7 @@ namespace Nuclear::Editor
 		void BuildWorkspace();	 ///< Attaches the persistent shell and tool regions.
 		void RefreshHierarchy(); ///< Replaces hierarchy content outside dispatch.
 		void RefreshInspector(); ///< Replaces inspector after selection/component changes.
+		void PickEntity(); ///< Applies a queued visible-mesh pick, synchronizing hierarchy and inspector without history edits.
 		void NewScene();		 ///< Resets renderer, selection and registry, then creates an editor camera.
 		void CreateEntity(int shape); ///< Adds an empty entity or a default primitive and selects it.
 		void CreateSkybox(); ///< Creates or selects the scene's skybox; GPU creation runs from Update.
@@ -51,6 +54,10 @@ namespace Nuclear::Editor
 		LoggerView mLogs;			///< Bounded file-log tail model.
 		std::unique_ptr<EditorWorkspace> pWorkspace; ///< Owns native windows and tab transfer commands.
 		std::unique_ptr<EditorSkybox> pSkybox; ///< Owns generated sky resources until Shutdown; components hold authoring data only.
+		std::unique_ptr<EditorSelectionRenderer> pSelectionRenderer; ///< Owns mesh ID/outline resources until graphics teardown.
+		std::optional<UI::Vec2> mPendingPick; ///< Logical Select-mode click queued for the next Update, or empty.
+		UI::Rect mPickBounds; ///< Viewport allocation at the queued press; stale geometry cancels the pick.
+		bool mRevealSelection = false; ///< Scrolls the next selected hierarchy row into view after a viewport pick.
 		UI::WidgetId mAddMenu = 0; ///< Context-owned creation popup identity, or zero.
 		bool mPendingSkybox = false; ///< Queued skybox creation from menu input.
 		std::vector<std::pair<Assets::AssetType, Core::UUID>> mPendingDocuments; ///< Asset-open requests from input.
@@ -63,7 +70,8 @@ namespace Nuclear::Editor
 		entt::entity mCamera = entt::null;		 ///< Protected editor preview camera handle.
 		UI::WidgetId mModal = 0;				 ///< Active modal identity, or zero.
 		UI::WidgetId mRoot = 0;					 ///< Attached workspace identity.
-		UI::ContentWidget* pHierarchy = nullptr; ///< Borrowed persistent content region.
+		UI::ScrollBox* pHierarchy = nullptr; ///< Borrowed hierarchy scroll viewport, including while its panel is closed.
+		UI::TextBox* pHierarchyFilter = nullptr; ///< Context-owned filter, cleared when it hides a viewport selection.
 		UI::ScrollBox* pInspector = nullptr;	 ///< Borrowed persistent inspector viewport.
 		UI::ContentWidget* pAssets = nullptr;	 ///< Borrowed persistent browser region.
 		GameViewPort* pViewport = nullptr;		 ///< Borrowed scene surface.

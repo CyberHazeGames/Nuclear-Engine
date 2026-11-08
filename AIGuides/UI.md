@@ -77,6 +77,9 @@ dimensions and pixels per logical unit. The default scale is 1. This is explicit
 application scaling, not automatic per-monitor DPI detection. The engine initializes
 physical dimensions at startup and updates them on resize while preserving scale.
 Zero-size resize events keep UI suspended until a nonzero resize restores it.
+The editor explicitly supplies `Window::GetDpiScale()` for its main and detached
+contexts and declares per-monitor DPI awareness in its executable manifest; other
+UI clients retain their own scaling policy.
 
 Layout measures desired sizes, then arranges roots over the viewport and children
 within parent allocations. Text, padding, size, slot, and visibility setters
@@ -200,7 +203,8 @@ and shares the graphics device; UIModule still owns only the main viewport servi
 
 The existing font importer now preserves fractional advances, plane bounds, atlas
 UVs, ascender/line metrics, and pair kerning. The retained text shader samples its
-single-channel SDF atlas. Font creation checks upload success before setting
+single-channel SDF atlas, with half of `fwidth` on each side of the contour for
+a one-pixel antialiasing band. Font creation checks upload success before setting
 `Created`. `FontImportingDesc::Height` controls atlas scale, clamped to 8–256;
 the initial repertoire is ASCII. UTF-8 is decoded and validated, with unsupported
 codepoints replaced by `?`. Newlines, tabs, word wrapping, and oversized-word glyph

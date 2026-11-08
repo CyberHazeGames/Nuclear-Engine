@@ -12,11 +12,11 @@ namespace Nuclear::Components
 }
 namespace Nuclear::Editor
 {
-	/// Retained scene surface with focused fly-camera navigation and optional world-axis transform handles.
+	/// Retained scene surface with click selection, focused fly-camera navigation and transform handles.
 	class GameViewPort : public UI::Widget
 	{
 	  public:
-		/// Changes the borrowed ECS handle, cancelling and restoring any pending edit on the old target.
+		/// Changes the borrowed ECS handle, restoring pending edits on the old target and retaining keyboard focus.
 		void SetSelectedEntity(entt::entity entity);
 		/// Cancels pending edits before changing tool; Select hides handles while retaining selection.
 		/// Q/G/E/R select tools while this surface has keyboard focus.
@@ -34,12 +34,15 @@ namespace Nuclear::Editor
 		std::function<void(entt::entity, const ECS::Transform&)> OnTransformCommitted;
 		/// Called after drag updates/commit/cancel so the inspector can rebuild outside dispatch.
 		std::function<void()> OnTransformChanged;
+		/// Requests a mesh pick at logical viewport coordinates on a Select-mode left press.
+		/// The owner resolves selection outside input dispatch; empty space can clear selection.
+		std::function<void(UI::Vec2)> OnSelectionRequested;
 		bool IsFocusable() const override
 		{
 			return true;
 		} ///< Receives focus and pointer capture.
 		UI::EventReply OnInput(
-			const UI::InputEvent& event) override; ///< Left edits handles; right looks; focused WASD moves.
+			const UI::InputEvent& event) override; ///< Left selects/edits handles; right looks; focused WASD moves.
 	  protected:
 		void OnArrange(UI::Rect content) override; ///< Cancels captured edits when viewport geometry changes.
 		void OnPaint(UI::DrawList& list,

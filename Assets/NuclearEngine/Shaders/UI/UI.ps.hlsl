@@ -13,7 +13,9 @@ float4 main(PixelInput input) : SV_TARGET
 {
     float4 sampled = UITexture.Sample(UITexture_sampler, input.UV);
     // Each quad has a constant SDF value. Evaluate derivatives before branching.
-    float smoothing = max(fwidth(sampled.r), 0.001);
+    // fwidth is the full distance change over a screen pixel. Use half on
+    // either side of the contour to avoid a two-pixel-wide blurred edge.
+    float smoothing = max(0.5 * fwidth(sampled.r), 0.0005);
     if (input.SDF > 0.5)
     {
         float coverage = smoothstep(0.5 - smoothing, 0.5 + smoothing, sampled.r);

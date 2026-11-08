@@ -62,6 +62,7 @@ static void RunChecks()
 	UnloadDynamicLibrary(library);
 
 	Window window;
+	Require(window.GetDpiScale() == 1, "Empty windows use the default DPI scale");
 	int desktopX = -17;
 	int desktopY = 23;
 	Require(!window.ClientToScreen(desktopX, desktopY) && !window.ScreenToClient(desktopX, desktopY) &&
@@ -75,6 +76,8 @@ static void RunChecks()
 	window.Display(false);
 	auto handle = static_cast<HWND>(window.GetNativeHandle());
 	Require(IsWindow(handle), "Window did not expose a live HWND");
+	Require(std::abs(window.GetDpiScale() - GetDpiForWindow(handle) / 96.f) < .001f,
+		"Window DPI scale differs from its native monitor scale");
 	Require(window.ClientToScreen(desktopX, desktopY) && window.ScreenToClient(desktopX, desktopY) &&
 		desktopX == -17 && desktopY == 23, "Desktop/client coordinate round trip failed");
 	DrainEvents();
@@ -91,6 +94,21 @@ static void RunChecks()
 	Require(std::any_of(resizeEvents.begin(), resizeEvents.end(), [](const Event& event)
 		{ return event.mType == EventType::WindowResize && event.mWidth == 800 && event.mHeight == 450; }),
 		"Resize event missing");
+
+	// Exercise the suggested-bounds path without requiring a second physical monitor.
+	RECT dpiBounds{};
+	GetWindowRect(handle, &dpiBounds);
+	dpiBounds.right += 40;
+	dpiBounds.bottom += 20;
+	const auto dpi = GetDpiForWindow(handle);
+	SendMessageW(handle, WM_DPICHANGED, MAKELONG(dpi, dpi), reinterpret_cast<LPARAM>(&dpiBounds));
+	window.GetSize(width, height);
+	const auto dpiEvents = DrainEvents();
+	Require(width == 840 && height == 470 && std::any_of(dpiEvents.begin(), dpiEvents.end(), [](const Event& event) {
+		return event.mType == EventType::WindowResize && event.mWidth == 840 && event.mHeight == 470;
+	}), "DPI change did not apply suggested bounds and notify the client");
+	window.SetSize(800, 450);
+	DrainEvents();
 
 	window.SetTitle("Nuclear \xe2\x98\xa2");
 	wchar_t title[64]{};

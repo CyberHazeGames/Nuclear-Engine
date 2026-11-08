@@ -93,9 +93,21 @@
       <AdditionalLibraryDirectories>..\Bin\ReleaseX64\;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)Editor.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <Manifest Include="Editor.manifest" />
+    <ClInclude Include="include\EditorToolbar.h" />
+    <ClCompile Include="source\EditorToolbar.cpp" />
+    <ClInclude Include="include\EditorSelectionRenderer.h" />
+    <ClCompile Include="source\EditorSelectionRenderer.cpp" />
     <ClCompile Include="source\AssetLibraryViewer.cpp" />
     <ClCompile Include="source\EntityEditor.cpp" />
+    <ClCompile Include="source\EditorComponentButton.cpp" />
+    <ClInclude Include="include\EditorComponentButton.h" />
     <ClCompile Include="source\EditorHistory.cpp" />
     <ClCompile Include="source\EditorSceneState.cpp" />
     <ClCompile Include="source\SceneSettings.cpp" />

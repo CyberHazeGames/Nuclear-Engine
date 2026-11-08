@@ -312,6 +312,12 @@ namespace
 			auto& ui = UIModule::Get().GetContext();
 			Check(ui.GetDefaultFont() && ui.GetDefaultFont()->mTextureView, "Default font GPU upload");
 			Check(ui.GetDefaultFont()->Characters.size() > 70, "Default font glyph repertoire");
+			Byte distances[16];
+			for (unsigned index = 0; index < 16; ++index)
+				distances[index] = static_cast<Byte>(index * 17);
+			EdgeProbe.Create({16, 1, distances});
+			Check(EdgeProbe.mTextureView != nullptr, "SDF edge probe upload");
+			Check(EdgeRenderer.Initialize(), "SDF edge probe renderer initialization");
 			auto probes = std::make_unique<CanvasPanel>();
 			auto& red = probes->Add<Border>();
 			red.SetBrush({nullptr, {1, 0, 0, 1}});
@@ -386,6 +392,8 @@ namespace
 
 	private:
 		UISample Sample;
+		Assets::Font EdgeProbe;
+		UIRenderer EdgeRenderer;
 		void Readback()
 		{
 			using namespace Diligent;
@@ -393,6 +401,14 @@ namespace
 			auto* context = graphics.GetContext();
 			auto* source = graphics.GetSwapChain()->GetCurrentBackBufferRTV()->GetTexture();
 			auto desc = source->GetDesc();
+			// A fractional straight contour isolates antialiasing from font shapes.
+			// A two-pixel smoothing band leaves a visible halo at x=17; one pixel does not.
+			DrawList edge;
+			const UI::Rect clip{0, 0, float(desc.Width), float(desc.Height)};
+			edge.Add({5, 200, 40, 40}, clip, {0, 0, 0, 1});
+			edge.Add({10.25f, 210, 16, 16}, clip, {1, 1, 1, 1}, EdgeProbe.mTextureView,
+				{0, 0, 1, 1}, true);
+			EdgeRenderer.Render(edge, {float(desc.Width), float(desc.Height)}, 1);
 			Check(desc.Format == TEX_FORMAT_RGBA8_UNORM || desc.Format == TEX_FORMAT_RGBA8_UNORM_SRGB,
 				  "Expected RGBA8 readback target");
 			desc.Name = "UI validation readback";
@@ -415,6 +431,11 @@ namespace
 			Check(mapped.pData != nullptr, "Readback mapping");
 			auto pixel = [&](unsigned x, unsigned y)
 			{ return static_cast<const unsigned char*>(mapped.pData) + y * mapped.Stride + x * 4; };
+			const auto* edgeOutside = pixel(17, 215);
+			const auto* edgeInside = pixel(18, 215);
+			const bool srgb = desc.Format == TEX_FORMAT_RGBA8_UNORM_SRGB;
+			Check(edgeOutside[0] < 3 && edgeInside[0] > (srgb ? 230 : 208) &&
+				edgeInside[0] < (srgb ? 245 : 222), "SDF edges use a single-pixel antialiasing band");
 			const auto* red = pixel(10, 10);
 			const auto* blend = pixel(30, 10);
 			VerifiedPixels = red[0] > 245 && red[1] < 5 && red[2] < 5 && blend[0] > 120 && blend[0] < 136 &&

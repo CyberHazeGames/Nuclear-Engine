@@ -46,7 +46,11 @@ namespace Nuclear::Editor
 		auto occupied = [this, includeEmpty](int index) { return includeEmpty || !mAreas[index]->GetTabs().empty(); };
 		const float left = occupied(0) ? bounds.Width * mLeft : 0;
 		const float right = occupied(2) ? bounds.Width * mRight : 0;
-		const float bottom = occupied(3) || occupied(4) ? bounds.Height * mBottom : 0;
+		// Reserve enough logical height for full-size controls and a usable scroll
+		// viewport, while leaving at least 40% for the scene on very small windows.
+		const float minimumBottom = std::min(180.f, bounds.Height * .6f);
+		const float bottom = occupied(3) || occupied(4)
+			? std::max(minimumBottom, bounds.Height * mBottom) : 0;
 		const float inner = bounds.Width - right;
 		const float split = !occupied(3) ? 0 : !occupied(4) ? inner : inner * mBottomSplit;
 		switch (region)

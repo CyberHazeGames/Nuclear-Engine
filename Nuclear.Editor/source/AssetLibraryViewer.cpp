@@ -1,6 +1,7 @@
 #include <AssetLibraryViewer.h>
 #include <EditorWidgets.h>
 #include <AssetDocument.h>
+#include <Nuclear.Platform/FileDialog.h>
 #include <algorithm>
 #include <cctype>
 #include <Threading/ThreadingModule.h>
@@ -12,8 +13,23 @@ namespace Nuclear::Editor
 		pProject = project;
 	}
 
-	void AssetLibraryViewer::Update()
+	void AssetLibraryViewer::Update(Platform::Window& dialogOwner)
 	{
+		if (std::exchange(mOpenImportDialog, false) && pProject)
+		{
+			std::string error;
+			auto selected = Platform::FileDialog::OpenFile(dialogOwner, "Import asset",
+				"*.png;*.jpg;*.jpeg;*.bmp;*.tga;*.hdr;*.obj;*.fbx;*.dae;*.gltf;*.glb;*.NuclearShader;*.ttf",
+				pProject->GetPath(), error);
+			if (!selected.empty())
+				mPendingImport = std::move(selected);
+			else
+			{
+				mStatus = error.empty() ? "Import cancelled." : error;
+				if (OnChanged)
+					OnChanged();
+			}
+		}
 		if (mPendingImport.empty())
 			return;
 		auto path = std::exchange(mPendingImport, {});
@@ -84,20 +100,28 @@ namespace Nuclear::Editor
 	{
 		auto root = std::make_unique<UI::VerticalBox>();
 		root->SetSpacing(8);
+		auto& actions = root->Add<UI::HorizontalBox>();
+		auto& import = Action(actions, "Import...", [this]() {
+			mOpenImportDialog = true;
+		});
+		import.SetEnabled(pProject != nullptr);
 		auto& tabs = root->Add<UI::HorizontalBox>();
 		tabs.SetSpacing(6);
 		const char* names[] = {"Files", "Textures", "Meshes", "Materials", "Scenes"};
 		for (int i = 0; i < 5; ++i)
-			Action(tabs, names[i], [this, i]() {
+		{
+			auto& button = Action(tabs, names[i], [this, i]() {
 				mCategory = i;
 				if (OnChanged)
 					OnChanged();
 			});
-		Label(*root, mStatus, 13).SetWrap(true);
+			button.SetPadding({6, 7, 6, 7});
+		}
 		auto& scroll = root->Add<UI::ScrollBox>();
 		Fill(*root, scroll);
 		auto& content = scroll.Add<UI::VerticalBox>();
 		content.SetSpacing(6);
+		Label(content, mStatus, 13).SetWrap(true);
 		if (!pProject)
 		{
 			Label(content, "Create a project to browse assets.");

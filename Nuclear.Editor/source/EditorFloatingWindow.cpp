@@ -27,7 +27,7 @@ namespace Nuclear::Editor
 			return false;
 		}
 		mContext.SetDefaultFont(font);
-		mContext.SetViewport(float(desc.WindowWidth), float(desc.WindowHeight));
+		mContext.SetViewport(float(desc.WindowWidth), float(desc.WindowHeight), mWindow.GetDpiScale());
 		mContext.SetInputMode(UI::InputMode::UIOnly);
 		auto root = std::make_unique<UI::VerticalBox>();
 		auto& caption = root->Add<EditorTitleBar>(mWindow);
@@ -52,7 +52,7 @@ namespace Nuclear::Editor
 			return;
 		if (event.mType == Platform::EventType::WindowResize)
 		{
-			mContext.SetViewport(float(event.mWidth), float(event.mHeight));
+			mContext.SetViewport(float(event.mWidth), float(event.mHeight), mWindow.GetDpiScale());
 			if (event.mWidth > 0 && event.mHeight > 0 && pSwapChain)
 				pSwapChain->Resize(event.mWidth, event.mHeight);
 		}

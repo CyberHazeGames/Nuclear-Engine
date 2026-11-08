@@ -10,7 +10,9 @@ namespace Nuclear::Editor
 	  public:
 		void SetProject(Project* project);	 ///< Borrows the active session project.
 		std::unique_ptr<UI::Widget> Build(); ///< Creates the owning browser tree.
-		void Update(); ///< Executes one queued synchronous, load-only import on the engine thread.
+		/// Opens a requested picker owned by dialogOwner, then executes a queued session import.
+		/// Call on the engine/window thread, outside retained input dispatch; owner is borrowed for this call.
+		void Update(Platform::Window& dialogOwner);
 		std::function<void(entt::entity)> OnEntityAdded; ///< Selects a newly instantiated library mesh.
 		std::function<void()> OnChanged; ///< Requests rebuilding browser content after navigation/import.
 		std::function<void(Assets::AssetType, Core::UUID)> OnAssetOpened;
@@ -18,8 +20,9 @@ namespace Nuclear::Editor
 	  private:
 		Project* pProject = nullptr;		  ///< Borrowed for the editor session.
 		std::filesystem::path mPendingImport; ///< Empty unless a user submitted an import.
+		bool mOpenImportDialog = false; ///< Defers native file selection until Update.
 		std::string mStatus =
-			"Select a source file, then import it into this session."; ///< Browser feedback.
+			"Use Import... to select an asset for this project session."; ///< Browser feedback.
 		int mCategory = 0; ///< Files, textures, meshes, materials or scenes.
 	};
 } // namespace Nuclear::Editor

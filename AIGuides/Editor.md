@@ -1,9 +1,20 @@
 # Retained editor
 
 Nuclear.Editor uses `Nuclear::UI` throughout. Its startup sets `EnableImGui=false`;
-no editor source includes or calls ImGui, and the old file dialog and `imgui.ini`
-have been removed. The engine still builds its optional legacy ImGui backend for
+no editor source includes or calls ImGui. File selection uses the independent
+platform's native picker; the old ImGui dialog and `imgui.ini` have been removed.
+The engine still builds its optional legacy ImGui backend for
 samples and debug clients. This migration does not remove that separate facility.
+
+The editor and its focused test executable embed `Editor.manifest` with
+PerMonitorV2 DPI awareness. Main and detached contexts use their native window's
+`GetDpiScale()`; resizing a window preserves the monitor's text size instead of
+shrinking the entire workspace to a 1440x900 design. `EditorToolbar` wraps viewport
+actions onto additional rows at narrow widths. Bottom tools keep at least 180
+logical units (capped at 60% of workspace height) so full-size controls retain a
+usable scroll viewport. Moving between monitors applies
+the OS-suggested bounds through the platform's DPI-change resize event. The shared
+SDF shader uses a one-pixel antialiasing band to keep small letter edges sharper.
 
 ## Workspace and ownership
 
@@ -49,13 +60,31 @@ Callbacks resolve ECS handles again before editing. The protected editor camera
 does not appear in the authoring hierarchy. Deletion clears selection before the
 next inspector rebuild.
 
+Every inspector component section has a small disclosure arrow before its name
+and an **X** at the right. The arrow points down when expanded and right when
+collapsed. Disclosure hides only the property body; it preserves component data,
+does not add history entries, and persists per versioned entity/component through
+inspector rebuilds, selection changes and undo/redo. New scenes/projects and
+shutdown clear these disclosure states. Header controls retain normal pointer and
+keyboard activation, including when the Inspector is detached.
+
+**X** removes an optional component through the existing entity history, requests
+new renderer bindings and returns that type to the **Add component** menu. It also
+works while the section is collapsed. Undo restores supported authored values;
+runtime services remain inactive. Transform belongs to the required
+`EntityInfoComponent`, so its **X** is disabled and its body explains that it is
+required. The protected preview camera stays outside the authoring inspector.
+[EditorComponentButton](../Nuclear.Editor/include/EditorComponentButton.h) paints
+font-independent arrow/cross glyphs; [EntityEditor](../Nuclear.Editor/source/EntityEditor.cpp)
+owns section construction and disclosure state.
+
 New-project creation is a modal form: disabling the workspace isolates pointer
 and Tab input until Create or Cancel removes the modal. Panel rebuilds are
 requested by callbacks and performed from Update. The shell persists across
 selection changes, so text input is not rebuilt every frame. Scroll views keep
 hierarchy entries, inspector properties, asset lists and diagnostics reachable.
-The logical 1440x900 layout scales down on smaller windows; draggable splitters
-control the main workspace proportions.
+The workspace keeps monitor-scaled text at smaller window sizes; draggable
+splitters control the main workspace proportions.
 
 ## Document tabs and docking
 
@@ -122,7 +151,8 @@ supports the existing D3D11/D3D12/Vulkan factories; OpenGL tear-off is unavailab
 and creation failure leaves the original panel in place. Only D3D11 has been run.
 The floating renderer targets its own buffer and presents before the main editor's
 retained UI draw. UI, swap chains and native windows are released before engine
-graphics/platform shutdown. Per-monitor automatic DPI scaling remains unimplemented.
+graphics/platform shutdown. Each window's context follows its own monitor DPI;
+tab drags convert between logical and physical coordinates using both contexts.
 
 ## Scene preview
 
@@ -144,6 +174,30 @@ uses an RGBA8 sRGB target matching the shader PSO and a separate depth target.
 Rendering sets the GPU viewport to the physical scene-surface size, restores the
 swap-chain target afterward, and lets the engine draw retained UI and present.
 Resizing updates camera resources/projection without rebaking the UI renderer.
+
+In **Select** mode, left-click a visible mesh to select the frontmost entity.
+The hierarchy highlights and reveals the same row, clearing a filter that would
+hide it, and the inspector shows its properties. Clicking background clears
+selection. Selection keeps viewport keyboard focus, changes no transforms and
+does not create scene-history entries. Closed/detached hierarchy panels retain
+the selected identity and reveal it when visible again.
+
+[EditorSelectionRenderer](../Nuclear.Editor/include/EditorSelectionRenderer.h)
+owns a depth-tested R32_UINT entity-ID target, separate D32 depth, pipelines and
+a one-pixel staging texture. It uses current mesh GPU buffers/transforms, including
+imported meshes with released CPU arrays. Clicks queue a fresh ID render/readback
+for Update, avoiding GPU work inside input dispatch. Resize/mode/modal changes
+can invalidate a queued click. IDs map to live versioned ECS identities and skip
+hidden/unready geometry; lights/empty entities and the sky background have no
+pickable surface. The editor currently previews static opaque meshes; animated
+deformation and alpha-cutout selection are not implemented.
+
+After scene geometry/sky, the same visible IDs draw a yellow silhouette border
+around the selected mesh, including hierarchy-selected meshes in transform modes.
+Its width follows UI scale. It preserves interior colors, camera depth and other
+meshes' pixels, and never draws a fully occluded selection through foreground
+geometry. UI/gizmos render afterward. Resources are released before graphics
+shutdown; selection adds no asset ownership or scene serialization fields.
 
 Structural component/deletion changes rebuild the renderer's borrowed light lists
 before the next scene draw. ShaderPipeline rebaking releases previous GPU objects
@@ -229,8 +283,8 @@ even outside the viewport, commits. Escape, focus loss, selection/mode changes o
 viewport geometry changes cancel and restore the starting position, quaternion and
 scale. Deleted targets discard drag state without accessing freed components.
 Right-button camera look and wheel movement are reserved from active gizmo drags.
-The first version supports one selected entity and world axes; snapping, local-axis
-mode and selecting meshes by clicking the scene are not implemented.
+The first version supports one selected entity and world axes; snapping and
+local-axis mode are not implemented. Select-mode mesh picking is described above.
 
 ## Undo and redo
 
@@ -244,7 +298,7 @@ and repeated key-down events do not replay additional steps.
 History covers toolbar entity/primitive creation, mesh instantiation from the
 browser and asset documents, entity deletion, committed inspector names and
 transforms, light properties, mesh visibility/shadow flags, kinematic flags and
-component addition, scene names and clear color. One released gizmo drag is one transaction, regardless of how
+component addition/removal, scene names and clear color. One released gizmo drag is one transaction, regardless of how
 many live updates occurred. Cancellation adds nothing. Replaying history first
 cancels a pending viewport gesture, then restores selection, hierarchy, inspector
 and renderer bindings. Invalid numeric input and unchanged values add no entries.
@@ -269,6 +323,15 @@ outside scene history.
 [AssetLibraryViewer](../Nuclear.Editor/source/AssetLibraryViewer.cpp) has Files,
 Textures, Meshes, Materials and Scenes categories. The filesystem browser supports
 parent navigation and an editable directory path, and reports filesystem errors.
+An **Import...** button remains available in every category and opens a native
+single-file picker in the current browsing directory. Its supported-assets filter
+covers the existing texture, geometry, NuclearShader and TTF formats; All files
+allows other selections, which receive the existing unsupported-format feedback.
+The picker is owned by the focused main/detached editor window, preserves the
+process working directory and queues selection outside retained input dispatch.
+Cancel creates no asset. Selection reuses the existing load-only import flow:
+resources belong to the current project session; no source copying or disk project
+persistence is added. Existing file-row Import actions remain available.
 Explicit Import actions queue work for Update. Texture, geometry, shader and TTF
 imports use existing importers; model imports deliberately omit materials and
 animations and use the editor default material when instantiated. Mesh GPU creation
@@ -289,6 +352,28 @@ values stay explicit. Diagnostics refresh twice per second. LoggerView reads onl
 the latest 16 KiB of `NuclearEngine.log`; it does not change the log or add a sink.
 
 ## Launch and validation
+
+Viewport-selection validation on 2026-11-08: Debug x64 editor and focused-test
+builds passed. D3D11 checks cover frontmost selection, hidden/occluded meshes,
+background deselection and empty Frame selected, hierarchy/inspector agreement,
+filter clearing, closed-panel recovery, retained keyboard focus, no transform or
+history changes and 125% UI scaling. GPU readback verifies yellow silhouette
+pixels, unchanged mesh interiors and absence of outlines on fully occluded
+selections. The complete existing editor lifecycle/history/settings/docking suite
+also passed, and the selection framebuffer was visually reviewed. These checks
+do not establish alpha-cutout/skinned picking, other graphics backends, Release
+or physical mouse feel.
+
+Text-quality validation on 2026-11-08: Debug x64 editor, focused editor-test,
+UI-test and Windows platform-test builds passed. The complete D3D11 editor suite
+passed with readable text at 1440x900 and 960x600, wrapped viewport actions,
+small-panel imports and a detached-window redock at a synthetic 125% scale.
+Headless UI checks and both 60-frame D3D11 UI GPU modes passed, including a
+fractional-contour readback that rejects a two-pixel smoothing halo. Platform
+checks passed for native DPI queries and OS-suggested DPI-change bounds, and the
+editor executable's embedded PerMonitorV2 manifest was inspected. Main and
+detached framebuffer readbacks were visually reviewed. Physical movement between
+monitors with different DPI, other graphics backends and Release were not checked.
 
 Add-menu/skybox validation on 2026-11-08: Debug x64 editor and focused editor-test
 builds passed. The D3D11 integration run covers pointer and keyboard creation,

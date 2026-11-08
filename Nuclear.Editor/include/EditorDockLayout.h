@@ -33,7 +33,7 @@ namespace Nuclear::Editor
 		UI::Border* pPreview = nullptr; ///< Child-owned translucent drop overlay, painted after the groups.
 		float mLeft = .21f; ///< Left-column fraction of available width.
 		float mRight = .27f; ///< Right-column fraction of available width.
-		float mBottom = .34f; ///< Bottom-row fraction of available height.
+		float mBottom = .34f; ///< Bottom-row fraction, with a 180-unit minimum capped at 60% of the available height.
 		float mBottomSplit = .59f; ///< Bottom-left fraction of width remaining beside the right column.
 		std::array<float, 4> mOriginal{}; ///< Split proportions saved for Escape/cancellation.
 		int mSplitter = -1; ///< Captured splitter index, or -1 when idle.

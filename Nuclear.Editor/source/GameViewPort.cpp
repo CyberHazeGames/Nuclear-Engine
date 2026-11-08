@@ -38,10 +38,13 @@ namespace Nuclear::Editor
 	{
 		if (entity == mSelected)
 			return;
+		const bool focused = HasFocus();
 		if (GetContext())
 			GetContext()->CancelSubtree(*this);
 		CancelTransform();
 		mSelected = entity;
+		if (focused && GetContext())
+			GetContext()->SetFocus(GetId());
 	}
 
 	void GameViewPort::SetGizmoMode(GizmoMode mode)
@@ -154,6 +157,12 @@ namespace Nuclear::Editor
 				return {true};
 			if (event.Button == MOUSE_BUTTON_LEFT)
 			{
+				if (mGizmo.GetMode() == GizmoMode::Select)
+				{
+					if (OnSelectionRequested)
+						OnSelectionRequested(event.Position);
+					return {true, false, false, true};
+				}
 				const bool edit =
 					info && mGizmo.BeginDrag(info->mTransform, *camera, GetBounds(), event.Position);
 				if (edit)

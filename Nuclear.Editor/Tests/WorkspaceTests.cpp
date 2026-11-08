@@ -345,7 +345,8 @@ namespace Nuclear::Editor::Tests
 		int foreignY = int((assetBounds.y + 40) * Main().GetScale());
 		Check(engine.GetMainWindow()->ClientToScreen(foreignX, foreignY) &&
 			foreignWindow.GetWindow().ScreenToClient(foreignX, foreignY), "Foreign panel drag coordinates convert");
-		const Vec2 foreignDrop{float(foreignX), float(foreignY)};
+		const float foreignScale = foreignWindow.GetContext().GetScale();
+		const Vec2 foreignDrop{foreignX / foreignScale, foreignY / foreignScale};
 		Pointer(editor, foreignWindow.GetContext(), &foreignWindow.GetWindow(), Platform::EventType::MouseButton, foreignStart, true);
 		Pointer(editor, foreignWindow.GetContext(), &foreignWindow.GetWindow(), Platform::EventType::MouseMove, foreignDrop);
 		Pointer(editor, foreignWindow.GetContext(), &foreignWindow.GetWindow(), Platform::EventType::MouseButton, foreignDrop);
@@ -491,6 +492,11 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Check(floating.GetContext().GetPixelSize().x == 680 && floating.GetContext().GetPixelSize().y == 500,
 			"Native secondary-window resize reaches only its retained context");
+		Check(std::abs(floating.GetContext().GetScale() - floating.GetWindow().GetDpiScale()) < .001f,
+			"Detached window resize uses its own monitor DPI");
+		// Exercise a noninteger secondary scale even on a single 96-DPI monitor.
+		floating.GetContext().SetViewport(680, 500, 1.25f);
+		floating.GetContext().Layout();
 		Event(editor, floating.GetContext(), &floating.GetWindow(), focus);
 		const auto floatingTab = floating.GetArea().GetStrip().GetTabBounds("hierarchy");
 		const Vec2 floatingStart{floatingTab.x + 20, floatingTab.y + 16};
@@ -499,7 +505,8 @@ namespace Nuclear::Editor::Tests
 		int desktopY = int((surfaceBounds.y + 20) * Main().GetScale());
 		Check(engine.GetMainWindow()->ClientToScreen(desktopX, desktopY) &&
 			floating.GetWindow().ScreenToClient(desktopX, desktopY), "Cross-window drag coordinates convert through the desktop");
-		const Vec2 dockPoint{float(desktopX), float(desktopY)};
+		const float floatingScale = floating.GetContext().GetScale();
+		const Vec2 dockPoint{desktopX / floatingScale, desktopY / floatingScale};
 		Pointer(editor, floating.GetContext(), &floating.GetWindow(), Platform::EventType::MouseButton, floatingStart, true);
 		Pointer(editor, floating.GetContext(), &floating.GetWindow(), Platform::EventType::MouseMove, dockPoint);
 		Pointer(editor, floating.GetContext(), &floating.GetWindow(), Platform::EventType::MouseButton, dockPoint);

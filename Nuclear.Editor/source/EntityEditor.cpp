@@ -2,6 +2,7 @@
 #include <EditorWidgets.h>
 #include <EditorHistory.h>
 #include <SkyboxComponent.h>
+#include <EditorComponentButton.h>
 #include <cmath>
 namespace Nuclear::Editor
 {
@@ -36,6 +37,54 @@ namespace Nuclear::Editor
 			});
 		}
 	} // namespace
+	void EntityEditor::Reset()
+	{
+		mCollapsedComponents.clear();
+	}
+
+	UI::VerticalBox& EntityEditor::ComponentSection(UI::PanelWidget& parent, entt::entity entity,
+		entt::id_type component, const std::string& title, std::function<void()> remove)
+	{
+		auto& border = parent.Add<UI::Border>();
+		border.SetBrush({nullptr, {.06f, .075f, .095f, 1}});
+		border.SetPadding({5, 8, 5, 10});
+
+		auto& section = border.Add<UI::VerticalBox>();
+		section.SetSpacing(10);
+
+		auto& header = section.Add<UI::HorizontalBox>();
+		header.SetSpacing(6);
+		auto& collapse = header.Add<EditorComponentButton>(EditorComponentButton::Action::Collapse);
+		auto& heading = Label(header, title, 14);
+		heading.SetColor({.18f, .7f, .62f, 1});
+		Fill(header, heading);
+		auto slot = header.GetSlot(heading.GetId());
+		slot.Vertical = UI::Alignment::Center;
+		header.SetSlot(heading.GetId(), slot);
+
+		auto& close = header.Add<EditorComponentButton>(EditorComponentButton::Action::Remove);
+		close.SetEnabled(bool(remove));
+		close.OnClicked = std::move(remove);
+
+		auto& body = section.Add<UI::VerticalBox>();
+		body.SetSpacing(10);
+		const bool expanded = !mCollapsedComponents[entity].contains(component);
+		collapse.SetExpanded(expanded);
+		body.SetVisibility(expanded ? UI::Visibility::Visible : UI::Visibility::Collapsed);
+
+		collapse.OnClicked = [this, entity, component, &body, &collapse]() {
+			const bool expanded = body.GetVisibility() == UI::Visibility::Collapsed;
+			if (expanded)
+				mCollapsedComponents[entity].erase(component);
+			else
+				mCollapsedComponents[entity].insert(component);
+			body.SetVisibility(expanded ? UI::Visibility::Visible : UI::Visibility::Collapsed);
+			collapse.SetExpanded(expanded);
+		};
+
+		return body;
+	}
+
 	std::unique_ptr<UI::Widget> EntityEditor::Build(entt::entity entity, std::function<void(bool)> changed, EditorHistory& history)
 	{
 		// Wrap every property setter at the commit boundary, never on text-change or paint.
@@ -55,6 +104,17 @@ namespace Nuclear::Editor
 		};
 		auto root = std::make_unique<UI::VerticalBox>();
 		root->SetSpacing(12);
+		auto componentSection = [this, &root, entity, changed, &history]<class T>(const std::string& title)
+			-> UI::VerticalBox& {
+			return ComponentSection(*root, entity, entt::type_hash<T>::value(), title, [entity, changed, &history]() {
+				history.Edit(entity, "Remove component", [entity]() {
+					auto& registry = Core::Scene::Get().GetRegistry();
+					if (registry.valid(entity))
+						registry.remove<T>(entity);
+				});
+				changed(true);
+			});
+		};
 		auto* info = Component<Components::EntityInfoComponent>(entity);
 		if (!info)
 		{
@@ -86,8 +146,9 @@ namespace Nuclear::Editor
 		};
 		if (!Component<SkyboxComponent>(entity))
 		{
-			auto& transform = Section(*root, "TRANSFORM");
-			Label(transform, "Enter commits a value. Rotation is in degrees.", 12).SetWrap(true);
+			auto& transform = ComponentSection(*root, entity,
+				entt::type_hash<Components::EntityInfoComponent>::value(), "TRANSFORM", {});
+			Label(transform, "Required by every entity. Enter commits a value. Rotation is in degrees.", 12).SetWrap(true);
 			for (int group = 0; group < 3; ++group)
 			{
 				const char* names[] = {"POSITION", "ROTATION", "SCALE"};
@@ -121,7 +182,7 @@ namespace Nuclear::Editor
 		}
 		if (auto* sky = Component<SkyboxComponent>(entity))
 		{
-			auto& section = Section(*root, "SKYBOX");
+			auto& section = componentSection.operator()<SkyboxComponent>("SKYBOX");
 			Label(section, "Default sky background", 13);
 			toggle(section, "Visible", sky->Enabled, [entity](bool value) {
 				if (auto* sky = Component<SkyboxComponent>(entity))
@@ -130,7 +191,7 @@ namespace Nuclear::Editor
 		}
 		if (auto* light = Component<Components::LightComponent>(entity))
 		{
-			auto& section = Section(*root, "LIGHT");
+			auto& section = componentSection.operator()<Components::LightComponent>("LIGHT");
 			number(
 				section, "Intensity", light->GetIntensity(),
 				[entity](float value) {
@@ -207,7 +268,7 @@ namespace Nuclear::Editor
 		}
 		if (auto* mesh = Component<Components::MeshComponent>(entity))
 		{
-			auto& section = Section(*root, "MESH");
+			auto& section = componentSection.operator()<Components::MeshComponent>("MESH");
 			Label(section, mesh->GetMesh() ? mesh->GetMesh()->GetName() : "No mesh assigned").SetWrap(true);
 			Label(section, mesh->GetMaterial() ? mesh->GetMaterial()->GetName() : "No material assigned")
 				.SetWrap(true);
@@ -225,20 +286,38 @@ namespace Nuclear::Editor
 			});
 		}
 		if (auto* body = Component<Components::RigidBodyComponent>(entity))
-			toggle(*root, "Kinematic (authoring)", body->isKinematic, [entity](bool value) {
+		{
+			auto& section = componentSection.operator()<Components::RigidBodyComponent>("RIGID BODY");
+			toggle(section, "Kinematic (authoring)", body->isKinematic, [entity](bool value) {
 				if (auto* body = Component<Components::RigidBodyComponent>(entity))
 					body->isKinematic = value;
 			});
+		}
 		if (Component<Components::ColliderComponent>(entity))
-			Label(*root, "Collider / authoring data", 13);
+		{
+			auto& section = componentSection.operator()<Components::ColliderComponent>("COLLIDER");
+			Label(section, "Collider / authoring data", 13);
+		}
 		if (Component<Components::CameraComponent>(entity))
-			Label(*root, "Camera / scene component", 13);
+		{
+			auto& section = componentSection.operator()<Components::CameraComponent>("CAMERA");
+			Label(section, "Camera / scene component", 13);
+		}
 		if (Component<Components::ScriptComponent>(entity))
-			Label(*root, "Script / runtime execution disabled", 13);
+		{
+			auto& section = componentSection.operator()<Components::ScriptComponent>("SCRIPT");
+			Label(section, "Script / runtime execution disabled", 13);
+		}
 		if (Component<Components::AudioListenerComponent>(entity))
-			Label(*root, "Audio listener / authoring data", 13);
+		{
+			auto& section = componentSection.operator()<Components::AudioListenerComponent>("AUDIO LISTENER");
+			Label(section, "Audio listener / authoring data", 13);
+		}
 		if (Component<Components::AudioSourceComponent>(entity))
-			Label(*root, "Audio source / authoring data", 13);
+		{
+			auto& section = componentSection.operator()<Components::AudioSourceComponent>("AUDIO SOURCE");
+			Label(section, "Audio source / authoring data", 13);
+		}
 		AddComponent<Components::LightComponent>(add, entity, "Light", changed, history);
 		AddComponent<Components::MeshComponent>(add, entity, "Mesh", changed, history);
 		// Runtime service objects are not activated in the editor's authoring registry.

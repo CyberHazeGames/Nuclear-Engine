@@ -93,9 +93,24 @@
       <AdditionalLibraryDirectories>..\Bin\ReleaseX64\;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)Editor.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <Manifest Include="Editor.manifest" />
+    <ClInclude Include="include\EditorToolbar.h" />
+    <ClCompile Include="source\EditorToolbar.cpp" />
+    <ClInclude Include="include\EditorSelectionRenderer.h" />
+    <ClCompile Include="source\EditorSelectionRenderer.cpp" />
     <ClCompile Include="source\AssetLibraryViewer.cpp" />
     <ClCompile Include="source\EntityEditor.cpp" />
+    <ClCompile Include="source\EditorComponentButton.cpp" />
+    <ClInclude Include="include\EditorComponentButton.h" />
     <ClCompile Include="source\EditorHistory.cpp" />
     <ClCompile Include="source\EditorSceneState.cpp" />
     <ClCompile Include="source\SceneSettings.cpp" />
@@ -119,6 +134,10 @@
     <ClCompile Include="source\TransformGizmo.cpp" />
     <ClCompile Include="source\NuclearEditor.cpp" />
     <ClCompile Include="Tests\EditorTests.cpp" />
+    <ClCompile Include="Tests\ComponentInspectorTests.cpp" />
+    <ClInclude Include="Tests\ComponentInspectorTests.h" />
+    <ClCompile Include="Tests\ViewportSelectionTests.cpp" />
+    <ClInclude Include="Tests\ViewportSelectionTests.h" />
     <ClCompile Include="Tests\EditorHistoryTests.cpp" />
     <ClCompile Include="Tests\SceneSettingsTests.cpp" />
     <ClInclude Include="Tests\SceneSettingsTests.h" />

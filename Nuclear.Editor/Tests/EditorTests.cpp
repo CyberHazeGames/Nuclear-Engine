@@ -1,20 +1,31 @@
 #include "EditorHistoryTests.h"
+#include "ComponentInspectorTests.h"
 #include "SceneSettingsTests.h"
 #include <NuclearEditor.h>
 #include <GameViewPort.h>
 #include <EditorTitleBar.h>
 #include <EditorMenuPopup.h>
 #include <EditorWindowButton.h>
+#include <EditorComponentButton.h>
+#include <EditorToolbar.h>
 #include <EditorAddMenu.h>
 #include <SkyboxComponent.h>
 #include "TransformGizmoTests.h"
 #include "WorkspaceTests.h"
+#include "ViewportSelectionTests.h"
 #include <Nuclear.Platform/Platform.h>
 #include <Profiling/ProfilingModule.h>
 #include <fstream>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
+#include <chrono>
+#include <thread>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#include <dlgs.h>
 
 using namespace Nuclear::UI;
 
@@ -105,13 +116,80 @@ namespace
 		Check(label && label->GetParent(), "Expected action label");
 		Click(*label->GetParent());
 	}
+	HWND FindImportDialog(DWORD thread)
+	{
+		HWND dialog = nullptr;
+		EnumThreadWindows(thread, [](HWND window, LPARAM output) -> BOOL {
+			wchar_t title[128]{};
+			GetWindowTextW(window, title, 128);
+			if (std::wcscmp(title, L"Import asset") == 0 && IsWindowVisible(window))
+			{
+				*reinterpret_cast<HWND*>(output) = window;
+				return FALSE;
+			}
+			return TRUE;
+		}, reinterpret_cast<LPARAM>(&dialog));
+		return dialog;
+	}
+	// Drive the real native picker on a helper thread while the UI thread runs its modal loop.
+	void ImportFile(const std::filesystem::path& path, const std::function<void()>& frame)
+	{
+		const auto uiThread = GetCurrentThreadId();
+		Action("Import...");
+		Check(!FindImportDialog(uiThread), "Picker is deferred beyond input dispatch");
+		bool found = false;
+		bool modal = false;
+		bool closed = false;
+		std::jthread picker([&]() {
+			HWND dialog = nullptr;
+			for (int attempt = 0; attempt < 1000 && !dialog; ++attempt)
+			{
+				dialog = FindImportDialog(uiThread);
+				if (!dialog)
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			}
+			if (!dialog)
+				return;
+			found = true;
+			const auto owner = GetWindow(dialog, GW_OWNER);
+			modal = owner == Core::Engine::Get().GetMainWindow()->GetNativeHandle() && !IsWindowEnabled(owner);
+			if (path.empty())
+				PostMessageW(dialog, WM_COMMAND, IDCANCEL, 0);
+			else
+			{
+				const auto filename = path.wstring();
+				EnumChildWindows(dialog, [](HWND child, LPARAM text) -> BOOL {
+					wchar_t name[16]{};
+					GetClassNameW(child, name, 16);
+					const int id = GetDlgCtrlID(child);
+					if ((id == cmb13 || id == edt1) && std::wcscmp(name, L"Edit") == 0)
+					{
+						SendMessageW(child, WM_SETTEXT, 0, text);
+						return FALSE;
+					}
+					return TRUE;
+				}, reinterpret_cast<LPARAM>(filename.c_str()));
+				PostMessageW(dialog, WM_COMMAND, IDOK, 0);
+			}
+			for (int attempt = 0; attempt < 1000 && IsWindow(dialog); ++attempt)
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			closed = !IsWindow(dialog);
+			if (!closed)
+				PostMessageW(dialog, WM_COMMAND, IDCANCEL, 0);
+		});
+		frame();
+		picker.join();
+		if (!found || !modal || !closed)
+			std::cerr << "Import picker: found=" << found << " modal=" << modal << " closed=" << closed << '\n';
+		Check(found && modal && closed, "Native import picker opens modally and accepts selection/cancellation");
+	}
 	void CheckViewportToolbar()
 	{
 		Context().Layout();
 		auto* surface = Find<Nuclear::Editor::GameViewPort>([](const auto&) { return true; });
 		Check(surface != nullptr, "Viewport exists for toolbar layout check");
 		const auto viewport = surface->GetBounds();
-		float rowY = -1;
+		Rect previous;
 		for (const char* title : {"Select", "Move", "Rotate", "Scale", "Frame selected", "Delete selected"})
 		{
 			auto* label = Find<TextBlock>([title](const TextBlock& label) {
@@ -122,8 +200,12 @@ namespace
 			Check(bounds.y + bounds.Height <= viewport.y && bounds.x >= viewport.x &&
 					  bounds.x + bounds.Width <= viewport.x + viewport.Width,
 				  "Viewport actions fit in a bar above the scene surface");
-			Check(rowY < 0 || std::abs(rowY - bounds.y) < .01f, "Viewport actions share one row");
-			rowY = bounds.y;
+			Check(previous.Width == 0 || bounds.y >= previous.y + previous.Height ||
+				(bounds.y == previous.y && bounds.x >= previous.x + previous.Width),
+				"Viewport actions wrap in order without overlap");
+			Check(label->GetBounds().Width + .01f >= label->GetDesiredSize().x,
+				"Viewport action text remains fully readable");
+			previous = bounds;
 		}
 	}
 	entt::entity Entity(const std::string& name)
@@ -211,8 +293,10 @@ namespace
 			}
 		context->UnmapTextureSubresource(staging, 0, 0);
 		Check(image.good() && coloredPixels > 4000, "Editor labels produce visible framebuffer coverage");
+		const float minimumScenePixels = std::max(20.f,
+			sceneBounds.Width * sceneBounds.Height * scale * scale * .001f);
 		Check(
-			scenePixels > 200,
+			scenePixels > minimumScenePixels,
 			"Scene framebuffer contains neutral shaded geometry, independently of labels and colored gizmos");
 	}
 } // namespace
@@ -236,6 +320,7 @@ int main()
 		Check(engine.Start(desc), "Editor engine startup");
 		engine.GetMainWindow()->Display(false);
 		Nuclear::Editor::Tests::RunEditorHistoryTests();
+		Nuclear::Editor::Tests::RunComponentInspectorTests();
 		{
 			NuclearEditor editor;
 			editor.Load();
@@ -265,6 +350,8 @@ int main()
 			Check(editor.GetWorkspace()->GetArea("scene-settings") == nullptr,
 				"Scene settings starts closed until opened from a menu");
 			Context().Layout();
+			Check(std::abs(Context().GetScale() - engine.GetMainWindow()->GetDpiScale()) < .001f,
+				"Editor uses monitor DPI instead of fitting the window to a design resolution");
 			auto* titleBar = Find<Nuclear::Editor::EditorTitleBar>([](const auto&) { return true; });
 			Check(titleBar && titleBar->GetBounds().x == 0 && titleBar->GetBounds().y == 0 &&
 				titleBar->GetBounds().Height == 40, "Custom title bar occupies the top of the client area");
@@ -346,6 +433,7 @@ int main()
 				return true;
 			});
 			Check(surface != nullptr, "Gizmo scene surface exists");
+			Nuclear::Editor::Tests::RunViewportSelectionTests(editor, frame);
 			const char* modes[] = {"Move", "Rotate", "Scale"};
 			for (int mode = 0; mode < 3; ++mode)
 			{
@@ -557,6 +645,36 @@ int main()
 				  "Component action updates ECS");
 			Check(!Find<TextBlock>([](const TextBlock& label) { return label.GetText() == "Light"; }),
 				  "Added components are removed from the dropdown choices");
+			auto componentControl = [](const std::string& title, Nuclear::Editor::EditorComponentButton::Action action)
+				-> Nuclear::Editor::EditorComponentButton& {
+				auto* heading = Find<TextBlock>([&](const auto& label) { return label.GetText() == title; });
+				Check(heading != nullptr, "Rendered inspector has the component heading");
+				auto* button = Find<Nuclear::Editor::EditorComponentButton>([&](const auto& button) {
+					return button.GetParent() == heading->GetParent() && button.GetAction() == action;
+				});
+				Check(button != nullptr, "Rendered inspector has component header controls");
+				return *button;
+			};
+			using ComponentAction = Nuclear::Editor::EditorComponentButton::Action;
+			Click(componentControl("TRANSFORM", ComponentAction::Collapse));
+			UIModule::Get().Render();
+			Readback("Build/DebugX64/editor-component-headers.ppm");
+			for (const auto& title : {"LIGHT", "MESH"})
+			{
+				Click(componentControl(title, ComponentAction::Remove));
+				frame();
+				auto& registry = Core::Scene::Get().GetRegistry();
+				Check(std::string(title) == "LIGHT" ? !registry.all_of<Components::LightComponent>(sphere)
+					: !registry.all_of<Components::MeshComponent>(sphere), "Inspector X removes the selected component");
+				historyMenu("Undo");
+				Check(registry.all_of<Components::LightComponent, Components::MeshComponent>(sphere),
+					"Undo restores component data and preview bindings");
+				historyMenu("Redo");
+				historyMenu("Undo");
+				Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "POSITION"; })->IsVisible(),
+					"Disclosure persists across removal and undo/redo inspector rebuilds");
+			}
+			Click(componentControl("TRANSFORM", ComponentAction::Collapse));
 			auto* cameraOption = Find<TextBlock>([](const TextBlock& label) {
 				return label.GetText() == "Camera";
 			});
@@ -637,8 +755,13 @@ int main()
 				frame();
 			UIModule::Get().Render();
 			CheckViewportToolbar();
+			Check(std::abs(Context().GetScale() - nativeWindow->GetDpiScale()) < .001f,
+				"Small workspace retains the monitor's text size");
 			Readback("Build/DebugX64/editor-960.ppm");
-			Check(nativeWindow->IsTitleBarAt(650, 13) && !nativeWindow->IsTitleBarAt(45, 13),
+			const float dpiScale = Context().GetScale();
+			const int captionX = int((titleBar->GetBounds().Width - 150) * dpiScale);
+			Check(nativeWindow->IsTitleBarAt(captionX, int(20 * dpiScale)) &&
+				!nativeWindow->IsTitleBarAt(int(70 * dpiScale), int(20 * dpiScale)),
 				"Caption hit testing follows the smaller workspace's physical UI scale");
 			Action("Capture");
 			for (int index = 0; index < 8; ++index)
@@ -665,8 +788,14 @@ int main()
 			Check(path != nullptr, "Asset directory field exists");
 			Edit(*path, fixture.string());
 			frame();
-			Action("Import / triangle.obj");
-			frame();
+			const auto directoryBeforeImport = std::filesystem::current_path();
+			const auto meshCountBeforeImport = Assets::AssetLibrary::Get().mImportedMeshes.mData.size();
+			ImportFile({}, frame);
+			Check(Assets::AssetLibrary::Get().mImportedMeshes.mData.size() == meshCountBeforeImport,
+				"Cancelling the picker creates no asset");
+			ImportFile(fixture / "triangle.obj", frame);
+			Check(std::filesystem::current_path() == directoryBeforeImport,
+				"Native file selection preserves the engine working directory");
 			Action("Meshes");
 			frame();
 			Action("Add to scene / editorfixtures_triangle");

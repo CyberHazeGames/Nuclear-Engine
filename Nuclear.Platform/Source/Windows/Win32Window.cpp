@@ -109,6 +109,24 @@ namespace Nuclear::Platform::Detail
 			UpdateCursor();
 			return 0;
 
+		case WM_DPICHANGED:
+		{
+			// The host opts into per-monitor DPI awareness. Accept the suggested
+			// physical bounds, then notify clients even if the pixel size is unchanged.
+			const auto& bounds = *reinterpret_cast<const RECT*>(lparam);
+			SetWindowPos(handle, nullptr, bounds.left, bounds.top,
+				bounds.right - bounds.left, bounds.bottom - bounds.top,
+				SWP_NOZORDER | SWP_NOACTIVATE);
+			RECT client{};
+			GetClientRect(handle, &client);
+			event.mType = EventType::WindowResize;
+			event.mWidth = client.right - client.left;
+			event.mHeight = client.bottom - client.top;
+			PushEvent(event);
+			UpdateCursor();
+			return 0;
+		}
+
 		case WM_MOVE:
 			UpdateCursor();
 			break;
@@ -207,7 +225,7 @@ namespace Nuclear::Platform
 		else
 		{
 			if (!mCustomTitleBar)
-				AdjustWindowRectEx(&bounds, style, FALSE, 0);
+				AdjustWindowRectExForDpi(&bounds, style, FALSE, 0, GetDpiForSystem());
 		}
 
 		const auto title = Detail::ToWide(desc.Title);
@@ -304,6 +322,12 @@ namespace Nuclear::Platform
 		return height > 0 ? static_cast<float>(width) / height : 0.0f;
 	}
 
+	float Window::GetDpiScale() const
+	{
+		const auto dpi = pWindow ? GetDpiForWindow(static_cast<HWND>(pWindow)) : 0;
+		return dpi ? static_cast<float>(dpi) / 96.0f : 1.0f;
+	}
+
 	void Window::SetSize(std::uint32_t width, std::uint32_t height)
 	{
 		if (!pWindow || !width || !height || width > 32767 || height > 32767)
@@ -316,7 +340,7 @@ namespace Nuclear::Platform
 		const auto extendedStyle = static_cast<DWORD>(GetWindowLongPtrW(handle, GWL_EXSTYLE));
 		RECT bounds{ 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 		if (!mCustomTitleBar)
-			AdjustWindowRectEx(&bounds, style, FALSE, extendedStyle);
+			AdjustWindowRectExForDpi(&bounds, style, FALSE, extendedStyle, GetDpiForWindow(handle));
 		SetWindowPos(handle, nullptr, 0, 0, bounds.right - bounds.left, bounds.bottom - bounds.top,
 			SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 	}

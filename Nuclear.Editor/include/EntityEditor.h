@@ -1,6 +1,8 @@
 #pragma once
 #include <Common.h>
 #include <functional>
+#include <unordered_map>
+#include <unordered_set>
 namespace Nuclear::Editor
 {
 	class EditorHistory;
@@ -11,6 +13,16 @@ namespace Nuclear::Editor
 		/// Returns an owning inspector tree. The callback requests panel refresh;
 		/// its argument is true when structural edits also require new renderer bindings.
 		/// History outlives the returned tree and records committed property/component edits.
+		/// Component disclosure is retained per versioned entity until Reset and does not enter scene history.
 		std::unique_ptr<UI::Widget> Build(entt::entity entity, std::function<void(bool)> changed, EditorHistory& history);
+		/// Clears per-entity disclosure state when the scene/session is replaced; does not edit ECS data.
+		void Reset();
+	private:
+		/// Creates a component header and returns its owned property column. Empty remove disables X.
+		/// Callbacks borrow this inspector controller, which must outlive the returned tree.
+		UI::VerticalBox& ComponentSection(UI::PanelWidget& parent, entt::entity entity,
+			entt::id_type component, const std::string& title, std::function<void()> remove);
+		std::unordered_map<entt::entity, std::unordered_set<entt::id_type>> mCollapsedComponents;
+		///< Hidden property bodies indexed by versioned entity identity and component type, until Reset.
 	};
 } // namespace Nuclear::Editor

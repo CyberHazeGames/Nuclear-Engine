@@ -3,8 +3,10 @@
 #include <SceneSettings.h>
 #include <EditorAddMenu.h>
 #include <EditorSkybox.h>
+#include <EditorSelectionRenderer.h>
 #include <SkyboxComponent.h>
 #include <EditorWidgets.h>
+#include <EditorToolbar.h>
 #include <AssetDocument.h>
 #include <GameViewPort.h>
 #include <Fallbacks/FallbacksModule.h>
@@ -67,6 +69,9 @@ namespace Nuclear::Editor
 			mPendingDocuments.emplace_back(type, id);
 		};
 		NewScene();
+		pSelectionRenderer = std::make_unique<EditorSelectionRenderer>();
+		if (!pSelectionRenderer->Initialize(*Core::Scene::Get().GetMainCamera()))
+			throw std::runtime_error("Editor selection renderer could not be initialized");
 		BuildWorkspace();
 		CreateEntity(1);
 		mHistory.Clear();
@@ -82,12 +87,15 @@ namespace Nuclear::Editor
 
 	void EditorUI::NewScene()
 	{
+		mPendingPick.reset();
+		mRevealSelection = false;
 		CloseAddMenu();
 		mPendingSkybox = false;
 		if (pViewport)
 			pViewport->SetSelectedEntity(entt::null);
 		mHistory.Clear();
 		pRenderer.reset();
+		mInspector.Reset();
 		mSceneSettingsDirty = true;
 		auto& scene = Core::Scene::Get();
 		scene.SetMainCamera(static_cast<Components::CameraComponent*>(nullptr));
@@ -237,6 +245,7 @@ namespace Nuclear::Editor
 		hierarchy.SetPadding({12, 10, 12, 10});
 		hierarchy.SetSpacing(8);
 		auto& filter = hierarchy.Add<UI::TextBox>();
+		pHierarchyFilter = &filter;
 		filter.OnChanged = [this](const std::string& text) {
 			mFilter = text;
 			mHierarchyDirty = true;
@@ -251,8 +260,7 @@ namespace Nuclear::Editor
 		scene.SetPadding({12, 10, 12, 10});
 		scene.SetSpacing(10);
 		pSceneTitle = &Label(scene, "Untitled Scene", 20);
-		auto& viewActions = scene.Add<UI::HorizontalBox>();
-		viewActions.SetSpacing(8);
+		auto& viewActions = scene.Add<EditorToolbar>();
 		const char* modes[] = {"Select", "Move", "Rotate", "Scale"};
 		for (size_t mode = 0; mode < ViewportModes.size(); ++mode)
 			mGizmoButtons[mode] = &Action(viewActions, modes[mode], [this, mode]() {
@@ -260,7 +268,9 @@ namespace Nuclear::Editor
 			});
 		auto& frameSelected = Action(viewActions, "Frame selected", [this]() {
 			auto& scene = Core::Scene::Get();
-			if (auto* info = scene.GetRegistry().try_get<Components::EntityInfoComponent>(mSelected))
+			auto& registry = scene.GetRegistry();
+			auto* info = registry.valid(mSelected) ? registry.try_get<Components::EntityInfoComponent>(mSelected) : nullptr;
+			if (info)
 			{
 				auto* camera = scene.GetMainCamera();
 				camera->SetPosition(info->mTransform.GetLocalPosition() - camera->GetFrontView() * 6.0f);
@@ -278,6 +288,10 @@ namespace Nuclear::Editor
 			}
 		});
 		pViewport = &scene.Add<GameViewPort>();
+		pViewport->OnSelectionRequested = [this](UI::Vec2 position) {
+			mPendingPick = position;
+			mPickBounds = pViewport->GetBounds();
+		};
 		pViewport->OnTransformChanged = [this]() {
 			mInspectorDirty = true;
 		};
@@ -426,19 +440,72 @@ namespace Nuclear::Editor
 		std::sort(entities.begin(), entities.end(), [](auto a, auto b) {
 			return static_cast<Uint32>(a) < static_cast<Uint32>(b);
 		});
+		UI::Widget* selectedRow = nullptr;
 		for (auto entity : entities)
 		{
 			auto& info = registry.get<Components::EntityInfoComponent>(entity);
-			Action(*column, (entity == mSelected ? "> " : "  ") + info.mName, [this, entity]() {
+			auto& row = Action(*column, (entity == mSelected ? "> " : "  ") + info.mName, [this, entity]() {
 				mSelected = entity;
 				pInspector->SetOffset(0);
 				mHierarchyDirty = mInspectorDirty = true;
 			});
+			if (entity == mSelected)
+			{
+				selectedRow = &row;
+				UI::ControlStyle style;
+				style.Normal = {.24f, .20f, .045f, 1};
+				style.Hovered = {.32f, .27f, .06f, 1};
+				style.Pressed = {.4f, .32f, .06f, 1};
+				style.Focus = {1, .8f, 0, 1};
+				row.SetStyle(style);
+			}
 		}
 		if (entities.empty())
 			Label(*column, "No matching entities.", 13);
 		pHierarchy->SetContent(std::move(column));
+		if (mRevealSelection && selectedRow && pHierarchy->GetContext() && pHierarchy->IsVisible())
+		{
+			auto* context = pHierarchy->GetContext();
+			context->Layout();
+			pHierarchy->ScrollIntoView(*selectedRow);
+			mRevealSelection = false;
+		}
+		if (!selectedRow)
+			mRevealSelection = false;
 		mHierarchyDirty = false;
+	}
+
+	void EditorUI::PickEntity()
+	{
+		const auto position = std::exchange(mPendingPick, std::nullopt);
+		if (!position || mModal || !pViewport->IsVisible() || !pViewport->IsEnabled() ||
+			pViewport->GetGizmoMode() != GizmoMode::Select)
+			return;
+
+		auto* context = pViewport->GetContext();
+		context->Layout();
+		const auto bounds = pViewport->GetBounds();
+		if (bounds.x != mPickBounds.x || bounds.y != mPickBounds.y ||
+			bounds.Width != mPickBounds.Width || bounds.Height != mPickBounds.Height)
+			return;
+		auto* camera = Core::Scene::Get().GetMainCamera();
+		if (!camera)
+			return;
+
+		mSelected = pSelectionRenderer->Pick(*camera, bounds, *position);
+		auto& registry = Core::Scene::Get().GetRegistry();
+		auto* info = registry.valid(mSelected) ? registry.try_get<Components::EntityInfoComponent>(mSelected) : nullptr;
+		if (info)
+		{
+			if (info->mName.find(mFilter) == std::string::npos)
+			{
+				mFilter.clear();
+				pHierarchyFilter->SetText("");
+			}
+			mRevealSelection = true;
+		}
+		pInspector->SetOffset(0);
+		mHierarchyDirty = mInspectorDirty = true;
 	}
 
 	void EditorUI::RefreshInspector()
@@ -541,7 +608,11 @@ namespace Nuclear::Editor
 				return ProcessShortcut(event, windowContext);
 			};
 		}
-		mAssets.Update();
+		auto* importOwner = Core::Engine::Get().GetMainWindow();
+		for (const auto& window : pWorkspace->GetWindows())
+			if (window->GetWindow().HasFocus())
+				importOwner = &window->GetWindow();
+		mAssets.Update(*importOwner);
 		if (std::exchange(mPendingSkybox, false))
 			CreateSkybox();
 		if (mSceneSettingsDirty)
@@ -552,6 +623,7 @@ namespace Nuclear::Editor
 		// Authoring camera additions/removals can move EnTT's packed camera storage.
 		auto& scene = Core::Scene::Get();
 		scene.SetMainCamera(scene.GetRegistry().try_get<Components::CameraComponent>(mCamera));
+		PickEntity();
 		pViewport->SetSelectedEntity(mSelected);
 		pViewport->UpdateCamera(deltaTime);
 		for (size_t mode = 0; mode < ViewportModes.size(); ++mode)
@@ -567,7 +639,7 @@ namespace Nuclear::Editor
 		}
 		if (mRendererDirty)
 			RebuildRenderer();
-		if (mHierarchyDirty)
+		if (mHierarchyDirty || (mRevealSelection && pHierarchy->GetContext() && pHierarchy->IsVisible()))
 			RefreshHierarchy();
 		if (mInspectorDirty)
 			RefreshInspector();
@@ -615,6 +687,7 @@ namespace Nuclear::Editor
 					pSkybox->Render(*camera);
 					break;
 				}
+			pSelectionRenderer->Render(*camera, mSelected, context.GetScale());
 		}
 		auto& graphics = Graphics::GraphicsModule::Get();
 		auto* target = graphics.GetSwapChain()->GetCurrentBackBufferRTV();
@@ -628,25 +701,29 @@ namespace Nuclear::Editor
 
 	void EditorUI::Resize(int width, int height)
 	{
-		float scale = std::min({1.0f, width / 1440.0f, height / 900.0f});
-		UI::UIModule::Get().GetContext().SetViewport(float(width), float(height), std::max(.1f, scale));
+		const float scale = Core::Engine::Get().GetMainWindow()->GetDpiScale();
+		UI::UIModule::Get().GetContext().SetViewport(float(width), float(height), scale);
 	}
 
 	void EditorUI::Shutdown()
 	{
+		mInspector.Reset();
 		CloseAddMenu();
 		mPendingSkybox = false;
 		mHistory.Clear();
 		mHistoryModifiers.fill(false);
+		mPendingPick.reset();
 		pWorkspace.reset();
 		mPendingDocuments.clear();
 		UI::UIModule::Get().GetContext().Clear();
 		pRenderer.reset();
 		pSkybox.reset();
+		pSelectionRenderer.reset();
 		Core::Scene::Get().SetMainCamera(static_cast<Components::CameraComponent*>(nullptr));
 		Core::Scene::Get().Clear();
 		mRoot = mModal = 0;
 		pHierarchy = nullptr;
+		pHierarchyFilter = nullptr;
 		pInspector = nullptr;
 		pAssets = nullptr;
 		pViewport = nullptr;

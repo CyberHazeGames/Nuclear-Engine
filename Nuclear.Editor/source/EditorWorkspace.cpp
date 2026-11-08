@@ -278,7 +278,8 @@ namespace Nuclear::Editor
 			return;
 		const auto& tab = source->second;
 		auto* layout = GetDocumentLayout(pDocumentHost->GetActive());
-		const float scale = origin == Core::Engine::Get().GetMainWindow() ? mContext.GetScale() : 1.f;
+		const auto* originContext = tab.Area ? tab.Area->GetContext() : nullptr;
+		const float scale = originContext ? originContext->GetScale() : origin->GetDpiScale();
 		int screenX = int(std::lround(point.x * scale));
 		int screenY = int(std::lround(point.y * scale));
 		if (!origin->ClientToScreen(screenX, screenY))
@@ -325,7 +326,9 @@ namespace Nuclear::Editor
 				int x = screenX;
 				int y = screenY;
 				window->GetWindow().ScreenToClient(x, y);
-				if (!window->GetArea().GetBounds().Contains({float(x), float(y)}))
+				const float targetScale = window->GetContext().GetScale();
+				const UI::Vec2 local = {x / targetScale, y / targetScale};
+				if (!window->GetArea().GetBounds().Contains(local))
 					continue;
 				destination = &window->GetArea();
 				if (mAreas.at(destination).Document != tab.OwnerDocument)
@@ -334,7 +337,7 @@ namespace Nuclear::Editor
 					rejected = true;
 					break;
 				}
-				insertion = destination->GetStrip().InsertionAt({float(x), float(y)});
+				insertion = destination->GetStrip().InsertionAt(local);
 				break;
 			}
 		}

@@ -41,6 +41,9 @@ namespace Nuclear::Platform
 		void GetSize(std::uint32_t& width, std::uint32_t& height);
 		/// Signed overload of GetSize, for native and UI consumers.
 		void GetSize(int& width, int& height);
+		/// Returns pixels per 96-DPI logical unit for this window; 1 for an empty window.
+		/// The host executable must declare DPI awareness to receive its monitor's actual scale.
+		float GetDpiScale() const;
 		/// Returns client width / height, or zero when minimized or empty.
 		float GetAspectRatioF32();
 

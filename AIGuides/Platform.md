@@ -4,6 +4,16 @@
 
 Only **Windows x64** is implemented. Public headers under [Nuclear.Platform/include/Nuclear.Platform](../Nuclear.Platform/include/Nuclear.Platform) use standard C++ types and opaque native handles. Windows APIs and message translation live under [Source/Windows](../Nuclear.Platform/Source/Windows). Additional platforms require their own implementation and build selection; these boundaries do not establish that the rest of the engine is portable.
 
+[FileDialog](../Nuclear.Platform/include/Nuclear.Platform/FileDialog.h) exposes
+single-file native selection without engine or OS types in its public header.
+Call `OpenFile` on the window/event thread with a live borrowed owner, UTF-8 title
+and wildcard patterns, and an initial directory. It blocks in the owner's modal
+picker, returns the selected filesystem path, and preserves the working directory.
+An empty path with empty error means cancellation; a nonempty error describes
+failure. The Windows implementation lives in
+[FileDialog.cpp](../Nuclear.Platform/Source/Windows/FileDialog.cpp) and links the
+Windows SDK's `comdlg32.lib`; no third-party dialog dependency is required.
+
 [Networking](Networking.md) adds independent UDP/TCP sockets, IPv4/IPv6 endpoints, synchronous hostname resolution, readiness waits, and explicit operation results. Sockets initialize and retain the networking runtime automatically, work without a window/event thread, and default to nonblocking mode. Higher-level replication and session protocols belong above the foundation.
 
 [Diagnostics](Profiling.md#platform-cpu-gpu-and-memory-queries) exposes CPU topology/counters, process/system memory, GPU adapter identities, and exact-adapter process memory budgets without a window. Native Windows/DXGI types stay private. Renderer query objects, allocation accounting, capture history, and the ImGui profiler stay in Nuclear.Engine.
@@ -33,6 +43,14 @@ Defaults and fullscreen behavior remain unchanged; public headers expose no OS t
 6. Shut down clients and modules, detach ImGui, and destroy graphics resources before destroying the window. A close event leaves its native handle alive for this cleanup. Finally call `Platform::Shutdown()`.
 
 The platform API is intended for the window/event thread. Window objects cannot be copied. Native handles, queued event window pointers, and library symbol addresses are borrowed and must not outlive their owners. Destroying a window removes its queued events. Repeated `Destroy()` and `Shutdown()` calls are safe; shutdown refuses to unregister the backend while windows remain alive.
+
+`Window::GetDpiScale()` reports pixels per 96-DPI logical unit (1 for an empty
+window). The host executable declares DPI awareness; the foundation does not
+change process-wide awareness for other applications. The editor embeds a
+PerMonitorV2 manifest. Windows `WM_DPICHANGED` applies the suggested physical
+window bounds and emits `WindowResize`, including when the pixel dimensions stay
+the same, so clients can refresh their logical scale and swap-chain dimensions.
+Native framed-window sizing uses DPI-adjusted nonclient extents.
 
 `Window::ClientToScreen` and `ScreenToClient` convert signed pixel coordinates
 through the desktop for cross-window drag/drop. They return false for an empty
