@@ -37,6 +37,10 @@ namespace Nuclear::UI
 		const DrawList& BuildDrawList();
 		/// Processes one platform event; true means gameplay should not receive it.
 		bool ProcessEvent(const Platform::Event& event);
+		/// Optional application shortcut filter, called before widget routing inside the dispatch guard.
+		/// Return true to consume the event. Focus notifications still reset context input normally.
+		/// Captured objects must outlive this context or clear the callback; Clear resets it.
+		std::function<bool(const Platform::Event&)> OnPreviewEvent;
 		/// Selects input routing; GameOnly cancels focus/capture. Physical input remains untouched.
 		void SetInputMode(InputMode mode);
 		/// Cancels presses/focus/capture when another UI layer takes input ownership.
@@ -53,6 +57,9 @@ namespace Nuclear::UI
 		{
 			return mFocus;
 		}
+		/// Selects an attached, visible, enabled focusable widget by ID; zero clears focus.
+		/// Cancels the previous focus and reveals scroll ancestors. Call on the UI/event thread.
+		void SetFocus(WidgetId id);
 		/// Zero when uncaptured.
 		WidgetId GetCapturedWidget() const
 		{
@@ -91,7 +98,6 @@ namespace Nuclear::UI
 		};
 		void CancelInput(); ///< Sends Cancel and drops focus/capture/hover.
 		bool Dispatch(WidgetId target, const InputEvent& event); ///< Bubbles along a snapshot of IDs.
-		void SetFocus(WidgetId id); ///< Cancels old focus before selecting a new widget.
 		void UpdateHover(Vec2 position); ///< Recomputes topmost interactive hover target.
 		void FlushDeferred(); ///< Applies queued mutations after dispatch.
 		void CollectFocusable(Widget& widget, std::vector<WidgetId>& ids) const; ///< Visible enabled order.

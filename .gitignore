@@ -29,6 +29,7 @@
 *.filters
 
 !logo.png
+!/Assets/NuclearEngine/Editor/NuclearLogo.png
 /Bin
 *.enc
 /External/CmakeProjects

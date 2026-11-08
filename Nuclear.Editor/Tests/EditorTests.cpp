@@ -1,5 +1,12 @@
+#include "EditorHistoryTests.h"
+#include "SceneSettingsTests.h"
 #include <NuclearEditor.h>
 #include <GameViewPort.h>
+#include <EditorTitleBar.h>
+#include <EditorMenuPopup.h>
+#include <EditorWindowButton.h>
+#include <EditorAddMenu.h>
+#include <SkyboxComponent.h>
 #include "TransformGizmoTests.h"
 #include "WorkspaceTests.h"
 #include <Nuclear.Platform/Platform.h>
@@ -127,6 +134,35 @@ namespace
 				return entity;
 		return entt::null;
 	}
+	std::array<unsigned char, 4> CameraCorner()
+	{
+		using namespace Diligent;
+		auto& graphics = Graphics::GraphicsModule::Get();
+		auto* source = Core::Scene::Get().GetMainCamera()->GetColorRT().GetRTV()->GetTexture();
+		auto desc = source->GetDesc();
+		desc.Usage = USAGE_STAGING;
+		desc.BindFlags = BIND_NONE;
+		desc.CPUAccessFlags = CPU_ACCESS_READ;
+		RefCntAutoPtr<ITexture> staging;
+		graphics.GetDevice()->CreateTexture(desc, nullptr, &staging);
+		Check(staging != nullptr, "Skybox readback allocation");
+		auto* context = graphics.GetContext();
+		context->SetRenderTargets(0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_NONE);
+		CopyTextureAttribs copy;
+		copy.pSrcTexture = source;
+		copy.pDstTexture = staging;
+		copy.SrcTextureTransitionMode = RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+		copy.DstTextureTransitionMode = RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+		context->CopyTexture(copy);
+		context->WaitForIdle();
+		MappedTextureSubresource mapped;
+		context->MapTextureSubresource(staging, 0, 0, MAP_READ, MAP_FLAG_NONE, nullptr, mapped);
+		Check(mapped.pData != nullptr, "Skybox readback mapping");
+		const auto* pixel = static_cast<const unsigned char*>(mapped.pData);
+		const std::array<unsigned char, 4> result = {pixel[0], pixel[1], pixel[2], pixel[3]};
+		context->UnmapTextureSubresource(staging, 0, 0);
+		return result;
+	}
 	void Readback(const char* path)
 	{
 		using namespace Diligent;
@@ -195,9 +231,11 @@ int main()
 		desc.mAssetsLibraryPath = "../Assets/";
 		desc.mEngineWindowDesc.WindowWidth = 1440;
 		desc.mEngineWindowDesc.WindowHeight = 900;
+		desc.mEngineWindowDesc.CustomTitleBar = true;
 		auto& engine = Core::Engine::Get();
 		Check(engine.Start(desc), "Editor engine startup");
 		engine.GetMainWindow()->Display(false);
+		Nuclear::Editor::Tests::RunEditorHistoryTests();
 		{
 			NuclearEditor editor;
 			editor.Load();
@@ -207,8 +245,89 @@ int main()
 				editor.Render(1.f / 60);
 				engine.EndFrame();
 			};
+			auto historyKey = [](Platform::Input::KeyCode key, bool shift = false) {
+				Key(Platform::Input::KEYCODE_LCTRL);
+				if (shift)
+					Key(Platform::Input::KEYCODE_LSHIFT);
+				Key(key);
+				Key(key, false);
+				if (shift)
+					Key(Platform::Input::KEYCODE_LSHIFT, false);
+				Key(Platform::Input::KEYCODE_LCTRL, false);
+			};
+			auto historyMenu = [&frame](const std::string& command) {
+				Action("Edit");
+				Action(command);
+				frame();
+			};
 			for (int index = 0; index < 4; ++index)
 				frame();
+			Check(editor.GetWorkspace()->GetArea("scene-settings") == nullptr,
+				"Scene settings starts closed until opened from a menu");
+			Context().Layout();
+			auto* titleBar = Find<Nuclear::Editor::EditorTitleBar>([](const auto&) { return true; });
+			Check(titleBar && titleBar->GetBounds().x == 0 && titleBar->GetBounds().y == 0 &&
+				titleBar->GetBounds().Height == 40, "Custom title bar occupies the top of the client area");
+			auto* nativeWindow = engine.GetMainWindow();
+			Check(nativeWindow->HasCustomTitleBar() && nativeWindow->IsTitleBarAt(1000, 20), "Empty caption space supports native dragging");
+			Check(!nativeWindow->IsTitleBarAt(70, 20) && !nativeWindow->IsTitleBarAt(1420, 20), "Menus and caption controls remain client input");
+			Action("File");
+			auto menu = []() { return Find<Nuclear::Editor::EditorMenuPopup>([](const auto&) { return true; }); };
+			Check(menu() && Context().GetFocusedWidget() == menu()->GetId(), "File opens a keyboard-focused dropdown");
+			Check(!nativeWindow->IsTitleBarAt(1000, 20), "Open menu blocks caption dragging");
+			UIModule::Get().Render();
+			Readback("Build/DebugX64/editor-file-menu.ppm");
+			Key(Platform::Input::KEYCODE_RIGHT);
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Undo"; }),
+				"Right switches to the next menu");
+			Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "Undo"; })->GetParent()->IsEnabled(),
+				"Initial scene has no undoable user edits");
+			Key(Platform::Input::KEYCODE_LEFT);
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Save scene (unavailable)"; }),
+				"Left switches to the previous menu");
+			Key(Platform::Input::KEYCODE_ESCAPE);
+			Check(!menu(), "Escape dismisses the menu");
+			Action("Help");
+			Key(Platform::Input::KEYCODE_DOWN);
+			Key(Platform::Input::KEYCODE_RETURN);
+			Check(!menu(), "Keyboard selection executes a command and dismisses its menu");
+			Action("Help");
+			Action("About Nuclear Engine");
+			Check(!menu(), "Pointer commands survive focus moving into the popup and dismiss it");
+			Action("Edit");
+			auto* projectHeader = Find<TextBlock>([](const auto& label) { return label.GetText() == "Project"; });
+			const auto projectBounds = projectHeader->GetBounds();
+			PointerAt(Platform::EventType::MouseMove, {projectBounds.x + 5, projectBounds.y + 5});
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Project settings (unavailable)"; }),
+				"Hover switches open dropdowns");
+			Platform::Event focus;
+			focus.mType = Platform::EventType::FocusChanged;
+			Context().ProcessEvent(focus);
+			Check(!menu(), "Window focus loss dismisses dropdowns");
+			focus.mFocused = true;
+			Context().ProcessEvent(focus);
+			Action("Help");
+			auto* about = Find<TextBlock>([](const auto& label) { return label.GetText() == "About Nuclear Engine"; });
+			const auto aboutBounds = about->GetBounds();
+			PointerAt(Platform::EventType::MouseButton, {aboutBounds.x + 5, aboutBounds.y + 5}, true);
+			focus.mFocused = false;
+			Context().ProcessEvent(focus);
+			frame();
+			Check(!menu(), "Losing window focus during a command press also closes its popup");
+			focus.mFocused = true;
+			Context().ProcessEvent(focus);
+			Action("Edit");
+			PointerAt(Platform::EventType::MouseButton, {1000, 70}, true);
+			PointerAt(Platform::EventType::MouseButton, {1000, 70}, false);
+			Check(!menu(), "Outside click dismisses without invoking underlying controls");
+			auto* maximize = Find<Nuclear::Editor::EditorWindowButton>([](const auto& button) {
+				return button.GetAction() == Nuclear::Editor::EditorWindowButton::Action::Maximize;
+			});
+			Click(*maximize);
+			Check(nativeWindow->IsMaximized(), "Retained maximize button invokes the native window command");
+			Click(*maximize);
+			Check(!nativeWindow->IsMaximized(), "Retained restore button invokes the native window command");
+			nativeWindow->Display(false);
 			auto& previewMesh =
 				Core::Scene::Get().GetRegistry().get<Components::MeshComponent>(Entity("Box"));
 			auto* camera = Core::Scene::Get().GetMainCamera();
@@ -306,6 +425,44 @@ int main()
 			const auto committed = movedBox.GetLocalPosition();
 			Check(committed.x > .1f && !Context().GetCapturedWidget(),
 				  "Release outside the viewport commits and releases capture");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(movedBox.GetLocalPosition() == Math::Vector3(0), "Ctrl+Z undoes a whole committed gizmo drag");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(Entity("Box") != entt::null && movedBox.GetLocalPosition() == Math::Vector3(0),
+				"Canceled drags and initial scene setup do not enter history");
+			historyKey(Platform::Input::KEYCODE_Y);
+			frame();
+			Check(movedBox.GetLocalPosition() == committed, "Ctrl+Y redoes the gizmo drag");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			historyKey(Platform::Input::KEYCODE_Z, true);
+			frame();
+			Check(movedBox.GetLocalPosition() == committed, "Ctrl+Shift+Z also redoes the gizmo drag");
+			Key(Platform::Input::KEYCODE_LCTRL);
+			Platform::Event repeated;
+			repeated.mType = Platform::EventType::Key;
+			repeated.mKey = Platform::Input::KEYCODE_Z;
+			repeated.mPressed = repeated.mRepeat = true;
+			Context().ProcessEvent(repeated);
+			Key(Platform::Input::KEYCODE_LCTRL, false);
+			Check(movedBox.GetLocalPosition() == committed, "Auto-repeat does not replay additional history steps");
+			moveHandles.GetHandlePosition(movedBox, *camera, surface->GetBounds(), 0, moveStart);
+			moveHandles.GetHandlePosition(movedBox, *camera, surface->GetBounds(), 3, moveCenter);
+			PointerAt(Platform::EventType::MouseButton, moveStart, true);
+			PointerAt(Platform::EventType::MouseMove, {moveStart.x + (moveStart.x - moveCenter.x) * .4f,
+				moveStart.y + (moveStart.y - moveCenter.y) * .4f});
+			frame();
+			Check(Context().GetCapturedWidget() == surface->GetId(), "History cancellation check starts a live drag");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(!Context().GetCapturedWidget() && movedBox.GetLocalPosition() == Math::Vector3(0),
+				"Undo cancels a pending drag before reverting the previous committed action");
+			historyKey(Platform::Input::KEYCODE_Y);
+			frame();
+			PointerAt(Platform::EventType::MouseButton, moveStart);
+			Check(movedBox.GetLocalPosition() == committed, "A release after history cancellation cannot commit a stale drag");
 			Key(Platform::Input::KEYCODE_ESCAPE);
 			Check(movedBox.GetLocalPosition() == committed,
 				  "Escape after commit does not undo a completed drag");
@@ -335,15 +492,23 @@ int main()
 					  surface->GetGizmoMode() == Nuclear::Editor::GizmoMode::Select &&
 					  movedBox.GetLocalPosition() == committed,
 				  "WASD runs through editor updates during right-look and preserves Select mode");
-			Action("+ Sphere");
+			Action("Add");
+			Action("Shapes  >");
+			Action("Sphere");
 			frame();
 			auto sphere = Entity("Sphere");
 			Check(sphere != entt::null, "Retained toolbar creates a sphere");
+			historyMenu("Undo");
+			Check(!Core::Scene::Get().GetRegistry().valid(sphere), "Edit menu undoes primitive creation");
+			historyMenu("Redo");
+			Check(Entity("Sphere") == sphere, "Edit menu redoes creation with the same entity identity");
 			auto* name = Find<TextBox>([](const TextBox& input) {
 				return input.GetText() == "Sphere";
 			});
 			Check(name != nullptr, "Selected entity has an editable name");
 			Click(*name);
+			historyKey(Platform::Input::KEYCODE_Z);
+			Check(Entity("Sphere") == sphere, "Scene history shortcuts leave focused text editing alone");
 			const auto inspectorCameraPosition = camera->GetPosition();
 			Key(Platform::Input::KEYCODE_W);
 			Key(Platform::Input::KEYCODE_G);
@@ -396,18 +561,59 @@ int main()
 				return label.GetText() == "Camera";
 			});
 			Check(cameraOption && !cameraOption->IsVisible(), "Component selection closes the dropdown");
+			Action("Add component  v");
+			Action("Camera");
+			Check(Core::Scene::Get().GetMainCamera() ==
+				&Core::Scene::Get().GetRegistry().get<Components::CameraComponent>(Entity("Editor Camera")),
+				"Adding an authoring camera preserves the preview camera before the next frame");
+			frame();
+			historyMenu("Undo");
+			Check(!Core::Scene::Get().GetRegistry().all_of<Components::CameraComponent>(sphere), "Undo removes an authoring camera");
+			historyMenu("Redo");
+			Check(Core::Scene::Get().GetRegistry().all_of<Components::CameraComponent>(sphere) &&
+				!Core::Scene::Get().GetRegistry().get<Components::CameraComponent>(sphere).GetIsActive(),
+				"Redo restores an inactive authoring camera");
+			historyMenu("Undo");
 			Action("Delete selected");
 			frame();
 			Check(!Core::Scene::Get().GetRegistry().valid(sphere),
 				  "Delete invalidates selected handle safely");
+			historyMenu("Undo");
+			Check(Entity("Test Sphere") == sphere &&
+				Core::Scene::Get().GetRegistry().all_of<Components::MeshComponent, Components::LightComponent>(sphere) &&
+				Core::Scene::Get().GetRegistry().get<Components::EntityInfoComponent>(sphere).mTransform.GetLocalPosition().x == 2.5f,
+				"Undo deletion restores identity, name, transform and components");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(!Core::Scene::Get().GetRegistry().all_of<Components::LightComponent>(sphere), "Undo removes the added light");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(Core::Scene::Get().GetRegistry().get<Components::EntityInfoComponent>(sphere).mTransform.GetLocalPosition().x == 0,
+				"Undo restores the committed numeric field");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(Entity("Sphere") == sphere, "Undo restores the previous entity name");
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(!Core::Scene::Get().GetRegistry().valid(sphere), "Earlier creation remains undoable after deletion restoration");
+			for (int index = 0; index < 5; ++index)
+			{
+				historyKey(Platform::Input::KEYCODE_Y);
+				frame();
+			}
+			Check(!Core::Scene::Get().GetRegistry().valid(sphere), "Redo replays creation, edits, component addition and deletion in order");
 			Action("New project");
 			frame();
+			historyKey(Platform::Input::KEYCODE_Z);
+			frame();
+			Check(!Core::Scene::Get().GetRegistry().valid(sphere), "Project modal blocks history shortcuts");
 			Key(Platform::Input::KEYCODE_TAB);
 			auto* focused = Context().Find(Context().GetFocusedWidget());
 			Check(dynamic_cast<TextBox*>(focused) != nullptr, "Modal focus excludes the disabled workspace");
 			Action("Cancel");
 			frame();
-			Action("+ Entity");
+			Action("Add");
+			Action("Empty Entity");
 			frame();
 			Check(Entity("Entity") != entt::null, "Cancel restores workspace input");
 			Action("New project");
@@ -416,7 +622,14 @@ int main()
 			frame();
 			Check(Entity("Entity") == entt::null && Entity("Editor Camera") != entt::null,
 				  "Project creation resets scene and camera");
-			Action("+ Box");
+			Action("Edit");
+			Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "Undo"; })->GetParent()->IsEnabled() &&
+				!Find<TextBlock>([](const auto& label) { return label.GetText() == "Redo"; })->GetParent()->IsEnabled(),
+				"New project clears undo and redo history");
+			Key(Platform::Input::KEYCODE_ESCAPE);
+			Action("Add");
+			Action("Shapes  >");
+			Action("Box");
 			frame();
 			engine.GetMainWindow()->SetSize(960, 600);
 			editor.OnWindowResize(960, 600);
@@ -425,6 +638,8 @@ int main()
 			UIModule::Get().Render();
 			CheckViewportToolbar();
 			Readback("Build/DebugX64/editor-960.ppm");
+			Check(nativeWindow->IsTitleBarAt(650, 13) && !nativeWindow->IsTitleBarAt(45, 13),
+				"Caption hit testing follows the smaller workspace's physical UI scale");
 			Action("Capture");
 			for (int index = 0; index < 8; ++index)
 				frame();
@@ -458,7 +673,128 @@ int main()
 			frame();
 			Check(Entity("editorfixtures_triangle") != entt::null,
 				  "Imported geometry is ready and can be instantiated");
+			const auto importedEntity = Entity("editorfixtures_triangle");
+			historyMenu("Undo");
+			Check(!Core::Scene::Get().GetRegistry().valid(importedEntity), "Undo removes an instantiated library mesh");
+			historyMenu("Redo");
+			Check(Entity("editorfixtures_triangle") == importedEntity &&
+				Core::Scene::Get().GetRegistry().get<Components::MeshComponent>(importedEntity).GetMesh()->GetState() == Assets::IAsset::State::Created,
+				"Redo instantiates the same library-owned ready mesh");
 			Nuclear::Editor::Tests::RunWorkspaceTests(editor, frame);
+			Nuclear::Editor::Tests::RunSceneSettingsTests(editor, frame);
+			auto addMenu = []() { return Find<Nuclear::Editor::EditorAddMenu>([](const auto&) { return true; }); };
+			Action("Add");
+			Check(addMenu() && Context().GetFocusedWidget() == addMenu()->GetId(), "Add opens a keyboard-focused creation popup");
+			Key(Platform::Input::KEYCODE_ESCAPE);
+			Check(!addMenu(), "Escape dismisses Add");
+			Action("Add");
+			PointerAt(Platform::EventType::MouseButton, {1000, 70}, true);
+			PointerAt(Platform::EventType::MouseButton, {1000, 70});
+			Check(!addMenu(), "Outside clicks dismiss Add without activating the workspace");
+			Action("Add");
+			Platform::Event addFocus;
+			addFocus.mType = Platform::EventType::FocusChanged;
+			Context().ProcessEvent(addFocus);
+			frame();
+			Check(!addMenu(), "Window focus loss dismisses the creation popup");
+			addFocus.mFocused = true;
+			Context().ProcessEvent(addFocus);
+			Action("Add");
+			Action("Skybox");
+			frame();
+			const auto emptySky = CameraCorner();
+			Check(Core::Scene::Get().GetRegistry().view<Components::MeshComponent>().empty() &&
+				emptySky[2] > emptySky[0] + 25, "Skybox initializes and renders in a scene without meshes");
+			historyMenu("Undo");
+			Action("Add");
+			Key(Platform::Input::KEYCODE_RETURN);
+			frame();
+			Check(Entity("Entity") != entt::null, "Keyboard Enter creates an Empty Entity");
+			historyMenu("Undo");
+			Action("Add");
+			Key(Platform::Input::KEYCODE_DOWN);
+			Key(Platform::Input::KEYCODE_RIGHT);
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Plane" && label.IsVisible(); }),
+				"Right opens Shapes as a submenu");
+			Key(Platform::Input::KEYCODE_LEFT);
+			Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "Plane" && label.IsVisible(); }),
+				"Left returns from Shapes to the Add menu");
+			Key(Platform::Input::KEYCODE_RIGHT);
+			Key(Platform::Input::KEYCODE_DOWN);
+			Key(Platform::Input::KEYCODE_RETURN);
+			frame();
+			Check(Entity("Plane") != entt::null, "Keyboard submenu navigation creates a plane");
+			historyMenu("Undo");
+			Action("Add");
+			Action("Shapes  >");
+			Action("Box");
+			frame();
+			Check(Entity("Box") != entt::null, "Add / Shapes / Box creates geometry");
+			const auto clearCorner = CameraCorner();
+			Action("Add");
+			auto* shapesLabel = Find<TextBlock>([](const auto& label) { return label.GetText() == "Shapes  >"; });
+			const auto shapesBounds = shapesLabel->GetBounds();
+			PointerAt(Platform::EventType::MouseMove, {shapesBounds.x + 5, shapesBounds.y + 5});
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Sphere" && label.IsVisible(); }),
+				"Hover opens Shapes without creating an entity");
+			UIModule::Get().Render();
+			Readback("Build/DebugX64/editor-add-menu.ppm");
+			Action("Skybox");
+			frame();
+			const auto sky = Entity("Skybox");
+			Check(sky != entt::null && Core::Scene::Get().GetRegistry().all_of<Nuclear::Editor::SkyboxComponent>(sky),
+				"Add creates a selectable skybox entity");
+			const auto skyCorner = CameraCorner();
+			Check(skyCorner[2] > skyCorner[0] + 25 && skyCorner[2] > clearCorner[2] + 30,
+				"The default cubemap renders behind the scene");
+			Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "TRANSFORM" && label.IsVisible(); }),
+				"Skybox inspection offers visibility without misleading spatial transforms");
+			UIModule::Get().Render();
+			Readback("Build/DebugX64/editor-skybox.ppm");
+			auto* skyCamera = Core::Scene::Get().GetMainCamera();
+			const auto skyCameraPosition = skyCamera->GetPosition();
+			skyCamera->SetPosition(skyCameraPosition + Math::Vector3(20, 0, 0));
+			frame();
+			const auto translatedCorner = CameraCorner();
+			Check(std::abs(int(translatedCorner[0]) - int(skyCorner[0])) <= 1 &&
+				std::abs(int(translatedCorner[2]) - int(skyCorner[2])) <= 1,
+				"Skybox follows camera translation without shifting its horizon");
+			skyCamera->SetPosition(skyCameraPosition);
+			frame();
+			Action("Add");
+			Action("Skybox");
+			frame();
+			int skyCount = 0;
+			for (auto entity : Core::Scene::Get().GetRegistry().view<Nuclear::Editor::SkyboxComponent>())
+				++skyCount;
+			Check(skyCount == 1, "Adding Skybox again selects the existing background");
+			historyMenu("Undo");
+			Check(!Core::Scene::Get().GetRegistry().valid(sky) && CameraCorner() == clearCorner,
+				"Undo removes the skybox and restores clear-color pixels, including after duplicate Add");
+			historyMenu("Redo");
+			Check(Entity("Skybox") == sky && CameraCorner() == skyCorner, "Redo restores skybox identity and rendering");
+			Action("Visible");
+			frame();
+			Check(!Core::Scene::Get().GetRegistry().get<Nuclear::Editor::SkyboxComponent>(sky).Enabled && CameraCorner() == clearCorner,
+				"Skybox visibility toggles the rendered background");
+			historyMenu("Undo");
+			Check(CameraCorner() == skyCorner, "Skybox visibility is undoable");
+			Action("Delete selected");
+			frame();
+			Check(!Core::Scene::Get().GetRegistry().valid(sky) && CameraCorner() == clearCorner,
+				"Deleting the skybox restores scene clear color");
+			historyMenu("Undo");
+			Check(Core::Scene::Get().GetRegistry().all_of<Nuclear::Editor::SkyboxComponent>(sky) && CameraCorner() == skyCorner,
+				"Undo deletion restores the skybox component and background");
+			Action("New scene");
+			frame();
+			Check(Core::Scene::Get().GetRegistry().view<Nuclear::Editor::SkyboxComponent>().empty(),
+				"New scene removes the skybox authoring entity");
+			Action("Edit");
+			Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "Undo"; })->GetParent()->IsEnabled() &&
+				!Find<TextBlock>([](const auto& label) { return label.GetText() == "Redo"; })->GetParent()->IsEnabled(),
+				"New scene clears both history directions while retaining the workspace");
+			Key(Platform::Input::KEYCODE_ESCAPE);
 			Context().Clear();
 			editor.Shutdown();
 			Check(Context().BuildDrawList().Quads.empty(), "Editor teardown clears all widgets");

@@ -10,6 +10,17 @@ Only **Windows x64** is implemented. Public headers under [Nuclear.Platform/incl
 
 ## Lifetime and event flow
 
+`WindowDesc::CustomTitleBar` opts a non-fullscreen window into client-drawn chrome.
+It retains the native overlapped-window capabilities but removes the nonclient
+caption via `WM_NCCALCSIZE`. The backend supplies DPI-aware resize hit tests and
+maximized bounds matching the current monitor's work area. `SetTitleBarHitTest`
+accepts a callback in physical client pixels; true exposes `HTCAPTION` for native
+dragging and double-click/system-menu behavior. UI owners must clear callbacks
+before captured widgets expire. `Destroy` also clears the callback.
+`Minimize`, `ToggleMaximize`, `IsMaximized` and `RequestClose` keep OS commands
+inside the foundation. RequestClose posts the existing deferred close event.
+Defaults and fullscreen behavior remain unchanged; public headers expose no OS types.
+
 1. Call `Nuclear::Platform::Initialize()` on the thread that will own windows and pump events.
 2. Create a `Platform::Window` with `WindowDesc`. Dimensions are client pixels and titles are UTF-8. `FullScreen` creates a borderless window over the primary monitor; it does not change the display mode.
 3. Pass the borrowed window to `GraphicsModuleDesc::pWindowHandle`. Graphics converts `GetNativeHandle()` to Diligent's native-window description at the renderer boundary.
@@ -66,3 +77,10 @@ finally { Pop-Location }
 ```
 
 Migration validation on 2026-11-06: the Debug x64 solution built, the standalone Windows smoke checks passed in Debug and Release, and the Debug engine smoke rendered 12 frames, resized to 960x540, received mouse/scroll callbacks, and completed client/module/window shutdown with exit code 0. Binary dependency inspection confirmed that Nuclear.Engine imports Nuclear.Platform and no SDL DLL. Nuclear.Platform imports only Windows system and C++ runtime DLLs. The default Samples launch initialized graphics/ImGui but failed XAudio master-voice creation, preventing successful full startup. A full Release engine build, physical input feel, clipboard interaction, and secondary-window UI behavior were not validated.
+
+Custom chrome checks on 2026-11-08 passed in Debug and Release: requested client
+sizes, caption/client/corner hit tests, native caption double-click maximize/restore,
+client double-click press translation, work-area maximize bounds, restore dimensions,
+minimize, deferred close and callback cleanup. The Debug editor integration and
+hidden executable launch also passed; see [Editor.md](Editor.md#launch-and-validation).
+Physical input feel, automatic DPI transitions and a full Release engine remain unverified.

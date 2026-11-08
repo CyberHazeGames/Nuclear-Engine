@@ -7,6 +7,7 @@ int main()
 	desc.mEngineWindowDesc.WindowWidth = 1440;
 	desc.mEngineWindowDesc.WindowHeight = 900;
 	desc.mEngineWindowDesc.Title = "Nuclear Editor";
+	desc.mEngineWindowDesc.CustomTitleBar = true;
 	desc.mAssetsLibraryPath = "../Assets/";
 	desc.EnableImGui = false;
 	desc.AutoInitAudioModule = false;

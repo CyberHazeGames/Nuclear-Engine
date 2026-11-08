@@ -3,6 +3,7 @@
 #include <UI/DrawList.h>
 #include <ECS/entt/entity/entity.hpp>
 #include <TransformGizmo.h>
+#include <ECS/Transform.h>
 #include <array>
 #include <functional>
 namespace Nuclear::Components
@@ -28,6 +29,9 @@ namespace Nuclear::Editor
 		/// Requires viewport keyboard focus; pauses during transform drags and clears keys on focus loss.
 		/// Nonpositive or nonfinite time steps are ignored. Diagonal movement keeps the same speed.
 		void UpdateCamera(float deltaTime);
+		void CancelInteraction(); ///< Restores a pending drag and releases capture before history replay.
+		/// Receives a completed drag's target and starting transform; never called for cancellation.
+		std::function<void(entt::entity, const ECS::Transform&)> OnTransformCommitted;
 		/// Called after drag updates/commit/cancel so the inspector can rebuild outside dispatch.
 		std::function<void()> OnTransformChanged;
 		bool IsFocusable() const override
@@ -45,6 +49,7 @@ namespace Nuclear::Editor
 			const;				///< Resolves the live selected component, or null.
 		void CancelTransform(); ///< Restores a live drag target and notifies the inspector.
 		TransformGizmo mGizmo;	///< Handle drawing, hit testing and transform drag state.
+		ECS::Transform mDragStart; ///< Authored transform before the current left-button gesture.
 		entt::entity mSelected =
 			entt::null;			///< Validated on every input and paint; never a component pointer.
 		UI::Rect mDragBounds;	///< Viewport allocation at interaction start, in logical units.

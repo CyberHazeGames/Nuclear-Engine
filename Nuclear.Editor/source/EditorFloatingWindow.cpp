@@ -1,4 +1,6 @@
 #include <EditorFloatingWindow.h>
+#include <EditorTitleBar.h>
+#include <EditorWidgets.h>
 #include <Graphics/GraphicsModule.h>
 
 namespace Nuclear::Editor
@@ -11,6 +13,7 @@ namespace Nuclear::Editor
 		desc.Title = "Nuclear / " + title;
 		desc.WindowWidth = 760;
 		desc.WindowHeight = 620;
+		desc.CustomTitleBar = true;
 		if (!mWindow.Create(desc))
 			return false;
 		mWindow.Display(show);
@@ -26,10 +29,21 @@ namespace Nuclear::Editor
 		mContext.SetDefaultFont(font);
 		mContext.SetViewport(float(desc.WindowWidth), float(desc.WindowHeight));
 		mContext.SetInputMode(UI::InputMode::UIOnly);
-		auto area = std::make_unique<EditorDockArea>();
-		pArea = area.get();
-		mContext.AddToViewport(std::move(area));
+		auto root = std::make_unique<UI::VerticalBox>();
+		auto& caption = root->Add<EditorTitleBar>(mWindow);
+		pTitleBar = &caption;
+		caption.SetTitle(desc.Title);
+		auto& area = root->Add<EditorDockArea>();
+		pArea = &area;
+		Fill(*root, area);
+		mContext.AddToViewport(std::move(root));
 		return true;
+	}
+
+	void EditorFloatingWindow::SetTitle(const std::string& title)
+	{
+		if (pTitleBar)
+			pTitleBar->SetTitle(title);
 	}
 
 	void EditorFloatingWindow::ProcessEvent(const Platform::Event& event)
@@ -68,6 +82,7 @@ namespace Nuclear::Editor
 	void EditorFloatingWindow::Shutdown()
 	{
 		mContext.Clear();
+		pTitleBar = nullptr;
 		pArea = nullptr;
 		mRenderer.Shutdown();
 		pSwapChain.Release();

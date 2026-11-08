@@ -9,6 +9,7 @@
 
 namespace Nuclear::Editor
 {
+	class EditorTitleBar;
 	/// Owns one native editor window, its independent retained input tree and its swap chain.
 	/// All operations run on the engine/window thread; destroy before graphics/platform shutdown.
 	class EditorFloatingWindow
@@ -18,6 +19,7 @@ namespace Nuclear::Editor
 		/// Creates a shared-device swap chain and private UI context; returns false without losing any panel.
 		bool Initialize(const std::string& title, const Assets::Font* font, bool show = true);
 		void Shutdown(); ///< Idempotent ordered teardown; does not redock or run controller callbacks.
+		void SetTitle(const std::string& title); ///< Sets both custom caption and native taskbar/Alt-Tab text for a live window.
 		void ProcessEvent(const Platform::Event& event); ///< Routes input and resizes only this window.
 		void Render(); ///< Draws this window's current back buffer; minimized windows are skipped.
 		void Present(); ///< Presents the rendered buffer; contents may be discarded afterward.
@@ -31,5 +33,6 @@ namespace Nuclear::Editor
 		UI::UIRenderer mRenderer; ///< Private retained renderer using the shared graphics device.
 		Diligent::RefCntAutoPtr<Diligent::ISwapChain> pSwapChain; ///< Window-specific presentation resources.
 		EditorDockArea* pArea = nullptr; ///< Borrowed root dock area, valid after Initialize.
+		EditorTitleBar* pTitleBar = nullptr; ///< Context-owned caption, valid until Shutdown.
 	};
 }

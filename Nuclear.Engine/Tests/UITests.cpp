@@ -52,6 +52,40 @@ namespace
 		context.ProcessEvent(event);
 	}
 
+	void PreviewEventTests()
+	{
+		UIContext context;
+		context.SetViewport(400, 200);
+		auto input = std::make_unique<TextBox>("Preview");
+		const auto id = input->GetId();
+		int committed = 0;
+		input->OnCommitted = [&](const std::string&) { ++committed; };
+		context.AddToViewport(std::move(input));
+		context.SetFocus(id);
+		context.OnPreviewEvent = [](const Platform::Event& event) {
+			return event.mType == Platform::EventType::Key && event.mKey == Platform::Input::KEYCODE_RETURN;
+		};
+		Key(context, Platform::Input::KEYCODE_RETURN, true);
+		Check(committed == 0, "Application shortcuts consume events before focused controls");
+		int observed = 0;
+		context.OnPreviewEvent = [&](const Platform::Event&) { ++observed; return false; };
+		Key(context, Platform::Input::KEYCODE_RETURN, true);
+		Check(committed == 1 && observed == 1, "Unconsumed preview events reach focused controls");
+		Platform::Event focus;
+		focus.mType = Platform::EventType::FocusChanged;
+		context.ProcessEvent(focus);
+		Check(!context.GetFocusedWidget() && observed == 2, "Focus loss reaches the filter and cancels controls");
+		Key(context, Platform::Input::KEYCODE_RETURN, true);
+		Check(observed == 2, "Unfocused windows cannot invoke application shortcuts");
+		focus.mFocused = true;
+		context.ProcessEvent(focus);
+		context.SetInputMode(InputMode::GameOnly);
+		Key(context, Platform::Input::KEYCODE_RETURN, true);
+		Check(observed == 3, "GameOnly routing bypasses application UI shortcuts");
+		context.Clear();
+		Check(!context.OnPreviewEvent, "Context teardown releases application shortcut captures");
+	}
+
 	void LayoutTests()
 	{
 		UIContext context;
@@ -527,6 +561,7 @@ int main(int argc, char** argv)
 	try
 	{
 		LayoutTests();
+		PreviewEventTests();
 		InputTests();
 		OwnershipTransferTests();
 		ClippingAndTextTests();

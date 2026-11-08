@@ -112,10 +112,22 @@ namespace Nuclear
 
 		void Skybox::Initialize(Assets::Texture* tex)
 		{
-			mTextureSRV = tex->GetTextureView();
+			const auto& desc = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc();
+			Initialize(tex, desc.ColorBufferFormat, desc.DepthBufferFormat);
+		}
 
-			InitializePipeline();
+		bool Skybox::Initialize(Assets::Texture* texture, TEXTURE_FORMAT colorFormat, TEXTURE_FORMAT depthFormat)
+		{
+			Valid = false;
+			if (!texture || !texture->GetTextureView() ||
+				texture->GetTextureView()->GetTexture()->GetDesc().Type != RESOURCE_DIM_TEX_CUBE)
+				return false;
+			mTextureSRV = texture->GetTextureView();
+			if (!InitializePipeline(colorFormat, depthFormat))
+				return false;
 			InitializeCube();
+			Valid = mVBuffer != nullptr;
+			return Valid;
 		}
 	
 
@@ -132,12 +144,19 @@ namespace Nuclear
 
 		void Skybox::InitializePipeline()
 		{
+			const auto& desc = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc();
+			InitializePipeline(desc.ColorBufferFormat, desc.DepthBufferFormat);
+		}
+
+		bool Skybox::InitializePipeline(TEXTURE_FORMAT colorFormat, TEXTURE_FORMAT depthFormat)
+		{
+			Valid = false;
 			GraphicsPipelineStateCreateInfo PSOCreateInfo;
 			PSOCreateInfo.PSODesc.Name = "SkyBox_PSO";
 			PSOCreateInfo.GraphicsPipeline.NumRenderTargets = 1;
-			PSOCreateInfo.GraphicsPipeline.RTVFormats[0] = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc().ColorBufferFormat;
+			PSOCreateInfo.GraphicsPipeline.RTVFormats[0] = colorFormat;
 			PSOCreateInfo.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = false;
-			PSOCreateInfo.GraphicsPipeline.DSVFormat = Graphics::GraphicsModule::Get().GetSwapChain()->GetDesc().DepthBufferFormat;
+			PSOCreateInfo.GraphicsPipeline.DSVFormat = depthFormat;
 			PSOCreateInfo.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 			PSOCreateInfo.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = true;
 			PSOCreateInfo.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
@@ -151,6 +170,8 @@ namespace Nuclear
 			RefCntAutoPtr<IShader> PSShader;
 			Graphics::GraphicsModule::Get().CreateShader(Platform::FileSystem::Get().LoadFileToString("@NuclearAssets@/Shaders/Background.vs.hlsl"), VSShader.RawDblPtr(), SHADER_TYPE_VERTEX);
 			Graphics::GraphicsModule::Get().CreateShader(Platform::FileSystem::Get().LoadFileToString("@NuclearAssets@/Shaders/Background.Ps.hlsl"), PSShader.RawDblPtr(), SHADER_TYPE_PIXEL);
+			if (!VSShader || !PSShader)
+				return false;
 
 
 			LayoutElement LayoutElems[] =
@@ -184,13 +205,24 @@ namespace Nuclear
 			PSOCreateInfo.PSODesc.ResourceLayout.ImmutableSamplers = StaticSamplers;
 			PSOCreateInfo.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(StaticSamplers);
 			Graphics::GraphicsModule::Get().GetDevice()->CreateGraphicsPipelineState(PSOCreateInfo, &mPipeline);
+			if (!mPipeline)
+				return false;
 
-			mPipeline->GetStaticVariableByName(SHADER_TYPE_VERTEX, "NEStatic_Camera")->Set(RenderingModule::Get().GetCameraCB());
+			auto* camera = mPipeline->GetStaticVariableByName(SHADER_TYPE_VERTEX, "NEStatic_Camera");
+			if (!camera)
+				return false;
+			camera->Set(RenderingModule::Get().GetCameraCB());
 
 
 			mPipeline->CreateShaderResourceBinding(&mSRB, true);
-			mSRB->GetVariableByIndex(SHADER_TYPE_PIXEL, 0)->Set(mTextureSRV);
+			if (!mSRB)
+				return false;
+			auto* sky = mSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NE_Skybox");
+			if (!sky)
+				return false;
+			sky->Set(mTextureSRV);
 			Valid = true;
+			return true;
 		}
 
 		void Skybox::InitializeCube()

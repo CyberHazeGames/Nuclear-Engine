@@ -1,5 +1,11 @@
 #include "Win32Platform.h"
 #include <algorithm>
+#include <windowsx.h>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+
+// windowsx.h defines a macro with the same name as our portable window query.
+#undef IsMaximized
 
 namespace Nuclear::Platform
 {
@@ -44,6 +50,51 @@ namespace Nuclear::Platform::Detail
 		event.pWindow = window;
 		switch (message)
 		{
+		case WM_NCCALCSIZE:
+			if (window->HasCustomTitleBar())
+			{
+				auto* bounds = wparam ? &reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam)->rgrc[0]
+					: reinterpret_cast<RECT*>(lparam);
+				if (IsZoomed(handle))
+				{
+					MONITORINFO monitor{sizeof(MONITORINFO)};
+					if (GetMonitorInfoW(MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST), &monitor))
+						*bounds = monitor.rcWork;
+				}
+				return 0;
+			}
+			break;
+
+		case WM_NCHITTEST:
+			if (window->HasCustomTitleBar())
+			{
+				POINT point{GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+				::ScreenToClient(handle, &point);
+				RECT bounds{};
+				GetClientRect(handle, &bounds);
+				if (!IsZoomed(handle))
+				{
+					const auto dpi = GetDpiForWindow(handle);
+					const int borderX = GetSystemMetricsForDpi(SM_CXSIZEFRAME, dpi) + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+					const int borderY = GetSystemMetricsForDpi(SM_CYSIZEFRAME, dpi) + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+					const bool left = point.x < borderX;
+					const bool right = point.x >= bounds.right - borderX;
+					const bool top = point.y < borderY;
+					const bool bottom = point.y >= bounds.bottom - borderY;
+					if (top) return left ? HTTOPLEFT : (right ? HTTOPRIGHT : HTTOP);
+					if (bottom) return left ? HTBOTTOMLEFT : (right ? HTBOTTOMRIGHT : HTBOTTOM);
+					if (left) return HTLEFT;
+					if (right) return HTRIGHT;
+				}
+				return window->IsTitleBarAt(point.x, point.y) ? HTCAPTION : HTCLIENT;
+			}
+			break;
+
+		case WM_NCACTIVATE:
+			if (window->HasCustomTitleBar())
+				return DefWindowProcW(handle, message, wparam, -1);
+			break;
+
 		case WM_CLOSE:
 			// Keep the HWND alive until the client and graphics resources have shut down.
 			event.mType = EventType::WindowClose;
@@ -141,6 +192,7 @@ namespace Nuclear::Platform
 		}
 
 		const DWORD style = desc.FullScreen ? WS_POPUP : WS_OVERLAPPEDWINDOW;
+		mCustomTitleBar = desc.CustomTitleBar && !desc.FullScreen;
 		RECT bounds{ 0, 0, static_cast<LONG>(desc.WindowWidth), static_cast<LONG>(desc.WindowHeight) };
 		int x = CW_USEDEFAULT;
 		int y = CW_USEDEFAULT;
@@ -154,7 +206,8 @@ namespace Nuclear::Platform
 		}
 		else
 		{
-			AdjustWindowRectEx(&bounds, style, FALSE, 0);
+			if (!mCustomTitleBar)
+				AdjustWindowRectEx(&bounds, style, FALSE, 0);
 		}
 
 		const auto title = Detail::ToWide(desc.Title);
@@ -164,11 +217,17 @@ namespace Nuclear::Platform
 		if (!pWindow)
 		{
 			Detail::RecordError("CreateWindowExW");
+			mCustomTitleBar = false;
 			std::erase_if(state.mEvents, [this](const Event& event) { return event.pWindow == this; });
 			return false;
 		}
 
 		state.mWindows.push_back(this);
+		if (mCustomTitleBar)
+		{
+			const MARGINS margins{1, 1, 1, 1};
+			DwmExtendFrameIntoClientArea(static_cast<HWND>(pWindow), &margins);
+		}
 		// A null target routes raw input to whichever platform window has focus.
 		RAWINPUTDEVICE mouse{ 0x01, 0x02, 0, nullptr };
 		if (!RegisterRawInputDevices(&mouse, 1, sizeof(mouse)))
@@ -183,14 +242,17 @@ namespace Nuclear::Platform
 
 	void Window::Destroy()
 	{
+		mTitleBarHitTest = {};
 		if (!pWindow)
 		{
+			mCustomTitleBar = false;
 			return;
 		}
 
 		auto& state = Detail::GetState();
 		DestroyWindow(static_cast<HWND>(pWindow));
 		pWindow = nullptr;
+		mCustomTitleBar = false;
 		std::erase(state.mWindows, this);
 		std::erase_if(state.mEvents, [this](const Event& event) { return event.pWindow == this; });
 		if (state.pFocusedWindow == this)
@@ -253,7 +315,8 @@ namespace Nuclear::Platform
 		const auto style = static_cast<DWORD>(GetWindowLongPtrW(handle, GWL_STYLE));
 		const auto extendedStyle = static_cast<DWORD>(GetWindowLongPtrW(handle, GWL_EXSTYLE));
 		RECT bounds{ 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-		AdjustWindowRectEx(&bounds, style, FALSE, extendedStyle);
+		if (!mCustomTitleBar)
+			AdjustWindowRectEx(&bounds, style, FALSE, extendedStyle);
 		SetWindowPos(handle, nullptr, 0, 0, bounds.right - bounds.left, bounds.bottom - bounds.top,
 			SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 	}
@@ -269,6 +332,39 @@ namespace Nuclear::Platform
 	void* Window::GetNativeHandle() const
 	{
 		return pWindow;
+	}
+
+	void Window::SetTitleBarHitTest(std::function<bool(int, int)> hitTest)
+	{
+		mTitleBarHitTest = std::move(hitTest);
+	}
+
+	bool Window::IsTitleBarAt(int x, int y) const
+	{
+		return mCustomTitleBar && mTitleBarHitTest && mTitleBarHitTest(x, y);
+	}
+
+	void Window::Minimize()
+	{
+		if (pWindow)
+			ShowWindow(static_cast<HWND>(pWindow), SW_MINIMIZE);
+	}
+
+	void Window::ToggleMaximize()
+	{
+		if (pWindow)
+			ShowWindow(static_cast<HWND>(pWindow), IsMaximized() ? SW_RESTORE : SW_MAXIMIZE);
+	}
+
+	bool Window::IsMaximized() const
+	{
+		return pWindow && IsZoomed(static_cast<HWND>(pWindow));
+	}
+
+	void Window::RequestClose()
+	{
+		if (pWindow)
+			PostMessageW(static_cast<HWND>(pWindow), WM_CLOSE, 0, 0);
 	}
 
 	bool Window::HasFocus() const

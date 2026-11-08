@@ -127,6 +127,17 @@ Sample1 and the selector import the supplied vampire Collada model as `dancing_v
 
 ## Retained editor validation
 
+Undo/redo follow-up on 2026-11-08: Debug x64 builds of the editor, focused editor
+tests and UI tests passed. Run `../Bin/DebugX64/Nuclear.Editor.Tests.exe` from
+`Nuclear.Editor/` for history ordering, restored entity identities/component data,
+menu/keyboard/gizmo transactions, redo branching/no-ops/retention, detached-window
+shortcuts, modal/text isolation, scene/project resets and the existing D3D11
+docking/import/readback/teardown suite. Headless UI checks passed, including
+preview-event consumption, focus/input-mode gating and callback cleanup.
+`../Bin/DebugX64/Nuclear.UI.Tests.exe --gpu --imgui` from `Samples/` passed its
+60-frame D3D11 lifecycle/readback checks. This follow-up did not run a full
+solution/Release build, other graphics backends or manual input testing.
+
 On 2026-11-08, the full Debug x64 solution build passed after replacing the editor
 with retained UI. The separate `Nuclear.Editor/Nuclear.Editor.Tests.vcxproj` build
 and executable passed D3D11 framebuffer checks at 1440x900 and 960x600, toolbar

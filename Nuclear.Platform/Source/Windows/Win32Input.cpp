@@ -145,6 +145,12 @@ namespace Nuclear::Platform::Detail
 
 	bool ProcessInput(Window& window, HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
 	{
+		// Double-click-capable captions also produce client double-click messages.
+		// Preserve ordinary press/release input for widgets without a double-click action.
+		if (message == WM_LBUTTONDBLCLK) message = WM_LBUTTONDOWN;
+		else if (message == WM_RBUTTONDBLCLK) message = WM_RBUTTONDOWN;
+		else if (message == WM_MBUTTONDBLCLK) message = WM_MBUTTONDOWN;
+		else if (message == WM_XBUTTONDBLCLK) message = WM_XBUTTONDOWN;
 		auto& state = GetState();
 		Event event;
 		event.pWindow = &window;

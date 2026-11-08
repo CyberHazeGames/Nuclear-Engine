@@ -1,4 +1,5 @@
 #include <GameViewPort.h>
+#include <SkyboxComponent.h>
 #include <Core/Scene.h>
 #include <Components/CameraComponent.h>
 #include <Components/EntityInfoComponent.h>
@@ -11,6 +12,8 @@ namespace Nuclear::Editor
 	Components::EntityInfoComponent* GameViewPort::SelectedInfo() const
 	{
 		auto& registry = Core::Scene::Get().GetRegistry();
+		if (registry.valid(mSelected) && registry.all_of<SkyboxComponent>(mSelected))
+			return nullptr;
 		return registry.valid(mSelected) ? registry.try_get<Components::EntityInfoComponent>(mSelected)
 										 : nullptr;
 	}
@@ -20,6 +23,15 @@ namespace Nuclear::Editor
 		auto* info = SelectedInfo();
 		if (mGizmo.CancelDrag(info ? &info->mTransform : nullptr) && OnTransformChanged)
 			OnTransformChanged();
+	}
+
+	void GameViewPort::CancelInteraction()
+	{
+		if (GetContext())
+			GetContext()->CancelSubtree(*this);
+		CancelTransform();
+		mDragging = false;
+		mMovementKeys.fill(false);
 	}
 
 	void GameViewPort::SetSelectedEntity(entt::entity entity)
@@ -144,6 +156,8 @@ namespace Nuclear::Editor
 			{
 				const bool edit =
 					info && mGizmo.BeginDrag(info->mTransform, *camera, GetBounds(), event.Position);
+				if (edit)
+					mDragStart = info->mTransform;
 				mDragBounds = GetBounds();
 				return {true, edit, false, true};
 			}
@@ -162,6 +176,8 @@ namespace Nuclear::Editor
 				if (mGizmo.IsDragging())
 				{
 					mGizmo.EndDrag();
+					if (OnTransformCommitted)
+						OnTransformCommitted(mSelected, mDragStart);
 					if (OnTransformChanged)
 						OnTransformChanged();
 				}

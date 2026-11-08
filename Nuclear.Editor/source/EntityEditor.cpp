@@ -1,5 +1,7 @@
 #include <EntityEditor.h>
 #include <EditorWidgets.h>
+#include <EditorHistory.h>
+#include <SkyboxComponent.h>
 #include <cmath>
 namespace Nuclear::Editor
 {
@@ -20,20 +22,37 @@ namespace Nuclear::Editor
 		}
 		template <class T>
 		void AddComponent(UI::PanelWidget& parent, entt::entity entity, const std::string& title,
-						  const std::function<void(bool)>& changed)
+						  const std::function<void(bool)>& changed, EditorHistory& history)
 		{
 			if (Component<T>(entity))
 				return;
-			Action(parent, title, [entity, changed]() {
+			Action(parent, title, [entity, changed, &history]() {
 				auto& registry = Core::Scene::Get().GetRegistry();
-				if (registry.valid(entity) && !registry.all_of<T>(entity))
-					registry.emplace<T>(entity);
+				history.Edit(entity, "Add component", [&]() {
+					if (!registry.all_of<T>(entity))
+						registry.emplace<T>(entity);
+				});
 				changed(true);
 			});
 		}
 	} // namespace
-	std::unique_ptr<UI::Widget> EntityEditor::Build(entt::entity entity, std::function<void(bool)> changed)
+	std::unique_ptr<UI::Widget> EntityEditor::Build(entt::entity entity, std::function<void(bool)> changed, EditorHistory& history)
 	{
+		// Wrap every property setter at the commit boundary, never on text-change or paint.
+		auto number = [entity, changed, &history](UI::PanelWidget& parent, const std::string& title,
+			float value, std::function<void(float)> setter, float minimum = -100000, float maximum = 100000) {
+			Number(parent, title, value, [entity, changed, &history, setter](float value) {
+				history.Edit(entity, "Edit property", [&]() { setter(value); });
+				changed(false);
+			}, minimum, maximum);
+		};
+		auto toggle = [entity, changed, &history](UI::PanelWidget& parent, const std::string& title,
+			bool value, std::function<void(bool)> setter) {
+			Toggle(parent, title, value, [entity, changed, &history, setter](bool value) {
+				history.Edit(entity, "Edit property", [&]() { setter(value); });
+				changed(false);
+			});
+		};
 		auto root = std::make_unique<UI::VerticalBox>();
 		root->SetSpacing(12);
 		auto* info = Component<Components::EntityInfoComponent>(entity);
@@ -44,9 +63,11 @@ namespace Nuclear::Editor
 		}
 		Label(*root, "ENTITY / " + std::to_string(static_cast<Uint32>(entity)), 13);
 		auto& name = root->Add<UI::TextBox>(info->mName);
-		name.OnCommitted = [entity, changed](const std::string& value) {
-			if (auto* info = Component<Components::EntityInfoComponent>(entity))
-				info->mName = value.empty() ? "Entity" : value;
+		name.OnCommitted = [entity, changed, &history](const std::string& value) {
+			history.Edit(entity, "Rename entity", [&]() {
+				if (auto* info = Component<Components::EntityInfoComponent>(entity))
+					info->mName = value.empty() ? "Entity" : value;
+			});
 			changed(false);
 		};
 		auto& componentMenu = root->Add<UI::VerticalBox>();
@@ -63,52 +84,64 @@ namespace Nuclear::Editor
 										? UI::Visibility::Visible
 											: UI::Visibility::Collapsed);
 		};
-		auto& transform = Section(*root, "TRANSFORM");
-		Label(transform, "Enter commits a value. Rotation is in degrees.", 12).SetWrap(true);
-		for (int group = 0; group < 3; ++group)
+		if (!Component<SkyboxComponent>(entity))
 		{
-			const char* names[] = {"POSITION", "ROTATION", "SCALE"};
-			Label(transform, names[group], 12);
-			auto& row = transform.Add<UI::HorizontalBox>();
-			row.SetSpacing(6);
-			auto value = group == 0	  ? info->mTransform.GetLocalPosition()
-						 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
-									  : info->mTransform.GetLocalScale();
-			for (int axis = 0; axis < 3; ++axis)
+			auto& transform = Section(*root, "TRANSFORM");
+			Label(transform, "Enter commits a value. Rotation is in degrees.", 12).SetWrap(true);
+			for (int group = 0; group < 3; ++group)
 			{
-				auto& column = row.Add<UI::VerticalBox>();
-				Fill(row, column);
-				Number(column, std::string(1, "XYZ"[axis]), value[axis], [entity, group, axis](float number) {
-					auto* info = Component<Components::EntityInfoComponent>(entity);
-					if (!info)
-						return;
-					auto value = group == 0	  ? info->mTransform.GetLocalPosition()
-								 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
-											  : info->mTransform.GetLocalScale();
-					value[axis] = number;
-					if (group == 0)
-						info->mTransform.SetPosition(value);
-					else if (group == 1)
-						info->mTransform.SetRotation(Math::radians(value));
-					else
-						info->mTransform.SetScale(value);
-				});
+				const char* names[] = {"POSITION", "ROTATION", "SCALE"};
+				Label(transform, names[group], 12);
+				auto& row = transform.Add<UI::HorizontalBox>();
+				row.SetSpacing(6);
+				auto value = group == 0	  ? info->mTransform.GetLocalPosition()
+							 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
+										  : info->mTransform.GetLocalScale();
+				for (int axis = 0; axis < 3; ++axis)
+				{
+					auto& column = row.Add<UI::VerticalBox>();
+					Fill(row, column);
+					number(column, std::string(1, "XYZ"[axis]), value[axis], [entity, group, axis](float number) {
+						auto* info = Component<Components::EntityInfoComponent>(entity);
+						if (!info)
+							return;
+						auto value = group == 0	  ? info->mTransform.GetLocalPosition()
+									 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
+												  : info->mTransform.GetLocalScale();
+						value[axis] = number;
+						if (group == 0)
+							info->mTransform.SetPosition(value);
+						else if (group == 1)
+							info->mTransform.SetRotation(Math::radians(value));
+						else
+							info->mTransform.SetScale(value);
+					});
+				}
 			}
+		}
+		if (auto* sky = Component<SkyboxComponent>(entity))
+		{
+			auto& section = Section(*root, "SKYBOX");
+			Label(section, "Default sky background", 13);
+			toggle(section, "Visible", sky->Enabled, [entity](bool value) {
+				if (auto* sky = Component<SkyboxComponent>(entity))
+					sky->Enabled = value;
+			});
 		}
 		if (auto* light = Component<Components::LightComponent>(entity))
 		{
 			auto& section = Section(*root, "LIGHT");
-			Number(
+			number(
 				section, "Intensity", light->GetIntensity(),
 				[entity](float value) {
 					if (auto* light = Component<Components::LightComponent>(entity))
 						light->SetIntensity(value);
 				},
 				0, 100000);
-			auto vector = [&section, entity](const std::string& title, Math::Vector3 value, int property) {
+			auto vector = [&section, entity, number](const std::string& title, Math::Vector3 value, int property) {
 				Label(section, title, 13);
 				for (int axis = 0; axis < 3; ++axis)
-					Number(
+					number(
 						section, std::string(1, "XYZ"[axis]), value[axis],
 						[entity, property, axis](float number) {
 							auto* light = Component<Components::LightComponent>(entity);
@@ -135,7 +168,7 @@ namespace Nuclear::Editor
 			vector("Attenuation", light->GetAttenuation(), 2);
 			auto cone = light->GetSpotlightCone();
 			for (int axis = 0; axis < 2; ++axis)
-				Number(
+				number(
 					section, axis == 0 ? "Inner cone (cosine)" : "Outer cone (cosine)", cone[axis],
 					[entity, axis](float number) {
 						if (auto* light = Component<Components::LightComponent>(entity))
@@ -146,28 +179,28 @@ namespace Nuclear::Editor
 						}
 					},
 					-1, 1);
-			Number(
+			number(
 				section, "Near plane", light->GetNearPlane(),
 				[entity](float value) {
 					if (auto* light = Component<Components::LightComponent>(entity))
 						light->SetNearPlane(value);
 				},
 				.001f);
-			Number(
+			number(
 				section, "Far plane", light->GetFarPlane(),
 				[entity](float value) {
 					if (auto* light = Component<Components::LightComponent>(entity))
 						light->SetFarPlane(value);
 				},
 				.001f);
-			Number(
+			number(
 				section, "Field of view (degrees)", light->GetFOV(),
 				[entity](float value) {
 					if (auto* light = Component<Components::LightComponent>(entity))
 						light->SetFOV(value);
 				},
 				1, 179);
-			Toggle(section, "Cast shadows", light->mCastShadows, [entity](bool value) {
+			toggle(section, "Cast shadows", light->mCastShadows, [entity](bool value) {
 				if (auto* light = Component<Components::LightComponent>(entity))
 					light->mCastShadows = value;
 			});
@@ -178,21 +211,21 @@ namespace Nuclear::Editor
 			Label(section, mesh->GetMesh() ? mesh->GetMesh()->GetName() : "No mesh assigned").SetWrap(true);
 			Label(section, mesh->GetMaterial() ? mesh->GetMaterial()->GetName() : "No material assigned")
 				.SetWrap(true);
-			Toggle(section, "Visible", mesh->GetEnableRendering(), [entity](bool value) {
+			toggle(section, "Visible", mesh->GetEnableRendering(), [entity](bool value) {
 				if (auto* mesh = Component<Components::MeshComponent>(entity))
 					mesh->SetEnableRendering(value);
 			});
-			Toggle(section, "Cast shadows", mesh->GetCastShadow(), [entity](bool value) {
+			toggle(section, "Cast shadows", mesh->GetCastShadow(), [entity](bool value) {
 				if (auto* mesh = Component<Components::MeshComponent>(entity))
 					mesh->SetCastShadow(value);
 			});
-			Toggle(section, "Receive shadows", mesh->GetReceiveShadows(), [entity](bool value) {
+			toggle(section, "Receive shadows", mesh->GetReceiveShadows(), [entity](bool value) {
 				if (auto* mesh = Component<Components::MeshComponent>(entity))
 					mesh->SetReceiveShadows(value);
 			});
 		}
 		if (auto* body = Component<Components::RigidBodyComponent>(entity))
-			Toggle(*root, "Kinematic (authoring)", body->isKinematic, [entity](bool value) {
+			toggle(*root, "Kinematic (authoring)", body->isKinematic, [entity](bool value) {
 				if (auto* body = Component<Components::RigidBodyComponent>(entity))
 					body->isKinematic = value;
 			});
@@ -206,16 +239,16 @@ namespace Nuclear::Editor
 			Label(*root, "Audio listener / authoring data", 13);
 		if (Component<Components::AudioSourceComponent>(entity))
 			Label(*root, "Audio source / authoring data", 13);
-		AddComponent<Components::LightComponent>(add, entity, "Light", changed);
-		AddComponent<Components::MeshComponent>(add, entity, "Mesh", changed);
+		AddComponent<Components::LightComponent>(add, entity, "Light", changed, history);
+		AddComponent<Components::MeshComponent>(add, entity, "Mesh", changed, history);
 		// Runtime service objects are not activated in the editor's authoring registry.
-		AddComponent<Components::RigidBodyComponent>(add, entity, "Rigid body", changed);
-		AddComponent<Components::ColliderComponent>(add, entity, "Collider", changed);
-		AddComponent<Components::ScriptComponent>(add, entity, "Script", changed);
-		AddComponent<Components::AudioListenerComponent>(add, entity, "Audio listener", changed);
-		AddComponent<Components::AudioSourceComponent>(add, entity, "Audio source", changed);
+		AddComponent<Components::RigidBodyComponent>(add, entity, "Rigid body", changed, history);
+		AddComponent<Components::ColliderComponent>(add, entity, "Collider", changed, history);
+		AddComponent<Components::ScriptComponent>(add, entity, "Script", changed, history);
+		AddComponent<Components::AudioListenerComponent>(add, entity, "Audio listener", changed, history);
+		AddComponent<Components::AudioSourceComponent>(add, entity, "Audio source", changed, history);
 		if (!Component<Components::CameraComponent>(entity))
-			Action(add, "Camera", [entity, changed]() {
+			Action(add, "Camera", [entity, changed, &history]() {
 				auto& registry = Core::Scene::Get().GetRegistry();
 				if (!registry.valid(entity) || registry.all_of<Components::CameraComponent>(entity))
 					return;
@@ -223,7 +256,9 @@ namespace Nuclear::Editor
 				desc.mInitRTs = false;
 				desc.mIsActiveCamera = false;
 				desc.mProjection = Math::perspective(Math::radians(45.0f), 1.0f, .1f, 100.f);
-				registry.emplace<Components::CameraComponent>(entity, desc);
+				history.Edit(entity, "Add camera", [&]() {
+					registry.emplace<Components::CameraComponent>(entity, desc);
+				});
 				changed(true);
 			});
 		if (Core::Scene::Get().GetRegistry().all_of<

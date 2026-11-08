@@ -85,6 +85,7 @@ namespace Nuclear::UI
 					entry.Root->Attach(nullptr, nullptr);
 				mDrawList.Quads.clear();
 				mInputMode = InputMode::GameAndUI;
+				OnPreviewEvent = {};
 				mShiftDown = false;
 				InvalidateLayout();
 			});
@@ -296,6 +297,10 @@ namespace Nuclear::UI
 		bool handled = false;
 		try
 		{
+			const bool acceptsInput = mWindowFocused && mInputMode != InputMode::GameOnly &&
+				mPixelSize.x > 0 && mPixelSize.y > 0;
+			const bool previewHandled = (acceptsInput || event.mType == Platform::EventType::FocusChanged) &&
+				OnPreviewEvent && OnPreviewEvent(event);
 			if (event.mType == Platform::EventType::FocusChanged)
 			{
 				mWindowFocused = event.mFocused;
@@ -308,7 +313,9 @@ namespace Nuclear::UI
 					widget->mHovered = false;
 				mHover = 0;
 			}
-			else if (mWindowFocused && mInputMode != InputMode::GameOnly && mPixelSize.x > 0 && mPixelSize.y > 0)
+			else if (previewHandled)
+				handled = true;
+			else if (acceptsInput)
 			{
 				Layout();
 				InputEvent input;

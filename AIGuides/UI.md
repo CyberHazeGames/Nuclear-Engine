@@ -40,6 +40,12 @@ Stable nonzero `WidgetId` values can be resolved through `UIContext::Find`; remo
 IDs resolve to null. Widgets are separate from ECS entities and scene snapshots.
 Use all UI operations on the engine/window thread.
 
+`UIContext::SetFocus(id)` lets a newly opened overlay take keyboard focus. The ID
+must resolve to an attached, visible, enabled focusable widget; zero or an invalid
+target clears focus. It cancels the previous control and reveals scroll ancestors,
+using the same focus path as pointer/Tab navigation. Editor dropdowns use this to
+receive arrow keys and Escape immediately after opening.
+
 `UserWidget::Construct` builds a reusable single-content composition on first
 attachment. Attachment/removal hooks run with the context available. Removal,
 content replacement, and viewport clearing requested during input callbacks are
@@ -125,6 +131,13 @@ replacement during dispatch. Explicit fonts and brush textures are borrowed and
 must outlive their widgets. Asset-library resources must not be deleted by callers.
 
 ## Input
+
+`UIContext::OnPreviewEvent` is an optional application shortcut filter inside the
+input dispatch guard, before widget routing. Returning true consumes the event.
+Unfocused, suspended and GameOnly contexts bypass ordinary preview input; native
+focus notifications still reach the filter and always perform normal cancellation.
+`Clear` releases the callback. Captured controller objects must outlive the context
+or clear the callback before destruction. The editor uses it for scene undo/redo.
 
 The engine forwards portable platform events to the context before gameplay mouse
 callbacks. MouseMove and MouseButton positions are converted from client pixels to

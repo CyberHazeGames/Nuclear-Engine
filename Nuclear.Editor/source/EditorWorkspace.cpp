@@ -134,7 +134,7 @@ namespace Nuclear::Editor
 			tab.Layout->GetArea(EditorDockRegion::Documents).SetTabTitle(id, tab.Header.Title);
 		for (auto& window : mWindows)
 			if (&window->GetArea() == tab.Area && tab.Area->GetActive() == id)
-				window->GetWindow().SetTitle("Nuclear / " + tab.Header.Title);
+				window->SetTitle("Nuclear / " + tab.Header.Title);
 	}
 
 	void EditorWorkspace::Refresh()
@@ -380,7 +380,7 @@ namespace Nuclear::Editor
 		border.SetBrush({nullptr, {.065f, .085f, .10f, 1}});
 		border.SetPadding({8, 8, 8, 8});
 		UI::Slot slot;
-		slot.Offsets = {760, 135, 300, 350};
+		slot.Offsets = {760, 135, 300, 400};
 		root->SetSlot(border.GetId(), slot);
 		auto& list = border.Add<UI::VerticalBox>();
 		list.SetSpacing(5);

@@ -152,6 +152,57 @@ static void RunChecks()
 	Require(!IsWindow(handle) && !window.GetNativeHandle(), "Window destruction failed");
 	Require(DrainEvents().empty(), "Destroyed window left dangling queued events");
 	Require(window.GetAspectRatioF32() == 0.0f, "Empty window aspect ratio should be zero");
+
+	// Opt-in client chrome keeps native resize, work-area maximize and deferred close behavior.
+	desc.CustomTitleBar = true;
+	Require(window.Create(desc), "Custom-chrome window creation failed");
+	handle = static_cast<HWND>(window.GetNativeHandle());
+	window.SetTitleBarHitTest([](int x, int y) { return x >= 40 && x < 400 && y < 40; });
+	window.GetSize(width, height);
+	Require(width == 640 && height == 360, "Custom chrome changed requested client dimensions");
+	auto hit = [&](int x, int y) {
+		Require(window.ClientToScreen(x, y), "Custom chrome coordinate conversion failed");
+		return SendMessageW(handle, WM_NCHITTEST, 0, MAKELPARAM(x, y));
+	};
+	Require(hit(100, 20) == HTCAPTION, "Custom title bar must expose native dragging");
+	Require(hit(500, 20) == HTCLIENT, "Custom caption controls must retain client input");
+	Require(hit(1, 1) == HTTOPLEFT && hit(639, 359) == HTBOTTOMRIGHT, "Custom frame lost native corner resizing");
+	DrainEvents();
+	SendMessageW(handle, WM_LBUTTONDBLCLK, MK_LBUTTON, MAKELPARAM(500, 20));
+	SendMessageW(handle, WM_LBUTTONUP, 0, MAKELPARAM(500, 20));
+	const auto doubleClickEvents = DrainEvents();
+	Require(std::any_of(doubleClickEvents.begin(), doubleClickEvents.end(), [](const Event& event) {
+		return event.mType == EventType::MouseButton && event.mPressed;
+	}), "Double-click-capable window class lost the second client press");
+	SendMessageW(handle, WM_NCLBUTTONDBLCLK, HTCAPTION, 0);
+	Require(window.IsMaximized(), "Native caption double-click did not maximize");
+	SendMessageW(handle, WM_NCLBUTTONDBLCLK, HTCAPTION, 0);
+	Require(!window.IsMaximized(), "Native caption double-click did not restore");
+	window.SetSize(800, 450);
+	window.GetSize(width, height);
+	Require(width == 800 && height == 450, "Custom chrome client resize failed");
+	window.ToggleMaximize();
+	Require(window.IsMaximized(), "Custom maximize command failed");
+	MONITORINFO monitor{sizeof(MONITORINFO)};
+	Require(GetMonitorInfoW(MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST), &monitor), "Monitor lookup failed");
+	window.GetSize(width, height);
+	Require(width == monitor.rcWork.right - monitor.rcWork.left && height == monitor.rcWork.bottom - monitor.rcWork.top,
+		"Maximized custom window must fit the work area without covering the taskbar");
+	window.ToggleMaximize();
+	Require(!window.IsMaximized(), "Custom restore command failed");
+	window.GetSize(width, height);
+	Require(width == 800 && height == 450, "Restore lost custom-window client dimensions");
+	window.Minimize();
+	Require(IsIconic(handle), "Custom minimize command failed");
+	window.Display(false);
+	DrainEvents();
+	window.RequestClose();
+	const auto customCloseEvents = DrainEvents();
+	Require(IsWindow(handle) && std::any_of(customCloseEvents.begin(), customCloseEvents.end(), [](const Event& event) {
+		return event.mType == EventType::WindowClose;
+	}), "Custom close must defer native destruction to the owner");
+	window.Destroy();
+	Require(!window.IsTitleBarAt(100, 20), "Destroyed window retained its caption callback");
 	Shutdown();
 	Shutdown();
 	Require(Initialize(), "Platform did not restart after shutdown");

@@ -130,12 +130,24 @@ namespace Nuclear::Editor::Tests
 		auto* viewportHierarchy = workspace->GetArea("hierarchy");
 		auto* viewportInspector = workspace->GetArea("inspector");
 		Check(documents.GetTabs().size() == 1 && documents.GetActive() == "viewport", "Main viewport starts as a document tab");
+		auto checkSceneToolbar = [](bool visible) {
+			for (const char* title : {"New project", "New scene", "Add", "VSync"})
+			{
+				auto* label = Find<TextBlock>([title](const auto& label) { return label.GetText() == title; });
+				Check(label && label->IsVisible() == visible, "Scene creation toolbar appears only on Main viewport");
+			}
+		};
+		checkSceneToolbar(true);
+		const float viewportWorkspaceTop = layout->GetBounds().y;
 		Action(editor, "Open / editorfixtures_triangle");
 		frame();
 		const auto meshId = documents.GetActive();
 		Check(meshId != "viewport" && documents.GetTabs().size() == 2 && !viewport->IsVisible(),
 			"Opening a mesh creates an active details tab and hides the main viewport");
 		auto* meshLayout = workspace->GetDocumentLayout(meshId);
+		checkSceneToolbar(false);
+		Check(meshLayout && meshLayout->GetBounds().y < viewportWorkspaceTop - 20,
+			"Asset documents reclaim the space occupied by the scene creation toolbar");
 		Check(meshLayout && meshLayout != layout && !viewportHierarchy->IsVisible() && !viewportInspector->IsVisible(),
 			"An asset document owns a separate dock layout with no viewport hierarchy or inspector");
 		Check(meshLayout->GetArea(EditorDockRegion::Documents).GetBounds().Width > layout->GetBounds().Width - 12 &&
@@ -148,6 +160,7 @@ namespace Nuclear::Editor::Tests
 		Readback("Build/DebugX64/editor-document.ppm", Graphics::GraphicsModule::Get().GetSwapChain()->GetCurrentBackBufferRTV()->GetTexture());
 		Tab(editor, *browser, "viewport");
 		frame();
+		checkSceneToolbar(true);
 		Action(editor, "Open / editorfixtures_triangle");
 		frame();
 		Check(documents.GetTabs().size() == 2, "Reopening an asset activates its existing tab");
@@ -180,6 +193,7 @@ namespace Nuclear::Editor::Tests
 		Action(editor, "Open / editorfixtures_preview");
 		frame();
 		const auto textureId = documents.GetActive();
+		checkSceneToolbar(false);
 		auto* textureHeading = Find<TextBlock>([](const auto& label) { return label.GetText() == "TEXTURE DETAILS"; });
 		Check(documents.GetTabs().size() == 3 && textureHeading, "Texture details open as another browser document");
 		Assets::Texture* previewTexture = nullptr;
@@ -215,6 +229,7 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Check(documents.GetTabs().size() == 4, "Material details open beside texture, mesh and viewport tabs");
 		const auto materialId = documents.GetActive();
+		checkSceneToolbar(false);
 		auto titleOf = [&documents](const std::string& id) {
 			for (const auto& tab : documents.GetTabs())
 				if (tab.Id == id) return tab.Title;
@@ -309,6 +324,7 @@ namespace Nuclear::Editor::Tests
 			workspace->GetArea("mesh-private") == &meshLayout->GetArea(EditorDockRegion::Right),
 			"Reset layout restores only the active asset's panels and keeps that asset selected");
 		Action(editor, "Window");
+		Action(editor, "Manage panels...");
 		Check(!Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "Show Inspector"; }) &&
 			Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "Show Mesh custom panel"; }),
 			"The Window menu lists only the active document's custom tools");
@@ -359,6 +375,7 @@ namespace Nuclear::Editor::Tests
 		Check(viewport->IsVisible() && viewportInspector->IsVisible() && viewportHierarchy->IsVisible() &&
 			!meshPanel->IsVisible() && meshPanel->GetText() == "private mesh editor state",
 			"Switching back restores viewport tools while preserving parked asset-panel state");
+		checkSceneToolbar(true);
 		workspace->Close("viewport");
 		frame();
 		Check(workspace->GetArea("viewport") == &documents, "Pinned main viewport cannot be closed");
@@ -420,6 +437,10 @@ namespace Nuclear::Editor::Tests
 		Check(workspace->GetWindows().size() == 1, "Dragging a panel out creates a native window");
 		auto& floating = *workspace->GetWindows().front();
 		floating.GetWindow().Display(false);
+		workspace->SetTitle("hierarchy", "Renamed hierarchy");
+		Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Nuclear / Renamed hierarchy"; }, floating.GetContext()),
+			"Renaming a detached panel updates its retained title bar");
+		workspace->SetTitle("hierarchy", "Hierarchy");
 		Check(floating.GetWindow().GetNativeHandle() && floating.GetContext().Find(filterId) == filter &&
 			!Main().Find(filterId), "The original panel tree moves into an independent context");
 		floating.Render();
@@ -435,6 +456,34 @@ namespace Nuclear::Editor::Tests
 		text.mCodepoint = 'Z';
 		Event(editor, floating.GetContext(), &floating.GetWindow(), text);
 		Check(filter->GetText() == "Z", "Detached panel accepts independent text input");
+		entt::entity historyEntity = entt::null;
+		for (auto entity : Core::Scene::Get().GetRegistry().view<Components::EntityInfoComponent>())
+			if (Core::Scene::Get().GetRegistry().get<Components::EntityInfoComponent>(entity).mName == "editorfixtures_triangle")
+				historyEntity = entity;
+		Check(historyEntity != entt::null, "Detached shortcut target is the instantiated library mesh");
+		auto historyKey = [&](Platform::Input::KeyCode key) {
+			Platform::Event input;
+			input.mType = Platform::EventType::Key;
+			input.mKey = Platform::Input::KEYCODE_LCTRL;
+			input.mPressed = true;
+			Event(editor, floating.GetContext(), &floating.GetWindow(), input);
+			input.mKey = key;
+			Event(editor, floating.GetContext(), &floating.GetWindow(), input);
+			input.mPressed = false;
+			Event(editor, floating.GetContext(), &floating.GetWindow(), input);
+			input.mKey = Platform::Input::KEYCODE_LCTRL;
+			Event(editor, floating.GetContext(), &floating.GetWindow(), input);
+		};
+		Click(editor, *filter, &floating.GetWindow());
+		historyKey(Platform::Input::KEYCODE_Z);
+		Check(Core::Scene::Get().GetRegistry().valid(historyEntity), "Detached text editing isolates scene shortcuts");
+		floating.GetContext().SetFocus(0);
+		historyKey(Platform::Input::KEYCODE_Z);
+		frame();
+		Check(!Core::Scene::Get().GetRegistry().valid(historyEntity), "Ctrl+Z from a detached workspace undoes the scene action");
+		historyKey(Platform::Input::KEYCODE_Y);
+		frame();
+		Check(Core::Scene::Get().GetRegistry().valid(historyEntity), "Ctrl+Y from a detached workspace redoes the scene action");
 		floating.GetWindow().SetSize(680, 500);
 		Platform::Event queued;
 		while (Platform::PollEvent(queued))
@@ -473,13 +522,18 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Check(!workspace->GetArea("inspector"), "Docked tool panels can be closed");
 		Action(editor, "Window");
+		Action(editor, "Manage panels...");
 		Action(editor, "Show Inspector");
 		frame();
 		Check(workspace->GetArea("inspector") != nullptr, "Window menu restores closed tools");
 		workspace->Detach(meshId);
 		frame();
 		Check(workspace->GetWindows().size() == 1, "Asset documents can also use native windows");
+		checkSceneToolbar(true);
 		workspace->GetWindows().front()->GetWindow().Display(false);
+		Check(!Find<TextBlock>([](const auto& label) {
+			return label.GetText() == "New project" || label.GetText() == "New scene" || label.GetText() == "Add";
+		}, workspace->GetWindows().front()->GetContext()), "Detached asset documents do not inherit scene creation actions");
 		Check(meshPanel->GetContext() == &workspace->GetWindows().front()->GetContext() &&
 			!workspace->GetWindows().front()->GetContext().Find(viewportInspector->GetId()),
 			"Detaching an asset moves its complete custom workspace without viewport panels");

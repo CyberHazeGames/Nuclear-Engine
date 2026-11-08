@@ -31,6 +31,9 @@ namespace Nuclear
 			void Initialize(const std::array<Assets::Texture*, 6>& data);     
 
 			void Initialize(Assets::Texture* Texture);
+			/// Borrows a ready cubemap and builds for explicit offscreen color/depth formats.
+			/// Retains the texture view; returns false for invalid input or GPU/shader creation failure.
+			bool Initialize(Assets::Texture* texture, Diligent::TEXTURE_FORMAT colorFormat, Diligent::TEXTURE_FORMAT depthFormat);
 
 			void Render();
 
@@ -38,6 +41,8 @@ namespace Nuclear
 			friend class ImageBasedLighting;
 
 			void InitializePipeline();
+			/// Creates compatible pipeline/bindings for the supplied target formats; false on failure.
+			bool InitializePipeline(Diligent::TEXTURE_FORMAT colorFormat, Diligent::TEXTURE_FORMAT depthFormat);
 			void InitializeCube();
 			void RenderCube();
 

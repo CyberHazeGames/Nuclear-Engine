@@ -96,9 +96,19 @@
   <ItemGroup>
     <ClCompile Include="source\AssetLibraryViewer.cpp" />
     <ClCompile Include="source\EntityEditor.cpp" />
+    <ClCompile Include="source\EditorHistory.cpp" />
+    <ClCompile Include="source\EditorSceneState.cpp" />
+    <ClCompile Include="source\SceneSettings.cpp" />
+    <ClCompile Include="source\EditorEntityState.cpp" />
     <ClCompile Include="source\Project.cpp" />
+    <ClCompile Include="source\EditorAddMenu.cpp" />
+    <ClCompile Include="source\EditorSkybox.cpp" />
+    <ClCompile Include="source\SkyboxComponent.cpp" />
     <ClCompile Include="source\EditorUI.cpp" />
     <ClCompile Include="source\EditorWidgets.cpp" />
+    <ClCompile Include="source\EditorTitleBar.cpp" />
+    <ClCompile Include="source\EditorWindowButton.cpp" />
+    <ClCompile Include="source\EditorMenuPopup.cpp" />
     <ClCompile Include="source\EditorTabStrip.cpp" />
     <ClCompile Include="source\EditorDockArea.cpp" />
     <ClCompile Include="source\EditorDockLayout.cpp" />
@@ -119,8 +129,14 @@
     <ClInclude Include="include\EditorUILayer.h" />
     <ClInclude Include="include\AssetLibraryViewer.h" />
     <ClInclude Include="include\Common.h" />
+    <ClInclude Include="include\EditorAddMenu.h" />
+    <ClInclude Include="include\EditorSkybox.h" />
+    <ClInclude Include="include\SkyboxComponent.h" />
     <ClInclude Include="include\EditorUI.h" />
     <ClInclude Include="include\EditorWidgets.h" />
+    <ClInclude Include="include\EditorTitleBar.h" />
+    <ClInclude Include="include\EditorWindowButton.h" />
+    <ClInclude Include="include\EditorMenuPopup.h" />
     <ClInclude Include="include\EditorTabStrip.h" />
     <ClInclude Include="include\EditorDockArea.h" />
     <ClInclude Include="include\EditorDockLayout.h" />
@@ -128,6 +144,10 @@
     <ClInclude Include="include\EditorWorkspace.h" />
     <ClInclude Include="include\AssetDocument.h" />
     <ClInclude Include="include\EntityEditor.h" />
+    <ClInclude Include="include\EditorHistory.h" />
+    <ClInclude Include="include\EditorSceneState.h" />
+    <ClInclude Include="include\SceneSettings.h" />
+    <ClInclude Include="include\EditorEntityState.h" />
     <ClInclude Include="include\GameViewPort.h" />
     <ClInclude Include="include\TransformGizmo.h" />
     <ClInclude Include="include\Project.h" />

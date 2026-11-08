@@ -78,7 +78,7 @@ namespace Nuclear::Platform
 
 		WNDCLASSEXW windowClass{};
 		windowClass.cbSize = sizeof(windowClass);
-		windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+		windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
 		windowClass.lpfnWndProc = Detail::WindowProcedure;
 		windowClass.hInstance = state.pInstance;
 		windowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);

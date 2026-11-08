@@ -2,6 +2,7 @@
 
 #include <Nuclear.Platform/Export.h>
 #include <cstdint>
+#include <functional>
 #include <string>
 
 namespace Nuclear::Platform
@@ -12,6 +13,7 @@ namespace Nuclear::Platform
 		std::uint32_t WindowWidth = 1024; ///< Client width in pixels; must be positive.
 		std::uint32_t WindowHeight = 768; ///< Client height in pixels; must be positive.
 		bool FullScreen = false; ///< Create a borderless window covering the primary monitor.
+		bool CustomTitleBar = false; ///< Extend the client area over the frame; caller paints its own caption.
 		std::string Title = "NuclearEngine"; ///< Window title encoded as UTF-8.
 	};
 
@@ -54,8 +56,24 @@ namespace Nuclear::Platform
 		bool ClientToScreen(int& x, int& y) const;
 		/// Converts desktop pixel coordinates to this window's client pixels; false if not live.
 		bool ScreenToClient(int& x, int& y) const;
+		/// Installs an event-thread caption hit test in client pixels. Clear before its captures expire.
+		void SetTitleBarHitTest(std::function<bool(int, int)> hitTest);
+		/// True when custom chrome is enabled and the callback identifies a draggable caption point.
+		bool IsTitleBarAt(int x, int y) const;
+		/// Whether this live window uses client-drawn chrome (fullscreen windows do not).
+		bool HasCustomTitleBar() const { return mCustomTitleBar; }
+		/// Minimizes a live window without changing ownership.
+		void Minimize();
+		/// Switches a live window between maximized and restored placement.
+		void ToggleMaximize();
+		/// True while the native window is maximized.
+		bool IsMaximized() const;
+		/// Queues the normal WindowClose event; leaves destruction to the owning client.
+		void RequestClose();
 
 	private:
 		void* pWindow = nullptr; ///< Owned native handle, hidden from portable headers.
+		bool mCustomTitleBar = false; ///< Opt-in chrome policy, set before native creation callbacks.
+		std::function<bool(int, int)> mTitleBarHitTest; ///< Borrowed UI callback, cleared on destruction.
 	};
 }
