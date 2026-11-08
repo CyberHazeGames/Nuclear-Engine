@@ -1,0 +1,15 @@
+{
+  "runs": [
+    {
+      "date": "2026-11-04T14:28:35.701193+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage_available": false,
+      "note": "Host agent token usage is unavailable; zeros are schema placeholders, not measured usage.",
+      "files": 398
+    }
+  ],
+  "total_input_tokens": 0,
+  "total_output_tokens": 0,
+  "usage_available": false
+}

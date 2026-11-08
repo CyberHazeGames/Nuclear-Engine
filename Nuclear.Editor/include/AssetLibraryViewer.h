@@ -1,6 +1,7 @@
 #pragma once
 #include <Common.h>
 #include <Project.h>
+#include <MeshPreviewCache.h>
 #include <functional>
 namespace Nuclear::Editor
 {
@@ -24,5 +25,6 @@ namespace Nuclear::Editor
 		std::string mStatus =
 			"Use Import... to select an asset for this project session."; ///< Browser feedback.
 		int mCategory = 0; ///< Files, textures, meshes, materials or scenes.
+		MeshPreviewCache mMeshPreviewCache; ///< Offscreen GPU renderer and cache for 3D mesh thumbnails.
 	};
 } // namespace Nuclear::Editor

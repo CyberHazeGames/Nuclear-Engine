@@ -47,13 +47,13 @@ namespace Nuclear::Editor
 	{
 		auto& border = parent.Add<UI::Border>();
 		border.SetBrush({nullptr, {.06f, .075f, .095f, 1}});
-		border.SetPadding({5, 8, 5, 10});
+		border.SetPadding({0, 0, 0, 0});
 
 		auto& section = border.Add<UI::VerticalBox>();
 		section.SetSpacing(10);
 
 		auto& header = section.Add<UI::HorizontalBox>();
-		header.SetSpacing(6);
+		header.SetSpacing(3);
 		auto& collapse = header.Add<EditorComponentButton>(EditorComponentButton::Action::Collapse);
 		auto& heading = Label(header, title, 14);
 		heading.SetColor({.18f, .7f, .62f, 1});
@@ -101,6 +101,14 @@ namespace Nuclear::Editor
 				history.Edit(entity, "Edit property", [&]() { setter(value); });
 				changed(false);
 			});
+		};
+		auto vector = [entity, changed, &history](UI::PanelWidget& parent, const std::string& title,
+			Math::Vector3 value, std::function<void(int, float)> setter, float minimum = -100000, float maximum = 100000,
+			float labelWidth = 80.0f) {
+			Vector(parent, title, value, [entity, changed, &history, setter](int axis, float value) {
+				history.Edit(entity, "Edit property", [&]() { setter(axis, value); });
+				changed(false);
+			}, minimum, maximum, labelWidth);
 		};
 		auto root = std::make_unique<UI::VerticalBox>();
 		root->SetSpacing(12);
@@ -152,32 +160,24 @@ namespace Nuclear::Editor
 			for (int group = 0; group < 3; ++group)
 			{
 				const char* names[] = {"POSITION", "ROTATION", "SCALE"};
-				Label(transform, names[group], 12);
-				auto& row = transform.Add<UI::HorizontalBox>();
-				row.SetSpacing(6);
-				auto value = group == 0	  ? info->mTransform.GetLocalPosition()
+				auto value = group == 0   ? info->mTransform.GetLocalPosition()
 							 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
 										  : info->mTransform.GetLocalScale();
-				for (int axis = 0; axis < 3; ++axis)
-				{
-					auto& column = row.Add<UI::VerticalBox>();
-					Fill(row, column);
-					number(column, std::string(1, "XYZ"[axis]), value[axis], [entity, group, axis](float number) {
-						auto* info = Component<Components::EntityInfoComponent>(entity);
-						if (!info)
-							return;
-						auto value = group == 0	  ? info->mTransform.GetLocalPosition()
-									 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
-												  : info->mTransform.GetLocalScale();
-						value[axis] = number;
-						if (group == 0)
-							info->mTransform.SetPosition(value);
-						else if (group == 1)
-							info->mTransform.SetRotation(Math::radians(value));
-						else
-							info->mTransform.SetScale(value);
-					});
-				}
+				vector(transform, names[group], value, [entity, group](int axis, float number) {
+					auto* info = Component<Components::EntityInfoComponent>(entity);
+					if (!info)
+						return;
+					auto value = group == 0   ? info->mTransform.GetLocalPosition()
+								 : group == 1 ? Math::degrees(info->mTransform.GetLocalRotationEular())
+											  : info->mTransform.GetLocalScale();
+					value[axis] = number;
+					if (group == 0)
+						info->mTransform.SetPosition(value);
+					else if (group == 1)
+						info->mTransform.SetRotation(Math::radians(value));
+					else
+						info->mTransform.SetScale(value);
+				});
 			}
 		}
 		if (auto* sky = Component<SkyboxComponent>(entity))
@@ -199,34 +199,36 @@ namespace Nuclear::Editor
 						light->SetIntensity(value);
 				},
 				0, 100000);
-			auto vector = [&section, entity, number](const std::string& title, Math::Vector3 value, int property) {
-				Label(section, title, 13);
-				for (int axis = 0; axis < 3; ++axis)
-					number(
-						section, std::string(1, "XYZ"[axis]), value[axis],
-						[entity, property, axis](float number) {
-							auto* light = Component<Components::LightComponent>(entity);
-							if (!light)
-								return;
-							auto current = property == 0 ? light->GetDirection()
-										   : property == 1
-											   ? Math::Vector3(light->GetColor().r, light->GetColor().g,
-															   light->GetColor().b)
-											   : light->GetAttenuation();
-							current[axis] = number;
-							if (property == 0)
-								light->SetDirection(current);
-							else if (property == 1)
-								light->SetColor(Graphics::Color(current.x, current.y, current.z, 1.0f));
-							else
-								light->SetAttenuation(current);
-						},
-						property == 0 ? -100000.0f : 0.0f);
-			};
-			vector("Direction", light->GetDirection(), 0);
+
+			vector(section, "Direction", light->GetDirection(), [entity](int axis, float number) {
+				if (auto* light = Component<Components::LightComponent>(entity))
+				{
+					auto dir = light->GetDirection();
+					dir[axis] = number;
+					light->SetDirection(dir);
+				}
+			}, -100000.0f, 100000.0f);
+
 			auto color = light->GetColor();
-			vector("Color RGB", {color.r, color.g, color.b}, 1);
-			vector("Attenuation", light->GetAttenuation(), 2);
+			vector(section, "Color RGB", {color.r, color.g, color.b}, [entity](int axis, float number) {
+				if (auto* light = Component<Components::LightComponent>(entity))
+				{
+					auto col = light->GetColor();
+					float rgb[3] = {col.r, col.g, col.b};
+					rgb[axis] = number;
+					light->SetColor(Graphics::Color(rgb[0], rgb[1], rgb[2], 1.0f));
+				}
+			}, 0.0f, 100000.0f);
+
+			vector(section, "Attenuation", light->GetAttenuation(), [entity](int axis, float number) {
+				if (auto* light = Component<Components::LightComponent>(entity))
+				{
+					auto att = light->GetAttenuation();
+					att[axis] = number;
+					light->SetAttenuation(att);
+				}
+			}, 0.0f, 100000.0f);
+
 			auto cone = light->GetSpotlightCone();
 			for (int axis = 0; axis < 2; ++axis)
 				number(

@@ -75,4 +75,103 @@ namespace Nuclear::Editor
 			}
 		};
 	}
+
+	void Vector(UI::PanelWidget& parent, const std::string& title, Math::Vector3 value,
+				std::function<void(int, float)> setter, float minimum, float maximum,
+				float labelWidth)
+	{
+		auto& row = parent.Add<UI::HorizontalBox>();
+		row.SetSpacing(6);
+
+		// Fixed-width container for the title label so adjacent vector rows align vertically.
+		auto& labelBox = row.Add<UI::SizeBox>();
+		labelBox.SetSizeLimits({labelWidth, 0}, {labelWidth, 1000000});
+		Label(labelBox, title, 12);
+		auto groupSlot = row.GetSlot(labelBox.GetId());
+		groupSlot.Vertical = UI::Alignment::Center;
+		row.SetSlot(labelBox.GetId(), groupSlot);
+
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			// Axis label with conventional representation colors (X=Red, Y=Green, Z=Blue).
+			auto& axisLabel = Label(row, std::string(1, "XYZ"[axis]), 13);
+			if (axis == 0)
+				axisLabel.SetColor({.85f, .25f, .25f, 1});
+			else if (axis == 1)
+				axisLabel.SetColor({.25f, .75f, .25f, 1});
+			else
+				axisLabel.SetColor({.35f, .55f, .95f, 1});
+
+			auto axisSlot = row.GetSlot(axisLabel.GetId());
+			axisSlot.Vertical = UI::Alignment::Center;
+			row.SetSlot(axisLabel.GetId(), axisSlot);
+
+			// Value field sharing remaining horizontal space equally.
+			auto& input = row.Add<UI::TextBox>(Decimal(value[axis]));
+			Fill(row, input);
+			input.OnCommitted = [&input, setter, axis, minimum, maximum](const std::string& text) {
+				try
+				{
+					size_t count = 0;
+					float parsed = std::stof(text, &count);
+					if (count != text.size() || !std::isfinite(parsed) || parsed < minimum || parsed > maximum)
+						throw std::invalid_argument("Numeric field out of range");
+					setter(axis, parsed);
+					input.SetText(Decimal(parsed));
+				}
+				catch (const std::exception&)
+				{
+					input.SetText("Invalid value");
+				}
+			};
+		}
+	}
+
+	UI::Button& AssetTile(UI::PanelWidget& parent, const std::string& name,
+						  const UI::Brush& brush, UI::Vec2 imageSize,
+						  std::function<void()> callback, const std::string& subtext)
+	{
+		auto& button = parent.Add<UI::Button>();
+		const float buttonWidth = imageSize.x + 16.0f;
+		button.SetSizeLimits({buttonWidth, 0}, {buttonWidth + 12.0f, 1000000});
+		button.SetPadding({6, 6, 6, 6});
+
+		UI::ControlStyle style;
+		style.Normal = {.08f, .10f, .13f, 1};
+		style.Hovered = {.13f, .18f, .24f, 1};
+		style.Pressed = {.05f, .24f, .26f, 1};
+		style.Focus = {.15f, .7f, .6f, 1};
+		button.SetStyle(style);
+
+		auto& tile = button.Add<UI::VerticalBox>();
+		tile.SetSpacing(4);
+
+		auto& image = tile.Add<UI::Image>();
+		image.SetBrush(brush);
+		image.SetImageSize(imageSize);
+		auto imgSlot = tile.GetSlot(image.GetId());
+		imgSlot.Horizontal = UI::Alignment::Center;
+		tile.SetSlot(image.GetId(), imgSlot);
+
+		auto& label = Label(tile, name, 11);
+		label.SetWrap(true);
+		label.SetTextAlignment(UI::Alignment::Center);
+		auto lblSlot = tile.GetSlot(label.GetId());
+		lblSlot.Horizontal = UI::Alignment::Center;
+		tile.SetSlot(label.GetId(), lblSlot);
+
+		if (!subtext.empty())
+		{
+			auto& sub = Label(tile, subtext, 10);
+			sub.SetColor({.50f, .55f, .62f, 1});
+			sub.SetWrap(true);
+			sub.SetTextAlignment(UI::Alignment::Center);
+			auto subSlot = tile.GetSlot(sub.GetId());
+			subSlot.Horizontal = UI::Alignment::Center;
+			tile.SetSlot(sub.GetId(), subSlot);
+		}
+
+		button.OnClicked = std::move(callback);
+		return button;
+	}
 } // namespace Nuclear::Editor

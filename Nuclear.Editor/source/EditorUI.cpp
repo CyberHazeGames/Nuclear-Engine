@@ -8,6 +8,7 @@
 #include <EditorWidgets.h>
 #include <EditorToolbar.h>
 #include <AssetDocument.h>
+#include <AboutDocument.h>
 #include <GameViewPort.h>
 #include <Fallbacks/FallbacksModule.h>
 #include <Rendering/RenderingModule.h>
@@ -368,7 +369,15 @@ namespace Nuclear::Editor
 		pTitleBar->AddMenu("Window", {{"Manage panels...", [this]() { pWorkspace->ToggleWindowMenu(); }},
 			{"Scene settings", [this]() { pWorkspace->Show("scene-settings"); }},
 			{"Reset layout", [this]() { pWorkspace->ResetLayout(); }}});
-		pTitleBar->AddMenu("Help", {{"About Nuclear Engine", [this]() { mNotice = "Nuclear Engine / session editor"; }}});
+		pTitleBar->AddMenu("Help", {{"About Nuclear Engine", [this]() {
+			if (pWorkspace->Contains("about"))
+			{
+				pWorkspace->Show("about");
+				return;
+			}
+			pWorkspace->Add("about", AboutDocument::GetTitle(), AboutDocument::Build(),
+				EditorDockRegion::Documents, true);
+		}}});
 		mRoot = root->GetId();
 		UI::UIModule::Get().GetContext().AddToViewport(std::move(root));
 	}

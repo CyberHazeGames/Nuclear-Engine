@@ -30,7 +30,9 @@ Undo and Redo, enabled when their respective scene-history stacks have entries.
 Saving and project settings remain disabled because they are not implemented.
 Hover switches open menus; outside click, Escape and focus loss dismiss. Left/Right switches
 headers, Up/Down selects enabled commands, and Enter executes. Window / Manage
-panels opens the active document's recovery menu.
+panels opens the active document's recovery menu. Help / About Nuclear Engine opens
+the About document showing engine and editor build information, repository link with
+a browser launcher, and engine and third-party license notices.
 
 The title bar borrows its native window and clears its physical-pixel caption
 hit-test callback on removal. Empty caption space uses native dragging,
@@ -91,9 +93,9 @@ splitters control the main workspace proportions.
 [EditorWorkspace](../Nuclear.Editor/include/EditorWorkspace.h) coordinates the
 browser-style document strip above the toolbar and a separate retained dock layout
 for every document. Each layout has five optional dock groups.
-**Main viewport** is a pinned document. **Open / ...** actions in the Asset Browser
-open texture, mesh and material detail documents; opening an asset again activates
-its existing tab. Texture documents preview ready resources, mesh documents expose
+**Main viewport** is a pinned document. In the Asset Browser, selecting a texture or mesh thumbnail
+tile button, or using **Open / ...** on materials opens detail documents; opening an asset again
+activates its existing tab. Texture documents preview ready resources, mesh documents expose
 geometry counts and an Add to scene action, and material documents show shader and
 texture-set information. These are resource details, not shader/material authoring.
 
@@ -337,9 +339,13 @@ imports use existing importers; model imports deliberately omit materials and
 animations and use the editor default material when instantiated. Mesh GPU creation
 still uses the importer's main-thread task queue, which the editor drains after
 synchronous decoding. Readiness is checked separately from decoding; failed texture
-decoding must not report the fallback texture as a successful import. Library mesh
-cards can create scene entities, and created textures display thumbnails/dimensions.
-Library assets are borrowed, never deleted by a panel.
+decoding must not report the fallback texture as a successful import. Textures and meshes
+display in an Unreal-style grid of thumbnail icon buttons with asset names, dimensions or
+triangle counts, and direct document-opening actions; mesh cards also retain an **Add to scene**
+action button. Mesh previews are rendered and cached on-demand by
+[MeshPreviewCache](../Nuclear.Editor/include/MeshPreviewCache.h) using an offscreen depth-tested
+render target and directional Blinn-Phong lighting. Library assets are borrowed,
+never deleted by a panel.
 
 The synchronous texture importer preserves the Created state assigned after a
 successful GPU upload. It must not downgrade an uploaded resource to Loaded:

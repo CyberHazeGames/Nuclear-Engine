@@ -139,7 +139,7 @@ namespace Nuclear::Editor::Tests
 		};
 		checkSceneToolbar(true);
 		const float viewportWorkspaceTop = layout->GetBounds().y;
-		Action(editor, "Open / editorfixtures_triangle");
+		Action(editor, "editorfixtures_triangle");
 		frame();
 		const auto meshId = documents.GetActive();
 		Check(meshId != "viewport" && documents.GetTabs().size() == 2 && !viewport->IsVisible(),
@@ -161,7 +161,7 @@ namespace Nuclear::Editor::Tests
 		Tab(editor, *browser, "viewport");
 		frame();
 		checkSceneToolbar(true);
-		Action(editor, "Open / editorfixtures_triangle");
+		Action(editor, "editorfixtures_triangle");
 		frame();
 		Check(documents.GetTabs().size() == 2, "Reopening an asset activates its existing tab");
 		Tab(editor, *browser, "viewport");
@@ -190,7 +190,7 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Action(editor, "Textures");
 		frame();
-		Action(editor, "Open / editorfixtures_preview");
+		Action(editor, "editorfixtures_preview");
 		frame();
 		const auto textureId = documents.GetActive();
 		checkSceneToolbar(false);
@@ -218,7 +218,7 @@ namespace Nuclear::Editor::Tests
 		Check(documents.GetTabs().size() == 2 && !Main().Find(headingId), "Tab close button removes the document from the active tree");
 		Tab(editor, *browser, "viewport");
 		frame();
-		Action(editor, "Open / editorfixtures_preview");
+		Action(editor, "editorfixtures_preview");
 		frame();
 		Check(Main().Find(headingId) == textureHeading, "Reopening a closed document restores its original contents");
 		Tab(editor, *browser, "viewport");
@@ -260,7 +260,7 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Action(editor, "Textures");
 		frame();
-		Action(editor, "Open / Unnamed Texture");
+		Action(editor, "Unnamed Texture");
 		frame();
 		Check(documents.GetActive() == textureId && titleOf(textureId) == "Unnamed Texture",
 			"Reopening an unnamed texture keeps its identity and supplies a nonempty browser title");
@@ -278,7 +278,7 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Action(editor, "Meshes");
 		frame();
-		Action(editor, "Open / Unnamed Mesh");
+		Action(editor, "Unnamed Mesh");
 		frame();
 		Check(titleOf(meshId) == "Unnamed Mesh", "Whitespace-only mesh names receive a type-specific title");
 		for (auto& [asset, original] : otherMeshes)
