@@ -1,4 +1,5 @@
 #include <AssetLibraryViewer.h>
+#include <EditorSettings.h>
 #include <EditorWidgets.h>
 #include <AssetDocument.h>
 #include <Nuclear.Platform/FileDialog.h>
@@ -100,13 +101,10 @@ namespace Nuclear::Editor
 	{
 		auto root = std::make_unique<UI::VerticalBox>();
 		root->SetSpacing(8);
-		auto& actions = root->Add<UI::HorizontalBox>();
-		auto& import = Action(actions, "Import...", [this]() {
-			mOpenImportDialog = true;
-		});
-		import.SetEnabled(pProject != nullptr);
+
 		auto& tabs = root->Add<UI::HorizontalBox>();
 		tabs.SetSpacing(6);
+
 		const char* names[] = {"Files", "Textures", "Meshes", "Materials", "Scenes"};
 		for (int i = 0; i < 5; ++i)
 		{
@@ -116,7 +114,27 @@ namespace Nuclear::Editor
 					OnChanged();
 			});
 			button.SetPadding({6, 7, 6, 7});
+			if (i == mCategory)
+			{
+				UI::ControlStyle activeStyle;
+				activeStyle.Normal = {.12f, .17f, .22f, 1.0f};
+				activeStyle.Hovered = {.16f, .22f, .28f, 1.0f};
+				activeStyle.Pressed = {.09f, .13f, .17f, 1.0f};
+				activeStyle.Focus = EditorSettings::Get().GetAccentColor();
+				button.SetStyle(activeStyle);
+			}
 		}
+
+		// Expanding spacer pushing the Import button to the right side of the tabs bar
+		auto& spacer = tabs.Add<UI::HorizontalBox>();
+		Fill(tabs, spacer, 1.0f);
+
+		// Import button placed on the right side of the tabs bar
+		auto& import = Action(tabs, "Import...", [this]() {
+			mOpenImportDialog = true;
+		});
+		import.SetEnabled(pProject != nullptr);
+		import.SetPadding({8, 7, 8, 7});
 		auto& scroll = root->Add<UI::ScrollBox>();
 		Fill(*root, scroll);
 		auto& content = scroll.Add<UI::VerticalBox>();

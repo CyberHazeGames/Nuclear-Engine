@@ -26,13 +26,18 @@ buttons on the right. The emblem uses a UV region of the original wordmark store
 at `Assets/NuclearEngine/Editor/NuclearLogo.png`.
 
 Dropdown commands reuse scene/project/selection/workspace actions. Edit offers
-Undo and Redo, enabled when their respective scene-history stacks have entries.
+Undo, Redo, Delete selected, and Editor Settings... (also accessible from Window / Editor Settings...).
 Saving and project settings remain disabled because they are not implemented.
 Hover switches open menus; outside click, Escape and focus loss dismiss. Left/Right switches
 headers, Up/Down selects enabled commands, and Enter executes. Window / Manage
-panels opens the active document's recovery menu. Help / About Nuclear Engine opens
-the About document showing engine and editor build information, repository link with
-a browser launcher, and engine and third-party license notices.
+panels opens the active document's recovery menu. Edit / Editor Settings... opens
+[EditorSettingsDocument](../Nuclear.Editor/include/EditorSettingsDocument.h) featuring a two-pane layout
+with a left vertical navigation menu and a right main view for settings pages (Theme, General, Viewport).
+The Theme page exposes an interactive linear RGB color property, preview swatch, and presets that control
+the editor's live accent color via [EditorSettings](../Nuclear.Editor/include/EditorSettings.h); the General
+page provides VSync swap chain presentation controls, DPI scaling, and session settings.
+Help / About Nuclear Engine opens the About document showing engine and editor build information, repository
+link with a browser launcher, and engine and third-party license notices.
 
 The title bar borrows its native window and clears its physical-pixel caption
 hit-test callback on removal. Empty caption space uses native dragging,
@@ -49,13 +54,14 @@ unless they opt in. No gameplay or networking state is affected.
 in matching files; native projects explicitly register all new source files.
 
 The viewport context owns the retained shell and dock surface. The creation toolbar
-appears only while **Main viewport** is active and exposes project/scene creation,
-an **Add** menu and VSync. Add offers **Empty Entity**, **Shapes > Box / Plane /
+appears only while **Main viewport** is active and exposes project/scene creation and
+an **Add** menu. Add offers **Empty Entity**, **Shapes > Box / Plane /
 Sphere** and **Skybox**. It collapses on asset documents,
 which reclaim its vertical space, and does not appear in detached asset windows.
 A filtered hierarchy
 selects entities; the inspector edits names, position, degree-valued rotation,
-scale, mesh visibility/shadow flags and light properties. Numeric fields validate
+scale, mesh visibility/shadow flags and light properties (including a segmented
+radio button selecting Directional, Point, or Spot light type). Numeric fields validate
 finite values and commit on Enter. The inspector's **Add component** dropdown starts
 collapsed, lists only missing components and closes after a component is added.
 Callbacks resolve ECS handles again before editing. The protected editor camera
@@ -325,7 +331,7 @@ outside scene history.
 [AssetLibraryViewer](../Nuclear.Editor/source/AssetLibraryViewer.cpp) has Files,
 Textures, Meshes, Materials and Scenes categories. The filesystem browser supports
 parent navigation and an editable directory path, and reports filesystem errors.
-An **Import...** button remains available in every category and opens a native
+An **Import...** button sits on the right side of the asset browser tabs bar across all categories and opens a native
 single-file picker in the current browsing directory. Its supported-assets filter
 covers the existing texture, geometry, NuclearShader and TTF formats; All files
 allows other selections, which receive the existing unsupported-format feedback.

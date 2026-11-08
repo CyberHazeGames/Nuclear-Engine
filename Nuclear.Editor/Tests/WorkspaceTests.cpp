@@ -2,6 +2,8 @@
 #include <NuclearEditor.h>
 #include <GameViewPort.h>
 #include <AssetDocument.h>
+#include <EditorSettings.h>
+#include <EditorSettingsDocument.h>
 #include <Nuclear.Platform/Platform.h>
 #include <Diligent/Graphics/GraphicsEngine/interface/Texture.h>
 #include <fstream>
@@ -131,7 +133,7 @@ namespace Nuclear::Editor::Tests
 		auto* viewportInspector = workspace->GetArea("inspector");
 		Check(documents.GetTabs().size() == 1 && documents.GetActive() == "viewport", "Main viewport starts as a document tab");
 		auto checkSceneToolbar = [](bool visible) {
-			for (const char* title : {"New project", "New scene", "Add", "VSync"})
+			for (const char* title : {"New project", "New scene", "Add"})
 			{
 				auto* label = Find<TextBlock>([title](const auto& label) { return label.GetText() == title; });
 				Check(label && label->IsVisible() == visible, "Scene creation toolbar appears only on Main viewport");
@@ -579,6 +581,41 @@ namespace Nuclear::Editor::Tests
 		Check(name->GetText() == "editorfixtures_triangle", "Project modal isolates input in independent windows");
 		Action(editor, "Cancel");
 		frame();
+
+		// Editor Settings document and theme accent color check
+		const auto defaultAccent = EditorSettings::GetDefaultAccentColor();
+		const auto initialAccent = EditorSettings::Get().GetAccentColor();
+		Check(std::abs(initialAccent.r - defaultAccent.r) < 0.01f && std::abs(initialAccent.g - defaultAccent.g) < 0.01f,
+			"Editor settings starts with default accent color");
+		Action(editor, "Window");
+		Action(editor, "Editor Settings...");
+		frame();
+		Check(documents.GetActive() == "editor-settings", "Editor settings opens as an active document tab");
+		Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "THEME & APPEARANCE"; }) != nullptr,
+			"Settings main view displays the Theme settings page by default");
+		Action(editor, "Electric Cyan");
+		frame();
+		Check(EditorSettings::Get().GetAccentColor().b > 0.8f, "Preset button updates editor accent color");
+		Action(editor, "Reset to Default Accent");
+		frame();
+		const auto resetAccent = EditorSettings::Get().GetAccentColor();
+		Check(std::abs(resetAccent.r - defaultAccent.r) < 0.01f && std::abs(resetAccent.g - defaultAccent.g) < 0.01f,
+			"Reset restores default accent color");
+		Action(editor, "General");
+		frame();
+		Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "GENERAL PREFERENCES"; }) != nullptr,
+			"Clicking sidebar menu switches to General settings page");
+		auto* vsyncOption = Find<TextBlock>([](const auto& label) { return label.GetText() == "VSync"; });
+		Check(vsyncOption != nullptr, "VSync option is available in General editor settings");
+		Action(editor, "VSync");
+		frame();
+		Check(!EditorSettings::Get().GetVSync(), "Toggling VSync checkbox in editor settings disables VSync");
+		Action(editor, "VSync");
+		frame();
+		Check(EditorSettings::Get().GetVSync(), "Toggling VSync checkbox again re-enables VSync");
+		workspace->Close("editor-settings");
+		frame();
+
 		std::cout << "Workspace document tabs, docking, tear-off, native input/render/resize, redock and recovery passed.\n";
 	}
 }

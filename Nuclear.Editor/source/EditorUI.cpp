@@ -9,6 +9,8 @@
 #include <EditorToolbar.h>
 #include <AssetDocument.h>
 #include <AboutDocument.h>
+#include <EditorSettings.h>
+#include <EditorSettingsDocument.h>
 #include <GameViewPort.h>
 #include <Fallbacks/FallbacksModule.h>
 #include <Rendering/RenderingModule.h>
@@ -231,12 +233,6 @@ namespace Nuclear::Editor
 		});
 		auto& add = Action(actions, "Add", {});
 		add.OnClicked = [this, &add]() { OpenAddMenu(add.GetBounds()); };
-		auto& vsync = actions.Add<UI::CheckBox>();
-		vsync.SetChecked(true);
-		Label(vsync, "VSync");
-		vsync.OnChanged = [](bool enabled) {
-			Core::Engine::Get().SetSwapChainSyncInterval(enabled ? 1 : 0);
-		};
 		auto& documentHost = shell.Add<EditorDockArea>();
 		Fill(shell, documentHost);
 		pWorkspace = std::make_unique<EditorWorkspace>(UI::UIModule::Get().GetContext(), documents, documentHost);
@@ -350,15 +346,32 @@ namespace Nuclear::Editor
 		pLogText->SetWrap(true);
 		pWorkspace->Add("performance", "Performance", std::move(diagnosticsWidget), EditorDockRegion::BottomRight);
 		pStatus = &Label(shell, mNotice, 13);
+
+		auto openSettings = [this]() {
+			if (pWorkspace->Contains("editor-settings"))
+			{
+				pWorkspace->Show("editor-settings");
+				return;
+			}
+			pWorkspace->Add("editor-settings", EditorSettingsDocument::GetTitle(), EditorSettingsDocument::Build(),
+				EditorDockRegion::Documents, true);
+		};
+
+		EditorSettings::Get().OnAccentColorChanged = [this](const UI::Color&) {
+			mHierarchyDirty = mInspectorDirty = true;
+		};
+
 		pTitleBar->AddMenu("File", {{"New project", newProject.OnClicked}, {"New scene", newScene.OnClicked},
 			{"Save scene (unavailable)", {}}, {"Exit", []() { Core::Engine::Get().GetMainWindow()->RequestClose(); }}});
 		pTitleBar->AddMenu("Edit", {{"Undo", {}}, {"Redo", {}},
-			{"Delete selected", deleteSelected.OnClicked}});
-		pTitleBar->SetMenuProvider("Edit", [this, remove = deleteSelected.OnClicked]() {
+			{"Delete selected", deleteSelected.OnClicked},
+			{"Editor Settings...", openSettings}});
+		pTitleBar->SetMenuProvider("Edit", [this, remove = deleteSelected.OnClicked, openSettings]() {
 			return EditorMenuPopup::Items{
 				{"Undo", mHistory.CanUndo() ? std::function<void()>([this]() { ReplayHistory(false); }) : nullptr},
 				{"Redo", mHistory.CanRedo() ? std::function<void()>([this]() { ReplayHistory(true); }) : nullptr},
-				{"Delete selected", remove}};
+				{"Delete selected", remove},
+				{"Editor Settings...", openSettings}};
 		});
 		pTitleBar->AddMenu("View", {{"Main viewport", [this]() { pWorkspace->Show("viewport"); }},
 			{"Scene settings", [this]() { pWorkspace->Show("scene-settings"); }},
@@ -368,6 +381,7 @@ namespace Nuclear::Editor
 			{"Project settings (unavailable)", {}}});
 		pTitleBar->AddMenu("Window", {{"Manage panels...", [this]() { pWorkspace->ToggleWindowMenu(); }},
 			{"Scene settings", [this]() { pWorkspace->Show("scene-settings"); }},
+			{"Editor Settings...", openSettings},
 			{"Reset layout", [this]() { pWorkspace->ResetLayout(); }}});
 		pTitleBar->AddMenu("Help", {{"About Nuclear Engine", [this]() {
 			if (pWorkspace->Contains("about"))

@@ -171,6 +171,19 @@ namespace Nuclear::Editor::Tests
 		inspector.Reset();
 		build();
 		Check(Label(context, "Intensity")->IsVisible(), "Scene reset clears component disclosure state");
+
+		auto* pointOption = Label(context, "Point");
+		auto* spotOption = Label(context, "Spot");
+		auto* dirOption = Label(context, "Directional");
+		Check(pointOption && spotOption && dirOption, "Light inspector provides a segmented button for light types");
+		Click(*spotOption->GetParent());
+		Check(registry.get<Components::LightComponent>(entity).GetType() == Components::LightComponent::Type::Spot,
+			"Segmented button switches light type to Spot");
+		Check(history.Undo() && registry.get<Components::LightComponent>(entity).GetType() != Components::LightComponent::Type::Spot,
+			"Undo restores previous light type");
+		Check(history.Redo() && registry.get<Components::LightComponent>(entity).GetType() == Components::LightComponent::Type::Spot,
+			"Redo reapplies light type selection");
+
 		const auto staleRemove = HeaderButton(context, "LIGHT", Action::Remove).OnClicked;
 		registry.destroy(entity);
 		const auto replacement = scene.CreateEntity("Replacement inspector fixture").GetEntityID();

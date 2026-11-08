@@ -1,4 +1,5 @@
 #include <EntityEditor.h>
+#include <EditorSettings.h>
 #include <EditorWidgets.h>
 #include <EditorHistory.h>
 #include <SkyboxComponent.h>
@@ -56,7 +57,7 @@ namespace Nuclear::Editor
 		header.SetSpacing(3);
 		auto& collapse = header.Add<EditorComponentButton>(EditorComponentButton::Action::Collapse);
 		auto& heading = Label(header, title, 14);
-		heading.SetColor({.18f, .7f, .62f, 1});
+		heading.SetColor(EditorSettings::Get().GetAccentColor());
 		Fill(header, heading);
 		auto slot = header.GetSlot(heading.GetId());
 		slot.Vertical = UI::Alignment::Center;
@@ -192,6 +193,38 @@ namespace Nuclear::Editor
 		if (auto* light = Component<Components::LightComponent>(entity))
 		{
 			auto& section = componentSection.operator()<Components::LightComponent>("LIGHT");
+
+			// Segmented radio button group for selecting the active light type
+			const auto currentType = light->GetType();
+			size_t selectedTypeIndex = 0;
+			if (currentType == Components::LightComponent::Type::Point)
+				selectedTypeIndex = 1;
+			else if (currentType == Components::LightComponent::Type::Spot)
+				selectedTypeIndex = 2;
+			else
+				selectedTypeIndex = 0; // Directional or Unknown
+
+			SegmentedButton(section, "Type", {"Directional", "Point", "Spot"}, selectedTypeIndex,
+				[entity, changed, &history](size_t newIndex) {
+					Components::LightComponent::Type newType = Components::LightComponent::Type::Directional;
+					if (newIndex == 1)
+						newType = Components::LightComponent::Type::Point;
+					else if (newIndex == 2)
+						newType = Components::LightComponent::Type::Spot;
+
+					if (auto* light = Component<Components::LightComponent>(entity))
+					{
+						if (light->GetType() != newType)
+						{
+							history.Edit(entity, "Change light type", [entity, newType]() {
+								if (auto* light = Component<Components::LightComponent>(entity))
+									light->SetType(newType);
+							});
+							changed(true);
+						}
+					}
+				});
+
 			number(
 				section, "Intensity", light->GetIntensity(),
 				[entity](float value) {
@@ -200,14 +233,19 @@ namespace Nuclear::Editor
 				},
 				0, 100000);
 
-			vector(section, "Direction", light->GetDirection(), [entity](int axis, float number) {
-				if (auto* light = Component<Components::LightComponent>(entity))
-				{
-					auto dir = light->GetDirection();
-					dir[axis] = number;
-					light->SetDirection(dir);
-				}
-			}, -100000.0f, 100000.0f);
+			if (currentType == Components::LightComponent::Type::Directional ||
+				currentType == Components::LightComponent::Type::Spot ||
+				currentType == Components::LightComponent::Type::Unknown)
+			{
+				vector(section, "Direction", light->GetDirection(), [entity](int axis, float number) {
+					if (auto* light = Component<Components::LightComponent>(entity))
+					{
+						auto dir = light->GetDirection();
+						dir[axis] = number;
+						light->SetDirection(dir);
+					}
+				}, -100000.0f, 100000.0f);
+			}
 
 			auto color = light->GetColor();
 			vector(section, "Color RGB", {color.r, color.g, color.b}, [entity](int axis, float number) {
@@ -220,49 +258,66 @@ namespace Nuclear::Editor
 				}
 			}, 0.0f, 100000.0f);
 
-			vector(section, "Attenuation", light->GetAttenuation(), [entity](int axis, float number) {
-				if (auto* light = Component<Components::LightComponent>(entity))
-				{
-					auto att = light->GetAttenuation();
-					att[axis] = number;
-					light->SetAttenuation(att);
-				}
-			}, 0.0f, 100000.0f);
+			if (currentType == Components::LightComponent::Type::Point ||
+				currentType == Components::LightComponent::Type::Spot)
+			{
+				vector(section, "Attenuation", light->GetAttenuation(), [entity](int axis, float number) {
+					if (auto* light = Component<Components::LightComponent>(entity))
+					{
+						auto att = light->GetAttenuation();
+						att[axis] = number;
+						light->SetAttenuation(att);
+					}
+				}, 0.0f, 100000.0f);
+			}
 
-			auto cone = light->GetSpotlightCone();
-			for (int axis = 0; axis < 2; ++axis)
+			if (currentType == Components::LightComponent::Type::Spot)
+			{
+				auto cone = light->GetSpotlightCone();
+				for (int axis = 0; axis < 2; ++axis)
+					number(
+						section, axis == 0 ? "Inner cone (cosine)" : "Outer cone (cosine)", cone[axis],
+						[entity, axis](float number) {
+							if (auto* light = Component<Components::LightComponent>(entity))
+							{
+								auto cone = light->GetSpotlightCone();
+								cone[axis] = number;
+								light->SetSpotlightCone(cone);
+							}
+						},
+						-1, 1);
+			}
+
+			if (currentType == Components::LightComponent::Type::Point ||
+				currentType == Components::LightComponent::Type::Spot)
+			{
 				number(
-					section, axis == 0 ? "Inner cone (cosine)" : "Outer cone (cosine)", cone[axis],
-					[entity, axis](float number) {
+					section, "Near plane", light->GetNearPlane(),
+					[entity](float value) {
 						if (auto* light = Component<Components::LightComponent>(entity))
-						{
-							auto cone = light->GetSpotlightCone();
-							cone[axis] = number;
-							light->SetSpotlightCone(cone);
-						}
+							light->SetNearPlane(value);
 					},
-					-1, 1);
-			number(
-				section, "Near plane", light->GetNearPlane(),
-				[entity](float value) {
-					if (auto* light = Component<Components::LightComponent>(entity))
-						light->SetNearPlane(value);
-				},
-				.001f);
-			number(
-				section, "Far plane", light->GetFarPlane(),
-				[entity](float value) {
-					if (auto* light = Component<Components::LightComponent>(entity))
-						light->SetFarPlane(value);
-				},
-				.001f);
-			number(
-				section, "Field of view (degrees)", light->GetFOV(),
-				[entity](float value) {
-					if (auto* light = Component<Components::LightComponent>(entity))
-						light->SetFOV(value);
-				},
-				1, 179);
+					.001f);
+				number(
+					section, "Far plane", light->GetFarPlane(),
+					[entity](float value) {
+						if (auto* light = Component<Components::LightComponent>(entity))
+							light->SetFarPlane(value);
+					},
+					.001f);
+			}
+
+			if (currentType == Components::LightComponent::Type::Spot)
+			{
+				number(
+					section, "Field of view (degrees)", light->GetFOV(),
+					[entity](float value) {
+						if (auto* light = Component<Components::LightComponent>(entity))
+							light->SetFOV(value);
+					},
+					1, 179);
+			}
+
 			toggle(section, "Cast shadows", light->mCastShadows, [entity](bool value) {
 				if (auto* light = Component<Components::LightComponent>(entity))
 					light->mCastShadows = value;

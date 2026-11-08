@@ -24,6 +24,24 @@ namespace Nuclear::Editor
 	void Vector(UI::PanelWidget& parent, const std::string& title, Math::Vector3 value,
 				std::function<void(int, float)> setter, float minimum = -100000, float maximum = 100000,
 				float labelWidth = 80.0f);
+	/// Adds an interactive segmented button (radio button group) widget displaying a horizontal row of connected options,
+	/// where exactly one segment is selected at any time.
+	/// The active segment is visually highlighted, and clicking an unselected option switches the selection,
+	/// updates the visual styles, and invokes the callback with the chosen segment's 0-based index.
+	///
+	/// @param parent The parent panel widget to host the segmented control row.
+	/// @param title Optional title/label displayed to the left of the segments in a fixed-width container.
+	///              If empty, no title container is created.
+	/// @param options List of text labels for each segment (e.g. {"Directional", "Point", "Spot"}).
+	/// @param selectedIndex The 0-based index of the currently active segment.
+	/// @param onSelectionChanged Callback invoked when an option is selected, passing the newly chosen segment index.
+	/// @param labelWidth Optional fixed width in logical units for the title container to align with adjacent property rows.
+	/// @return Reference to the horizontal container panel hosting the segmented button widget, owned by parent.
+	UI::HorizontalBox& SegmentedButton(UI::PanelWidget& parent, const std::string& title,
+									   const std::vector<std::string>& options,
+									   size_t selectedIndex,
+									   std::function<void(size_t)> onSelectionChanged,
+									   float labelWidth = 80.0f);
 	/// Adds an interactive asset tile button displaying a centered thumbnail image and label underneath,
 	/// matching Unreal Engine Content Browser and desktop icon layouts.
 	/// The button owns an internal vertical layout containing the thumbnail brush and text labels.

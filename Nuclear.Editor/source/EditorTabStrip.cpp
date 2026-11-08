@@ -1,4 +1,5 @@
 #include <EditorTabStrip.h>
+#include <EditorSettings.h>
 #include <UI/DrawList.h>
 #include <Nuclear.Platform/Input.h>
 #include <algorithm>
@@ -161,7 +162,7 @@ namespace Nuclear::Editor
 			const bool active = mTabs[index].Id == mActive;
 			list.Add(rect, tabClip, active ? UI::Color{.09f, .14f, .17f, 1} : UI::Color{.065f, .08f, .10f, 1});
 			if (active)
-				list.Add({rect.x, rect.y, rect.Width, 2}, tabClip, {.15f, .7f, .6f, 1});
+				list.Add({rect.x, rect.y, rect.Width, 2}, tabClip, EditorSettings::Get().GetAccentColor());
 			list.Text(ResolveFont(nullptr), mTabs[index].Title,
 				{rect.x + 10, rect.y + 9, rect.Width - (mTabs[index].Closable ? 38.f : 18.f), 20},
 				tabClip, 14, {.8f, .86f, .9f, 1}, UI::Alignment::Start, false);
@@ -182,6 +183,6 @@ namespace Nuclear::Editor
 			list.Add({icon.x + 3, icon.y + 3, icon.Width - 6, 1}, clip, color);
 		}
 		if (HasFocus())
-			list.Add({bounds.x, bounds.y + bounds.Height - 1, bounds.Width, 1}, clip, {.15f, .7f, .6f, 1});
+			list.Add({bounds.x, bounds.y + bounds.Height - 1, bounds.Width, 1}, clip, EditorSettings::Get().GetAccentColor());
 	}
 }

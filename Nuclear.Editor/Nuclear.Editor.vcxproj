@@ -128,6 +128,8 @@
     <ClCompile Include="source\EditorWorkspace.cpp" />
     <ClCompile Include="source\AssetDocument.cpp" />
     <ClCompile Include="source\AboutDocument.cpp" />
+    <ClCompile Include="source\EditorSettings.cpp" />
+    <ClCompile Include="source\EditorSettingsDocument.cpp" />
     <ClCompile Include="source\MeshPreviewCache.cpp" />
     <ClCompile Include="source\GameViewPort.cpp" />
     <ClCompile Include="source\TransformGizmo.cpp" />
@@ -158,6 +160,8 @@
     <ClInclude Include="include\EditorWorkspace.h" />
     <ClInclude Include="include\AssetDocument.h" />
     <ClInclude Include="include\AboutDocument.h" />
+    <ClInclude Include="include\EditorSettings.h" />
+    <ClInclude Include="include\EditorSettingsDocument.h" />
     <ClInclude Include="include\MeshPreviewCache.h" />
     <ClInclude Include="include\EntityEditor.h" />
     <ClInclude Include="include\EditorHistory.h" />

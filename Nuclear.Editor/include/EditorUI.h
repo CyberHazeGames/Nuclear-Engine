@@ -75,7 +75,7 @@ namespace Nuclear::Editor
 		UI::ScrollBox* pInspector = nullptr;	 ///< Borrowed persistent inspector viewport.
 		UI::ContentWidget* pAssets = nullptr;	 ///< Borrowed persistent browser region.
 		GameViewPort* pViewport = nullptr;		 ///< Borrowed scene surface.
-		UI::Widget* pSceneToolbar = nullptr; ///< Context-owned creation/VSync row; collapsed outside Main viewport.
+		UI::Widget* pSceneToolbar = nullptr; ///< Context-owned creation row; collapsed outside Main viewport.
 		SceneSettings* pSceneSettings = nullptr; ///< Workspace-owned scene settings, valid while attached or parked.
 		bool mSceneSettingsDirty = true; ///< Refresh settings after scene replacement, commit or scene-history replay.
 		EditorTitleBar* pTitleBar = nullptr; ///< Context-owned main title bar, valid until Shutdown.

@@ -1,4 +1,5 @@
 #include <AboutDocument.h>
+#include <EditorSettings.h>
 #include <EditorWidgets.h>
 #include <string>
 
@@ -25,7 +26,7 @@ namespace Nuclear::Editor
 		auto& headerBox = root.Add<UI::VerticalBox>();
 		headerBox.SetSpacing(4);
 		auto& title = Label(headerBox, "NUCLEAR ENGINE", 24);
-		title.SetColor({.18f, .7f, .62f, 1});
+		title.SetColor(EditorSettings::Get().GetAccentColor());
 		Label(headerBox, "Modern C++20 3D Game Engine & Retained Native Editor", 13);
 
 		// Section: Engine Build Information

@@ -1,4 +1,5 @@
 #include <EditorWidgets.h>
+#include <EditorSettings.h>
 #include <cmath>
 #include <iomanip>
 #include <sstream>
@@ -50,7 +51,7 @@ namespace Nuclear::Editor
 		auto& column = border.Add<UI::VerticalBox>();
 		column.SetSpacing(10);
 		auto& heading = Label(column, title, 14);
-		heading.SetColor({.18f, .7f, .62f, 1});
+		heading.SetColor(EditorSettings::Get().GetAccentColor());
 		return column;
 	}
 
@@ -125,6 +126,89 @@ namespace Nuclear::Editor
 				}
 			};
 		}
+	}
+
+	UI::HorizontalBox& SegmentedButton(UI::PanelWidget& parent, const std::string& title,
+									   const std::vector<std::string>& options,
+									   size_t selectedIndex,
+									   std::function<void(size_t)> onSelectionChanged,
+									   float labelWidth)
+	{
+		auto& row = parent.Add<UI::HorizontalBox>();
+		row.SetSpacing(6);
+
+		if (!title.empty())
+		{
+			auto& labelBox = row.Add<UI::SizeBox>();
+			labelBox.SetSizeLimits({labelWidth, 0}, {labelWidth, 1000000});
+			Label(labelBox, title, 12);
+			auto groupSlot = row.GetSlot(labelBox.GetId());
+			groupSlot.Vertical = UI::Alignment::Center;
+			row.SetSlot(labelBox.GetId(), groupSlot);
+		}
+
+		auto& border = row.Add<UI::Border>();
+		border.SetBrush({nullptr, {.06f, .075f, .095f, 1.0f}});
+		border.SetPadding({2, 2, 2, 2});
+		Fill(row, border, 1.0f);
+
+		auto& segmentBox = border.Add<UI::HorizontalBox>();
+		segmentBox.SetSpacing(2);
+
+		UI::ControlStyle selectedStyle;
+		selectedStyle.Normal = {.16f, .50f, .45f, 1.0f};
+		selectedStyle.Hovered = {.20f, .58f, .52f, 1.0f};
+		selectedStyle.Pressed = {.12f, .42f, .38f, 1.0f};
+		selectedStyle.Focus = {.25f, .80f, .70f, 1.0f};
+
+		UI::ControlStyle unselectedStyle;
+		unselectedStyle.Normal = {.095f, .125f, .16f, 1.0f};
+		unselectedStyle.Hovered = {.14f, .19f, .24f, 1.0f};
+		unselectedStyle.Pressed = {.075f, .10f, .13f, 1.0f};
+		unselectedStyle.Focus = {.20f, .60f, .55f, 1.0f};
+
+		struct SegmentItem
+		{
+			UI::Button* pButton = nullptr;
+			UI::TextBlock* pLabel = nullptr;
+		};
+		auto items = std::make_shared<std::vector<SegmentItem>>();
+		items->reserve(options.size());
+
+		for (size_t i = 0; i < options.size(); ++i)
+		{
+			const bool isSelected = (i == selectedIndex);
+			auto& button = segmentBox.Add<UI::Button>();
+			button.SetPadding({8, 5, 8, 5});
+			button.SetStyle(isSelected ? selectedStyle : unselectedStyle);
+			Fill(segmentBox, button, 1.0f);
+
+			auto& label = Label(button, options[i], 12);
+			label.SetColor(isSelected ? UI::Color{.95f, 1.0f, 1.0f, 1.0f} : UI::Color{.62f, .70f, .78f, 1.0f});
+			auto labelSlot = button.GetSlot(label.GetId());
+			labelSlot.Horizontal = UI::Alignment::Center;
+			labelSlot.Vertical = UI::Alignment::Center;
+			button.SetSlot(label.GetId(), labelSlot);
+
+			items->push_back({&button, &label});
+		}
+
+		for (size_t i = 0; i < options.size(); ++i)
+		{
+			auto* btn = (*items)[i].pButton;
+			btn->OnClicked = [i, items, onSelectionChanged, selectedStyle, unselectedStyle]() {
+				for (size_t j = 0; j < items->size(); ++j)
+				{
+					const bool sel = (j == i);
+					(*items)[j].pButton->SetStyle(sel ? selectedStyle : unselectedStyle);
+					(*items)[j].pLabel->SetColor(sel ? UI::Color{.95f, 1.0f, 1.0f, 1.0f} : UI::Color{.62f, .70f, .78f, 1.0f});
+				}
+				if (onSelectionChanged)
+					onSelectionChanged(i);
+			};
+		}
+
+		return row;
 	}
 
 	UI::Button& AssetTile(UI::PanelWidget& parent, const std::string& name,
