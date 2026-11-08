@@ -1,4 +1,4 @@
-#include <UILayers/LoggerView.h>
+#include <LoggerView.h>
 #include <fstream>
 namespace Nuclear::Editor
 {

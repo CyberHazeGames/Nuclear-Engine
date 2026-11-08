@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/include/AssetLibraryViewer.h": {
-    "mtime": 1794169991.52371,
-    "seen": 1794170164.9076066,
-    "ast_hash": "351ee28ad083d2717eaee0ea4036e857",
+    "mtime": 1794176121.8893328,
+    "seen": 1794176747.0505688,
+    "ast_hash": "bba511dcd60d51484761353cd4f0db16",
     "semantic_hash": ""
   },
   "Nuclear.Editor/include/Common.h": {
@@ -84,21 +84,21 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/source/AssetLibraryViewer.cpp": {
-    "mtime": 1794170462.2171817,
-    "seen": 1794170542.1513994,
-    "ast_hash": "6de9fbbb8f60c6d447f83a8399406d5d",
+    "mtime": 1794176146.4606705,
+    "seen": 1794176747.0505688,
+    "ast_hash": "9f23276e4e691eac2df934e5b7279c7a",
     "semantic_hash": ""
   },
   "Nuclear.Editor/source/EditorUI.cpp": {
-    "mtime": 1794171154.9827158,
-    "seen": 1794171488.8973484,
-    "ast_hash": "0ea8c71edea4cc093bb8949db0336e28",
+    "mtime": 1794175382.9131098,
+    "seen": 1794176747.0505688,
+    "ast_hash": "af47a74b52eda35c22222f208e1a225f",
     "semantic_hash": ""
   },
   "Nuclear.Editor/source/EntityEditor.cpp": {
-    "mtime": 1794171442.4238207,
-    "seen": 1794171488.8973484,
-    "ast_hash": "2a26f96e70d8572862d16564c7c6abc2",
+    "mtime": 1794174159.1749475,
+    "seen": 1794176747.0505688,
+    "ast_hash": "4b1f46e221ae8fe40496d52e80d86a97",
     "semantic_hash": ""
   },
   "Nuclear.Editor/source/Nuclear.Editor.cpp": {
@@ -2916,9 +2916,9 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/include/EditorWidgets.h": {
-    "mtime": 1794094082.7410066,
-    "seen": 1794094280.9178965,
-    "ast_hash": "c631502aa295e58c77bf1786e9970849",
+    "mtime": 1794174813.7022748,
+    "seen": 1794176747.0505688,
+    "ast_hash": "89e95316c35a4198372acbc2a150f7af",
     "semantic_hash": ""
   },
   "Nuclear.Editor/include/NuclearEditor.h": {
@@ -2928,9 +2928,9 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/source/EditorWidgets.cpp": {
-    "mtime": 1794094168.9465299,
-    "seen": 1794094280.9178965,
-    "ast_hash": "1a5057986577fc6c63679b36ea965490",
+    "mtime": 1794174830.237033,
+    "seen": 1794176747.0505688,
+    "ast_hash": "fc8ab4d4ea91306c970a0c84aae210ae",
     "semantic_hash": ""
   },
   "Nuclear.Editor/source/GameViewPort.cpp": {
@@ -2970,9 +2970,9 @@
     "semantic_hash": ""
   },
   "AIGuides/Editor.md": {
-    "mtime": 1794171369.5300043,
-    "seen": 1794171488.8973484,
-    "ast_hash": "deb186d296c562a5eecd96ba9a178b64",
+    "mtime": 1794176243.8013878,
+    "seen": 1794176747.052082,
+    "ast_hash": "9b330edef7b9ac5a8a715c45f2693248",
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/TransformGizmoTests.cpp": {
@@ -3000,9 +3000,9 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/WorkspaceTests.cpp": {
-    "mtime": 1794167718.5249114,
-    "seen": 1794167968.7826614,
-    "ast_hash": "0ab23a3520543502189086068c4d4286",
+    "mtime": 1794176216.2302132,
+    "seen": 1794176747.0505688,
+    "ast_hash": "9577fdb0621024d7aa2b62633e27c182",
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/WorkspaceTests.h": {
@@ -3303,6 +3303,30 @@
     "mtime": 1794171154.778717,
     "seen": 1794171488.8973484,
     "ast_hash": "a851ae9ea7573fe5bc09484bb4404082",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/AboutDocument.h": {
+    "mtime": 1794175354.8559666,
+    "seen": 1794176747.0505688,
+    "ast_hash": "266345099e9baf82e08c8ebabe8b8329",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/MeshPreviewCache.h": {
+    "mtime": 1794176275.0835657,
+    "seen": 1794176747.0505688,
+    "ast_hash": "bb80182c63aec792a4ebfb8745d6c52f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/AboutDocument.cpp": {
+    "mtime": 1794175366.326848,
+    "seen": 1794176747.0505688,
+    "ast_hash": "e242d3094294efe93198dbddf1454891",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/MeshPreviewCache.cpp": {
+    "mtime": 1794176286.5963497,
+    "seen": 1794176747.0505688,
+    "ast_hash": "c7c073f66ab5b30e549418f2daaea906",
     "semantic_hash": ""
   }
 }

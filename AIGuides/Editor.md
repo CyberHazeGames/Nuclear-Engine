@@ -31,10 +31,10 @@ Saving and project settings remain disabled because they are not implemented.
 Hover switches open menus; outside click, Escape and focus loss dismiss. Left/Right switches
 headers, Up/Down selects enabled commands, and Enter executes. Window / Manage
 panels opens the active document's recovery menu. Edit / Editor Settings... opens
-[EditorSettingsDocument](../Nuclear.Editor/include/EditorSettingsDocument.h) featuring a two-pane layout
+[EditorSettingsDocument](../Nuclear.Editor/include/Documents/EditorSettingsDocument.h) featuring a two-pane layout
 with a left vertical navigation menu and a right main view for settings pages (Theme, General, Viewport).
 The Theme page exposes an interactive linear RGB color property, preview swatch, and presets that control
-the editor's live accent color via [EditorSettings](../Nuclear.Editor/include/EditorSettings.h); the General
+the editor's live accent color via [EditorSettings](../Nuclear.Editor/include/Settings/EditorSettings.h); the General
 page provides VSync swap chain presentation controls, DPI scaling, and session settings.
 Help / About Nuclear Engine opens the About document showing engine and editor build information, repository
 link with a browser launcher, and engine and third-party license notices.
@@ -47,9 +47,9 @@ owns resize edges, work-area maximization and native commands. Close follows the
 existing event flow and resource teardown. Runtime/sample windows keep OS chrome
 unless they opt in. No gameplay or networking state is affected.
 
-[NuclearEditor](../Nuclear.Editor/include/NuclearEditor.h) owns the session
-[Project](../Nuclear.Editor/include/Project.h) and the
-[EditorUI](../Nuclear.Editor/include/EditorUI.h) controller. The compatibility
+[NuclearEditor](../Nuclear.Editor/include/Core/NuclearEditor.h) owns the session
+[Project](../Nuclear.Editor/include/Core/Project.h) and the
+[EditorUI](../Nuclear.Editor/include/Panels/EditorUI.h) controller. The compatibility
 `Nuclear.Editor.h` header contains only the client include. Implementations live
 in matching files; native projects explicitly register all new source files.
 
@@ -82,8 +82,8 @@ works while the section is collapsed. Undo restores supported authored values;
 runtime services remain inactive. Transform belongs to the required
 `EntityInfoComponent`, so its **X** is disabled and its body explains that it is
 required. The protected preview camera stays outside the authoring inspector.
-[EditorComponentButton](../Nuclear.Editor/include/EditorComponentButton.h) paints
-font-independent arrow/cross glyphs; [EntityEditor](../Nuclear.Editor/source/EntityEditor.cpp)
+[EditorComponentButton](../Nuclear.Editor/include/Widgets/EditorComponentButton.h) paints
+font-independent arrow/cross glyphs; [EntityEditor](../Nuclear.Editor/source/Panels/EntityEditor.cpp)
 owns section construction and disclosure state.
 
 New-project creation is a modal form: disabling the workspace isolates pointer
@@ -96,7 +96,7 @@ splitters control the main workspace proportions.
 
 ## Document tabs and docking
 
-[EditorWorkspace](../Nuclear.Editor/include/EditorWorkspace.h) coordinates the
+[EditorWorkspace](../Nuclear.Editor/include/Workspace/EditorWorkspace.h) coordinates the
 browser-style document strip above the toolbar and a separate retained dock layout
 for every document. Each layout has five optional dock groups.
 **Main viewport** is a pinned document. In the Asset Browser, selecting a texture or mesh thumbnail
@@ -142,13 +142,13 @@ Window menu. Layouts and document history last for the session; disk layout
 persistence is not implemented. Closed contents remain owned for reopening until
 editor shutdown.
 
-[EditorDockArea](../Nuclear.Editor/include/EditorDockArea.h) owns each attached tab
-tree; [EditorTabStrip](../Nuclear.Editor/include/EditorTabStrip.h) owns only its header
+[EditorDockArea](../Nuclear.Editor/include/Workspace/EditorDockArea.h) owns each attached tab
+tree; [EditorTabStrip](../Nuclear.Editor/include/Workspace/EditorTabStrip.h) owns only its header
 metadata and gestures. Ownership-changing callbacks queue work for Update.
 `PanelWidget::TakeChild` cancels subtree input, detaches the tree and preserves widget
 IDs. The browser's outer dock area owns complete document layouts, and each
-[EditorDockLayout](../Nuclear.Editor/include/EditorDockLayout.h) owns its document's
-groups and splitters. [EditorFloatingWindow](../Nuclear.Editor/include/EditorFloatingWindow.h)
+[EditorDockLayout](../Nuclear.Editor/include/Workspace/EditorDockLayout.h) owns its document's
+groups and splitters. [EditorFloatingWindow](../Nuclear.Editor/include/Workspace/EditorFloatingWindow.h)
 owns a native window, a separate UIContext/renderer and an additional swap chain on
 the existing graphics device. Main-window modals disable input in every detached
 window. Teardown clears callbacks before either context/controller can disappear.
@@ -164,7 +164,7 @@ tab drags convert between logical and physical coordinates using both contexts.
 
 ## Scene preview
 
-[GameViewPort](../Nuclear.Editor/source/GameViewPort.cpp) samples the active
+[GameViewPort](../Nuclear.Editor/source/Panels/GameViewPort.cpp) samples the active
 camera's offscreen color target directly through the retained draw list. Right-drag
 within the surface to look; wheel moves the camera forward/backward. Click the
 viewport to give it keyboard focus, then hold WASD to fly forward/left/back/right
@@ -190,7 +190,7 @@ selection. Selection keeps viewport keyboard focus, changes no transforms and
 does not create scene-history entries. Closed/detached hierarchy panels retain
 the selected identity and reveal it when visible again.
 
-[EditorSelectionRenderer](../Nuclear.Editor/include/EditorSelectionRenderer.h)
+[EditorSelectionRenderer](../Nuclear.Editor/include/Rendering/EditorSelectionRenderer.h)
 owns a depth-tested R32_UINT entity-ID target, separate D32 depth, pipelines and
 a one-pixel staging texture. It uses current mesh GPU buffers/transforms, including
 imported meshes with released CPU arrays. Clicks queue a fresh ID render/readback
@@ -216,7 +216,7 @@ camera components start inactive without render targets.
 
 ## Add menu and skybox
 
-[EditorAddMenu](../Nuclear.Editor/include/EditorAddMenu.h) is a retained popup
+[EditorAddMenu](../Nuclear.Editor/include/Widgets/EditorAddMenu.h) is a retained popup
 anchored to the scene toolbar's **Add** button. Click or hover **Shapes** for the
 Box, Plane and Sphere submenu. Up/Down choose commands, Right/Enter open Shapes,
 Left returns to the root menu, and Enter creates the selected entity. Escape,
@@ -224,13 +224,13 @@ outside click, focus loss, scene replacement and leaving Main viewport dismiss i
 The popup blocks underlying workspace clicks and removes itself before creation.
 
 **Add / Skybox** creates a hierarchy entity with the editor-only
-[SkyboxComponent](../Nuclear.Editor/include/SkyboxComponent.h). Adding it again
+[SkyboxComponent](../Nuclear.Editor/include/Rendering/SkyboxComponent.h). Adding it again
 selects the existing background. The inspector exposes **Visible**; translation,
 scale and gizmos are omitted because the sky surrounds the camera. Creation,
 visibility, deletion and restoration participate in normal entity undo/redo.
 Removing/hiding the sky restores the scene clear color. New scenes start without it.
 
-[EditorSkybox](../Nuclear.Editor/include/EditorSkybox.h) owns a generated blue sky,
+[EditorSkybox](../Nuclear.Editor/include/Rendering/EditorSkybox.h) owns a generated blue sky,
 horizon and ground cubemap, so creation needs no external texture assets. GPU
 creation is queued for Update. It reuses the engine
 [Skybox](../Nuclear.Engine/include/Rendering/Skybox.h) renderer after scene geometry,
@@ -243,7 +243,7 @@ session authoring data; custom cubemap assignment and disk persistence are not p
 ## Scene settings
 
 Open **Window / Scene settings** or **View / Scene settings** to show the
-[SceneSettings](../Nuclear.Editor/include/SceneSettings.h) tool. It starts closed,
+[SceneSettings](../Nuclear.Editor/include/Panels/SceneSettings.h) tool. It starts closed,
 docks beside Inspector and uses the same float, redock, close/reopen and panel
 recovery controls as the other viewport tools. Asset documents do not inherit it.
 
@@ -253,7 +253,7 @@ Enter commits a field, and invalid/nonfinite values leave scene data unchanged.
 A swatch previews the color. Blank scene names become **Untitled Scene**. Changes
 refresh the scene heading and settings controls outside input dispatch.
 
-[EditorSceneState](../Nuclear.Editor/include/EditorSceneState.h) captures these
+[EditorSceneState](../Nuclear.Editor/include/Settings/EditorSceneState.h) captures these
 settings separately from entities, using the borrowed active scene identity and
 resolving the current camera on restore. Scene settings share the same 128-action
 undo/redo order as entity edits and preserve entity selection during replay.
@@ -277,8 +277,8 @@ in the camera-facing plane in Move mode and scales all components in Scale mode.
 Scale factors stay positive and preserve existing mirrored signs. Handles use
 logical UI units so their size follows workspace UI scaling rather than object size.
 
-[TransformGizmo](../Nuclear.Editor/include/TransformGizmo.h) owns only drag math and
-snapshots. [GameViewPort](../Nuclear.Editor/source/GameViewPort.cpp) validates the
+[TransformGizmo](../Nuclear.Editor/include/Rendering/TransformGizmo.h) owns only drag math and
+snapshots. [GameViewPort](../Nuclear.Editor/source/Panels/GameViewPort.cpp) validates the
 selected ECS handle on every event, owns pointer capture and paints clipped retained
 UI primitives over the scene. It uses the camera's actual `mCameraData.View`, not
 the existing `GetViewMatrix()` accessor that returns Model. Axis movement uses
@@ -296,7 +296,7 @@ local-axis mode are not implemented. Select-mode mesh picking is described above
 
 ## Undo and redo
 
-[EditorHistory](../Nuclear.Editor/include/EditorHistory.h) owns up to 128 scene
+[EditorHistory](../Nuclear.Editor/include/Settings/EditorHistory.h) owns up to 128 scene
 authoring transactions. Use **Edit / Undo**, **Edit / Redo**, **Ctrl+Z**, **Ctrl+Y**
 or **Ctrl+Shift+Z**. Shortcuts work in the main workspace and detached windows;
 focused text boxes retain their uncommitted text and do not invoke scene history.
@@ -312,7 +312,7 @@ cancels a pending viewport gesture, then restores selection, hierarchy, inspecto
 and renderer bindings. Invalid numeric input and unchanged values add no entries.
 A new committed edit after Undo drops Redo; no-op edits preserve it.
 
-[EditorEntityState](../Nuclear.Editor/include/EditorEntityState.h) stores authored
+[EditorEntityState](../Nuclear.Editor/include/Settings/EditorEntityState.h) stores authored
 values and borrowed library mesh/material references, restoring deleted entities
 at their original versioned ECS identity so earlier commands still resolve. The
 editor's protected camera is excluded from editing. Runtime-service components
@@ -328,7 +328,7 @@ outside scene history.
 
 ## Assets and diagnostics
 
-[AssetLibraryViewer](../Nuclear.Editor/source/AssetLibraryViewer.cpp) has Files,
+[AssetLibraryViewer](../Nuclear.Editor/source/Panels/AssetLibraryViewer.cpp) has Files,
 Textures, Meshes, Materials and Scenes categories. The filesystem browser supports
 parent navigation and an editable directory path, and reports filesystem errors.
 An **Import...** button sits on the right side of the asset browser tabs bar across all categories and opens a native
@@ -349,7 +349,7 @@ decoding must not report the fallback texture as a successful import. Textures a
 display in an Unreal-style grid of thumbnail icon buttons with asset names, dimensions or
 triangle counts, and direct document-opening actions; mesh cards also retain an **Add to scene**
 action button. Mesh previews are rendered and cached on-demand by
-[MeshPreviewCache](../Nuclear.Editor/include/MeshPreviewCache.h) using an offscreen depth-tested
+[MeshPreviewCache](../Nuclear.Editor/include/Rendering/MeshPreviewCache.h) using an offscreen depth-tested
 render target and directional Blinn-Phong lighting. Library assets are borrowed,
 never deleted by a panel.
 

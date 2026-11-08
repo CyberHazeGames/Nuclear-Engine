@@ -381,6 +381,11 @@ int main()
 			Action("Help");
 			Action("About Nuclear Engine");
 			Check(!menu(), "Pointer commands survive focus moving into the popup and dismiss it");
+			if (editor.GetWorkspace()->Contains("about"))
+			{
+				editor.GetWorkspace()->Close("about");
+				frame();
+			}
 			Action("Edit");
 			auto* projectHeader = Find<TextBlock>([](const auto& label) { return label.GetText() == "Project"; });
 			const auto projectBounds = projectHeader->GetBounds();

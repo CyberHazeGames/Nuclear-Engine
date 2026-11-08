@@ -62,7 +62,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDOWS;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;PLATFORM_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\Nuclear.Platform\include;..\External\;include;..\Nuclear.Engine\include;..\Nuclear.Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Nuclear.Platform\include;..\External\;include;include\Core;include\Workspace;include\Panels;include\Documents;include\Widgets;include\Settings;include\Rendering;include\Systems;..\Nuclear.Engine\include;..\Nuclear.Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -81,7 +81,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINDOWS;D3D11_SUPPORTED;D3D12_SUPPORTED;GL_SUPPORTED;VULKAN_SUPPORTED;PLATFORM_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\Nuclear.Platform\include;..\External\;include;..\Nuclear.Engine\include;..\Nuclear.Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Nuclear.Platform\include;..\External\;include;include\Core;include\Workspace;include\Panels;include\Documents;include\Widgets;include\Settings;include\Rendering;include\Systems;..\Nuclear.Engine\include;..\Nuclear.Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,81 +100,95 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Manifest Include="Editor.manifest" />
-    <ClInclude Include="include\EditorToolbar.h" />
-    <ClCompile Include="source\EditorToolbar.cpp" />
-    <ClInclude Include="include\EditorSelectionRenderer.h" />
-    <ClCompile Include="source\EditorSelectionRenderer.cpp" />
-    <ClCompile Include="source\AssetLibraryViewer.cpp" />
-    <ClCompile Include="source\EntityEditor.cpp" />
-    <ClCompile Include="source\EditorComponentButton.cpp" />
-    <ClInclude Include="include\EditorComponentButton.h" />
-    <ClCompile Include="source\EditorHistory.cpp" />
-    <ClCompile Include="source\EditorSceneState.cpp" />
-    <ClCompile Include="source\SceneSettings.cpp" />
-    <ClCompile Include="source\EditorEntityState.cpp" />
-    <ClCompile Include="source\Project.cpp" />
-    <ClCompile Include="source\EditorAddMenu.cpp" />
-    <ClCompile Include="source\EditorSkybox.cpp" />
-    <ClCompile Include="source\SkyboxComponent.cpp" />
-    <ClCompile Include="source\EditorUI.cpp" />
-    <ClCompile Include="source\EditorWidgets.cpp" />
-    <ClCompile Include="source\EditorTitleBar.cpp" />
-    <ClCompile Include="source\EditorWindowButton.cpp" />
-    <ClCompile Include="source\EditorMenuPopup.cpp" />
-    <ClCompile Include="source\EditorTabStrip.cpp" />
-    <ClCompile Include="source\EditorDockArea.cpp" />
-    <ClCompile Include="source\EditorDockLayout.cpp" />
-    <ClCompile Include="source\EditorFloatingWindow.cpp" />
-    <ClCompile Include="source\EditorWorkspace.cpp" />
-    <ClCompile Include="source\AssetDocument.cpp" />
-    <ClCompile Include="source\AboutDocument.cpp" />
-    <ClCompile Include="source\EditorSettings.cpp" />
-    <ClCompile Include="source\EditorSettingsDocument.cpp" />
-    <ClCompile Include="source\MeshPreviewCache.cpp" />
-    <ClCompile Include="source\GameViewPort.cpp" />
-    <ClCompile Include="source\TransformGizmo.cpp" />
-    <ClCompile Include="source\NuclearEditor.cpp" />
-    <ClCompile Include="source\Nuclear.Editor.cpp" />
-    <ClCompile Include="source\UILayers\LoggerView.cpp" />
+    <!-- Core -->
+    <ClCompile Include="source\Core\Nuclear.Editor.cpp" />
+    <ClCompile Include="source\Core\NuclearEditor.cpp" />
+    <ClCompile Include="source\Core\Project.cpp" />
+    <!-- Workspace -->
+    <ClCompile Include="source\Workspace\EditorDockArea.cpp" />
+    <ClCompile Include="source\Workspace\EditorDockLayout.cpp" />
+    <ClCompile Include="source\Workspace\EditorFloatingWindow.cpp" />
+    <ClCompile Include="source\Workspace\EditorTabStrip.cpp" />
+    <ClCompile Include="source\Workspace\EditorWorkspace.cpp" />
+    <!-- Panels -->
+    <ClCompile Include="source\Panels\AssetLibraryViewer.cpp" />
+    <ClCompile Include="source\Panels\EditorUI.cpp" />
+    <ClCompile Include="source\Panels\EntityEditor.cpp" />
+    <ClCompile Include="source\Panels\GameViewPort.cpp" />
+    <ClCompile Include="source\Panels\LoggerView.cpp" />
+    <ClCompile Include="source\Panels\SceneSettings.cpp" />
+    <!-- Documents -->
+    <ClCompile Include="source\Documents\AboutDocument.cpp" />
+    <ClCompile Include="source\Documents\AssetDocument.cpp" />
+    <ClCompile Include="source\Documents\EditorSettingsDocument.cpp" />
+    <!-- Widgets -->
+    <ClCompile Include="source\Widgets\EditorAddMenu.cpp" />
+    <ClCompile Include="source\Widgets\EditorComponentButton.cpp" />
+    <ClCompile Include="source\Widgets\EditorMenuPopup.cpp" />
+    <ClCompile Include="source\Widgets\EditorTitleBar.cpp" />
+    <ClCompile Include="source\Widgets\EditorToolbar.cpp" />
+    <ClCompile Include="source\Widgets\EditorWidgets.cpp" />
+    <ClCompile Include="source\Widgets\EditorWindowButton.cpp" />
+    <!-- Settings -->
+    <ClCompile Include="source\Settings\EditorEntityState.cpp" />
+    <ClCompile Include="source\Settings\EditorHistory.cpp" />
+    <ClCompile Include="source\Settings\EditorSceneState.cpp" />
+    <ClCompile Include="source\Settings\EditorSettings.cpp" />
+    <!-- Rendering -->
+    <ClCompile Include="source\Rendering\EditorSelectionRenderer.cpp" />
+    <ClCompile Include="source\Rendering\EditorSkybox.cpp" />
+    <ClCompile Include="source\Rendering\MeshPreviewCache.cpp" />
+    <ClCompile Include="source\Rendering\SkyboxComponent.cpp" />
+    <ClCompile Include="source\Rendering\TransformGizmo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Root -->
     <ClInclude Include="include\Nuclear.Editor.h" />
-    <ClInclude Include="include\NuclearEditor.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\EditorUILayer.h" />
-    <ClInclude Include="include\AssetLibraryViewer.h" />
-    <ClInclude Include="include\Common.h" />
-    <ClInclude Include="include\EditorAddMenu.h" />
-    <ClInclude Include="include\EditorSkybox.h" />
-    <ClInclude Include="include\SkyboxComponent.h" />
-    <ClInclude Include="include\EditorUI.h" />
-    <ClInclude Include="include\EditorWidgets.h" />
-    <ClInclude Include="include\EditorTitleBar.h" />
-    <ClInclude Include="include\EditorWindowButton.h" />
-    <ClInclude Include="include\EditorMenuPopup.h" />
-    <ClInclude Include="include\EditorTabStrip.h" />
-    <ClInclude Include="include\EditorDockArea.h" />
-    <ClInclude Include="include\EditorDockLayout.h" />
-    <ClInclude Include="include\EditorFloatingWindow.h" />
-    <ClInclude Include="include\EditorWorkspace.h" />
-    <ClInclude Include="include\AssetDocument.h" />
-    <ClInclude Include="include\AboutDocument.h" />
-    <ClInclude Include="include\EditorSettings.h" />
-    <ClInclude Include="include\EditorSettingsDocument.h" />
-    <ClInclude Include="include\MeshPreviewCache.h" />
-    <ClInclude Include="include\EntityEditor.h" />
-    <ClInclude Include="include\EditorHistory.h" />
-    <ClInclude Include="include\EditorSceneState.h" />
-    <ClInclude Include="include\SceneSettings.h" />
-    <ClInclude Include="include\EditorEntityState.h" />
-    <ClInclude Include="include\GameViewPort.h" />
-    <ClInclude Include="include\TransformGizmo.h" />
-    <ClInclude Include="include\Project.h" />
-    <ClInclude Include="include\ProjectTemplate.h" />
-    <ClInclude Include="include\SystemsEditor.h" />
-    <ClInclude Include="include\Systems.h" />
-    <ClInclude Include="include\UILayers\LoggerView.h" />
+    <!-- Core -->
+    <ClInclude Include="include\Core\Common.h" />
+    <ClInclude Include="include\Core\NuclearEditor.h" />
+    <ClInclude Include="include\Core\Project.h" />
+    <ClInclude Include="include\Core\ProjectTemplate.h" />
+    <!-- Workspace -->
+    <ClInclude Include="include\Workspace\EditorDockArea.h" />
+    <ClInclude Include="include\Workspace\EditorDockLayout.h" />
+    <ClInclude Include="include\Workspace\EditorFloatingWindow.h" />
+    <ClInclude Include="include\Workspace\EditorTabStrip.h" />
+    <ClInclude Include="include\Workspace\EditorWorkspace.h" />
+    <!-- Panels -->
+    <ClInclude Include="include\Panels\AssetLibraryViewer.h" />
+    <ClInclude Include="include\Panels\EditorUI.h" />
+    <ClInclude Include="include\Panels\EditorUILayer.h" />
+    <ClInclude Include="include\Panels\EntityEditor.h" />
+    <ClInclude Include="include\Panels\GameViewPort.h" />
+    <ClInclude Include="include\Panels\LoggerView.h" />
+    <ClInclude Include="include\Panels\SceneSettings.h" />
+    <!-- Documents -->
+    <ClInclude Include="include\Documents\AboutDocument.h" />
+    <ClInclude Include="include\Documents\AssetDocument.h" />
+    <ClInclude Include="include\Documents\EditorSettingsDocument.h" />
+    <!-- Widgets -->
+    <ClInclude Include="include\Widgets\EditorAddMenu.h" />
+    <ClInclude Include="include\Widgets\EditorComponentButton.h" />
+    <ClInclude Include="include\Widgets\EditorMenuPopup.h" />
+    <ClInclude Include="include\Widgets\EditorTitleBar.h" />
+    <ClInclude Include="include\Widgets\EditorToolbar.h" />
+    <ClInclude Include="include\Widgets\EditorWidgets.h" />
+    <ClInclude Include="include\Widgets\EditorWindowButton.h" />
+    <!-- Settings -->
+    <ClInclude Include="include\Settings\EditorEntityState.h" />
+    <ClInclude Include="include\Settings\EditorHistory.h" />
+    <ClInclude Include="include\Settings\EditorSceneState.h" />
+    <ClInclude Include="include\Settings\EditorSettings.h" />
+    <!-- Rendering -->
+    <ClInclude Include="include\Rendering\EditorSelectionRenderer.h" />
+    <ClInclude Include="include\Rendering\EditorSkybox.h" />
+    <ClInclude Include="include\Rendering\MeshPreviewCache.h" />
+    <ClInclude Include="include\Rendering\SkyboxComponent.h" />
+    <ClInclude Include="include\Rendering\TransformGizmo.h" />
+    <!-- Systems -->
+    <ClInclude Include="include\Systems\Systems.h" />
+    <ClInclude Include="include\Systems\SystemsEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nuclear.Engine\Nuclear.Engine.vcxproj">

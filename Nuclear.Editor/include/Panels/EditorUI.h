@@ -5,7 +5,7 @@
 #include <AssetLibraryViewer.h>
 #include <Systems/RenderSystem.h>
 #include <Rendering/RenderPasses/GeometryPass.h>
-#include <UILayers/LoggerView.h>
+#include <LoggerView.h>
 #include <array>
 #include <EditorWorkspace.h>
 #include <EditorHistory.h>
