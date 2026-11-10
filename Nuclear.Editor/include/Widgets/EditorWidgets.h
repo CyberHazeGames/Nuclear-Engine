@@ -2,6 +2,7 @@
 #include <UI/UI.h>
 #include <Math/Math.h>
 #include <functional>
+#include <EditorAssetButton.h>
 #include <string>
 
 namespace Nuclear::Editor
@@ -47,9 +48,11 @@ namespace Nuclear::Editor
 	/// The button owns an internal vertical layout containing the thumbnail brush and text labels.
 	/// Clicking the tile button executes the callback (typically opening the corresponding asset document).
 	/// The returned button reference is owned by parent.
+	/// Optional drag callbacks preserve click activation until the drag threshold is crossed.
 	UI::Button& AssetTile(UI::PanelWidget& parent, const std::string& name,
 						  const UI::Brush& brush, UI::Vec2 imageSize,
-						  std::function<void()> callback, const std::string& subtext = {});
+						  std::function<void()> callback, const std::string& subtext = {},
+						  EditorAssetButton::DragCallback dragged = {}, std::function<void()> cancelled = {});
 	/// Formats a compact number with three fractional digits.
 	std::string Decimal(float value);
 } // namespace Nuclear::Editor

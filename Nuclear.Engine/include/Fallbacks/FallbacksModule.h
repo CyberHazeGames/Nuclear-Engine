@@ -16,6 +16,7 @@ namespace Nuclear
 
 			Assets::Texture* GetDefaultBlackImage();
 			Assets::Texture* GetDefaultGreyImage();
+			/// Returns the library-owned white GPU texture after Initialize; callers must not delete it.
 			Assets::Texture* GetDefaultWhiteImage();
 
 			const Assets::MaterialTexture& GetDefaultDiffuseTex() const;

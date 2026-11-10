@@ -7,12 +7,12 @@ namespace Nuclear::Editor
 {
 	EditorFloatingWindow::~EditorFloatingWindow() { Shutdown(); }
 
-	bool EditorFloatingWindow::Initialize(const std::string& title, const Assets::Font* font, bool show)
+	bool EditorFloatingWindow::Initialize(const std::string& title, const Assets::Font* font, bool show, UI::Vec2 size)
 	{
 		Platform::WindowDesc desc;
 		desc.Title = "Nuclear / " + title;
-		desc.WindowWidth = 760;
-		desc.WindowHeight = 620;
+		desc.WindowWidth = static_cast<int>(std::max(240.f, size.x));
+		desc.WindowHeight = static_cast<int>(std::max(240.f, size.y));
 		desc.CustomTitleBar = true;
 		if (!mWindow.Create(desc))
 			return false;

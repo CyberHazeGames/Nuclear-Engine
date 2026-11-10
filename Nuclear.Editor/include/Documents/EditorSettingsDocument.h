@@ -5,6 +5,7 @@
 
 namespace Nuclear::Editor
 {
+	class EditorColorPickerWindow;
 	/// Builds the Editor Settings document window.
 	/// Features a left vertical navigation menu listing settings categories (Theme, General, Viewport)
 	/// and a right main view displaying the selected settings page with interactive properties.
@@ -17,7 +18,8 @@ namespace Nuclear::Editor
 		/// Constructs the two-pane Editor Settings view with navigation sidebar and settings page content.
 		///
 		/// @return Owning pointer to the root UI::Widget containing the full settings layout.
-		static std::unique_ptr<UI::Widget> Build();
+		/// colors is borrowed by color properties and must outlive the document.
+		static std::unique_ptr<UI::Widget> Build(EditorColorPickerWindow& colors);
 	};
 
 	/// Convenience alias matching window-centric naming conventions.

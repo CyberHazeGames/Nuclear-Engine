@@ -1,5 +1,7 @@
 #include <MeshPreviewCache.h>
 #include <Graphics/GraphicsModule.h>
+#include <Assets/DefaultMeshes.h>
+#include <MeshPreviewScene.h>
 #include <Diligent/Graphics/GraphicsTools/interface/MapHelper.hpp>
 #include <cmath>
 
@@ -30,7 +32,7 @@ struct PSInput
 PSInput main(VSInput input)
 {
     PSInput output;
-    output.Position = mul(float4(input.Position, 1.0), ModelViewProjection);
+    output.Position = mul(ModelViewProjection, float4(input.Position, 1.0));
     output.Normal = input.Normal;
     return output;
 }
@@ -71,6 +73,7 @@ float4 main(PSInput input) : SV_TARGET
 	void MeshPreviewCache::Clear()
 	{
 		mCachedTextures.clear();
+		mMaterialTextures.clear();
 		mPipeline.Release();
 		mBinding.Release();
 		mConstantBuffer.Release();
@@ -164,6 +167,33 @@ float4 main(PSInput input) : SV_TARGET
 		if (mesh->GetState() != Assets::IAsset::State::Created)
 			return nullptr;
 
+		auto texture = RenderPreview(*mesh);
+		if (!texture) return nullptr;
+		auto* result = texture.get();
+		mCachedTextures[mesh] = std::move(texture);
+		return result;
+	}
+
+	Assets::Texture* MeshPreviewCache::GetMaterialPreview(Assets::Material* material)
+	{
+		if (!material || material->GetState() != Assets::IAsset::State::Created) return nullptr;
+		if (auto found = mMaterialTextures.find(material); found != mMaterialTextures.end())
+			return found->second.get();
+		auto* sphere = Assets::DefaultMeshes::GetSphereAsset();
+		if (!sphere || sphere->GetState() != Assets::IAsset::State::Created) return nullptr;
+		MeshPreviewScene scene;
+		if (!scene.Render(*sphere, 128, 128, material)) return nullptr;
+		auto texture = std::make_unique<Assets::Texture>();
+		texture->SetTextureView(scene.GetTexture().GetTextureView());
+		texture->SetState(Assets::IAsset::State::Created);
+		auto* result = texture.get();
+		mMaterialTextures[material] = std::move(texture);
+		return result;
+	}
+
+	std::unique_ptr<Assets::Texture> MeshPreviewCache::RenderPreview(Assets::Mesh& mesh)
+	{
+
 		if (!InitializePipeline())
 			return nullptr;
 
@@ -204,13 +234,36 @@ float4 main(PSInput input) : SV_TARGET
 		size_t totalVerts = 0;
 		Math::Vector3 minBounds(1e9f);
 		Math::Vector3 maxBounds(-1e9f);
-		for (const auto& part : mesh->mSubMeshes)
+		for (const auto& part : mesh.mSubMeshes)
 		{
-			for (const auto& v : part.data.Vertices)
-			{
+			auto measure = [&](const Assets::Mesh::Vertex& v) {
+				if (!std::isfinite(v.Position.x) || !std::isfinite(v.Position.y) || !std::isfinite(v.Position.z)) return;
 				minBounds = glm::min(minBounds, v.Position);
 				maxBounds = glm::max(maxBounds, v.Position);
 				++totalVerts;
+			};
+			if (!part.data.Vertices.empty())
+			{
+				for (const auto& vertex : part.data.Vertices) measure(vertex);
+			}
+			else if (part.mVB)
+			{
+				auto desc = part.mVB->GetDesc();
+				desc.Name = "Thumbnail bounds readback";
+				desc.Usage = USAGE_STAGING;
+				desc.BindFlags = BIND_NONE;
+				desc.CPUAccessFlags = CPU_ACCESS_READ;
+				desc.Mode = BUFFER_MODE_UNDEFINED;
+				desc.ElementByteStride = 0;
+				RefCntAutoPtr<IBuffer> staging;
+				device->CreateBuffer(desc, nullptr, &staging);
+				if (!staging) continue;
+				context->CopyBuffer(part.mVB, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
+					staging, 0, desc.Size, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+				context->WaitForIdle();
+				MapHelper<Assets::Mesh::Vertex> mapped(context, staging, MAP_READ, MAP_FLAG_NONE);
+				if (mapped)
+					for (Uint64 index = 0; index < desc.Size / sizeof(Assets::Mesh::Vertex); ++index) measure(mapped[index]);
 			}
 		}
 		if (totalVerts > 0 && minBounds.x <= maxBounds.x)
@@ -223,7 +276,8 @@ float4 main(PSInput input) : SV_TARGET
 		}
 
 		Constants constants;
-		const Math::Matrix4 proj = Math::perspective(Math::radians(45.0f), 1.0f, 0.05f, 500.0f);
+		const Math::Matrix4 proj = Math::perspective(Math::radians(45.0f), 1.0f,
+			std::max(.0001f, distance * .001f), distance * 4);
 		const Math::Vector3 eye = center + glm::normalize(Math::Vector3(1.2f, 1.0f, 1.5f)) * distance;
 		const Math::Matrix4 view = Math::lookAt(eye, center, Math::Vector3(0.0f, 1.0f, 0.0f));
 		constants.ModelViewProjection = proj * view;
@@ -238,7 +292,7 @@ float4 main(PSInput input) : SV_TARGET
 		context->SetPipelineState(mPipeline);
 		context->CommitShaderResources(mBinding, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		for (auto& submesh : mesh->mSubMeshes)
+		for (auto& submesh : mesh.mSubMeshes)
 		{
 			if (!submesh.mVB || !submesh.mIB || !submesh.mIndicesCount)
 				continue;
@@ -259,8 +313,6 @@ float4 main(PSInput input) : SV_TARGET
 		textureAsset->SetTextureView(colorTarget->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE));
 		textureAsset->SetState(Assets::IAsset::State::Created);
 
-		auto* resultPtr = textureAsset.get();
-		mCachedTextures[mesh] = std::move(textureAsset);
-		return resultPtr;
+		return textureAsset;
 	}
 } // namespace Nuclear::Editor

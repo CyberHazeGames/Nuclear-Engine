@@ -17,7 +17,8 @@ namespace Nuclear::Editor
 	public:
 		~EditorFloatingWindow(); ///< Releases UI/GPU objects before the native window.
 		/// Creates a shared-device swap chain and private UI context; returns false without losing any panel.
-		bool Initialize(const std::string& title, const Assets::Font* font, bool show = true);
+		/// size specifies the initial physical client dimensions; dock windows keep their existing default.
+		bool Initialize(const std::string& title, const Assets::Font* font, bool show = true, UI::Vec2 size = {760, 620});
 		void Shutdown(); ///< Idempotent ordered teardown; does not redock or run controller callbacks.
 		void SetTitle(const std::string& title); ///< Sets both custom caption and native taskbar/Alt-Tab text for a live window.
 		void ProcessEvent(const Platform::Event& event); ///< Routes input and resizes only this window.

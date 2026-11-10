@@ -421,6 +421,7 @@ namespace Nuclear::Editor
 
 	void EditorWorkspace::Update()
 	{
+		mColorPicker.Update(mEnabled);
 		auto commands = std::exchange(mPending, {});
 		for (auto& command : commands)
 			command();
@@ -439,10 +440,12 @@ namespace Nuclear::Editor
 			window->Render();
 			window->Present();
 		}
+		mColorPicker.Render();
 	}
 
 	void EditorWorkspace::ProcessEvent(const Platform::Event& event)
 	{
+		if (mColorPicker.ProcessEvent(event)) return;
 		for (auto& window : mWindows)
 		{
 			if (event.pWindow != &window->GetWindow())
@@ -460,6 +463,7 @@ namespace Nuclear::Editor
 
 	void EditorWorkspace::Shutdown()
 	{
+		mColorPicker.Shutdown();
 		mPending.clear();
 		CloseMenu();
 		for (auto& [area, binding] : mAreas)

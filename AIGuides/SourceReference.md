@@ -37,6 +37,9 @@ Start with the owning row, read the declaration and implementation, then search 
 
 ## Graphics, materials, and animation
 
+Read [Rendering.md](Rendering.md) for the verified source relationships and sample
+examples behind this map; runtime checks remain documented in the build guide.
+
 | Topic | Primary source | Follow-up |
 | --- | --- | --- |
 | Backend/device | [GraphicsModule.h](../Nuclear.Engine/include/Graphics/GraphicsModule.h), [GraphicsModule.cpp](../Nuclear.Engine/Source/Graphics/GraphicsModule.cpp), [GraphicsModuleDesc.h](../Nuclear.Engine/include/Graphics/GraphicsModuleDesc.h) | Diligent creation, default D3D11 selection, device/context/swap chain |
@@ -61,6 +64,16 @@ clears its caption callback on removal. `Nuclear.Platform/Window.h` and
 `Win32Window.cpp` own opt-in frame removal, native resize/move and window commands.
 See [Editor.md](Editor.md#workspace-and-ownership) and [Platform.md](Platform.md).
 
+Editor color properties use [EditorColorProperty.h](../Nuclear.Editor/include/Widgets/EditorColorProperty.h)
+for a compact clickable swatch. The workspace owns
+[EditorColorPickerWindow.h](../Nuclear.Editor/include/Workspace/EditorColorPickerWindow.h),
+which opens a separate native chooser containing
+[EditorColorPicker.h](../Nuclear.Editor/include/Widgets/EditorColorPicker.h) and
+[EditorColorWheel.h](../Nuclear.Editor/include/Widgets/EditorColorWheel.h).
+Matching implementations live under `source/Widgets/` and `source/Workspace/`.
+Light RGB, scene-clear RGBA and theme-accent RGB share the same wheel, HSV and HEX
+editing; see [Editor.md](Editor.md#color-picker).
+
 | Topic | Primary source | Follow-up |
 | --- | --- | --- |
 | Retained widgets and slots | [Widget.h](../Nuclear.Engine/include/UI/Widget.h), [PanelWidget.h](../Nuclear.Engine/include/UI/PanelWidget.h), [UserWidget.h](../Nuclear.Engine/include/UI/UserWidget.h), [Slot.h](../Nuclear.Engine/include/UI/Slot.h), [Widgets.h](../Nuclear.Engine/include/UI/Widgets.h) | Each widget has a same-named header/source pair; Widgets.h aggregates includes only |
@@ -70,6 +83,20 @@ See [Editor.md](Editor.md#workspace-and-ownership) and [Platform.md](Platform.md
 | Sample and checks | [UISample.cpp](../Samples/UISample.cpp), [UIShowcaseWidget.cpp](../Samples/UIShowcaseWidget.cpp), [UITests.cpp](../Nuclear.Engine/Tests/UITests.cpp) | `Samples.exe --ui`, headless and GPU checks; [UI.md](UI.md) |
 
 ## Scripting, physics, audio, and editor
+
+Mesh-component asset fields live in
+[EditorAssetProperty.h](../Nuclear.Editor/include/Widgets/EditorAssetProperty.h) and
+[EditorAssetPicker.h](../Nuclear.Editor/include/Widgets/EditorAssetPicker.h), with matching
+implementations under `Nuclear.Editor/source/Widgets/`. EntityEditor routes their commits
+through EditorHistory; [MeshPreviewCache.h](../Nuclear.Editor/include/Rendering/MeshPreviewCache.h)
+owns mesh and material-sphere thumbnails. See [Editor.md](Editor.md) for preview limitations.
+
+All texture, mesh and material documents use
+[AssetViewerLayout.h](../Nuclear.Editor/include/Widgets/AssetViewerLayout.h) for their
+left preview/right properties split. [TexturePreviewViewport.h](../Nuclear.Editor/include/Widgets/TexturePreviewViewport.h)
+fits the source image; [MaterialPreviewRenderer.h](../Nuclear.Editor/include/Rendering/MaterialPreviewRenderer.h)
+owns a private forward shader and studio lights for sphere previews and thumbnails.
+Each has a matching implementation under `source/Widgets/` or `source/Rendering/`.
 
 | Topic | Primary source | Follow-up |
 | --- | --- | --- |

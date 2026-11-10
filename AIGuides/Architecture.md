@@ -2,7 +2,7 @@
 
 ## Startup and client lifecycle
 
-[Samples/Main.cpp](../Samples/Main.cpp) configures `Core::EngineStartupDesc`, starts the engine, registers `@CommonAssets@`, and loads a `SampleSelector` client. [The editor entry point](../Nuclear.Editor/source/Nuclear.Editor.cpp) uses the same engine lifecycle with a retained editor client and no script assembly requirement.
+[Samples/Main.cpp](../Samples/Main.cpp) configures `Core::EngineStartupDesc`, starts the engine, registers `@CommonAssets@`, and loads a `SampleSelector` client. [The editor entry point](../Nuclear.Editor/source/Core/Nuclear.Editor.cpp) uses the same engine lifecycle with a retained editor client and no script assembly requirement.
 
 [Engine.cpp](../Nuclear.Engine/Source/Core/Engine.cpp) is the central lifecycle implementation:
 
@@ -58,6 +58,10 @@ The texture path is a useful concrete example: [TextureImportTask](../Nuclear.En
 Reserved path aliases are expanded by [Core::Path](../Nuclear.Engine/Source/Core/Path.cpp). Engine startup sets `@Assets@`, `@NuclearAssets@`, and `@CurrentPath@`; clients add aliases such as `@CommonAssets@` and `@EditorAssets@`. Relative paths are sensitive to the process working directory.
 
 ## Graphics and rendering
+
+See [Rendering.md](Rendering.md) for the material/submesh contract, shader-resource
+naming, variant baking, per-camera pass flow, sample reading map and source-observed
+rendering constraints.
 
 - [GraphicsModule](../Nuclear.Engine/Source/Graphics/GraphicsModule.cpp) owns the Diligent device/context/swap-chain integration and resource creation.
 - [RenderingModule](../Nuclear.Engine/Source/Rendering/RenderingModule.cpp) provides shared rendering resources, including camera/animation constant buffers and final render targets.

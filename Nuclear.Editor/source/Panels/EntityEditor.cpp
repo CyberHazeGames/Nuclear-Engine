@@ -4,6 +4,8 @@
 #include <EditorHistory.h>
 #include <SkyboxComponent.h>
 #include <EditorComponentButton.h>
+#include <EditorColorProperty.h>
+#include <EditorAssetProperty.h>
 #include <cmath>
 namespace Nuclear::Editor
 {
@@ -41,6 +43,7 @@ namespace Nuclear::Editor
 	void EntityEditor::Reset()
 	{
 		mCollapsedComponents.clear();
+		mAssetPreviews.Clear();
 	}
 
 	UI::VerticalBox& EntityEditor::ComponentSection(UI::PanelWidget& parent, entt::entity entity,
@@ -86,7 +89,8 @@ namespace Nuclear::Editor
 		return body;
 	}
 
-	std::unique_ptr<UI::Widget> EntityEditor::Build(entt::entity entity, std::function<void(bool)> changed, EditorHistory& history)
+	std::unique_ptr<UI::Widget> EntityEditor::Build(entt::entity entity, std::function<void(bool)> changed,
+		EditorHistory& history, EditorColorPickerWindow& colors)
 	{
 		// Wrap every property setter at the commit boundary, never on text-change or paint.
 		auto number = [entity, changed, &history](UI::PanelWidget& parent, const std::string& title,
@@ -248,15 +252,14 @@ namespace Nuclear::Editor
 			}
 
 			auto color = light->GetColor();
-			vector(section, "Color RGB", {color.r, color.g, color.b}, [entity](int axis, float number) {
-				if (auto* light = Component<Components::LightComponent>(entity))
-				{
-					auto col = light->GetColor();
-					float rgb[3] = {col.r, col.g, col.b};
-					rgb[axis] = number;
-					light->SetColor(Graphics::Color(rgb[0], rgb[1], rgb[2], 1.0f));
-				}
-			}, 0.0f, 100000.0f);
+			section.Add<EditorColorProperty>(colors, "Light color", Math::Vector3(color.r, color.g, color.b),
+				[entity, changed, &history](Math::Vector3 value) {
+					history.Edit(entity, "Light color", [&]() {
+						if (auto* light = Component<Components::LightComponent>(entity))
+							light->SetColor(Graphics::Color(value.r, value.g, value.b, 1.f));
+					});
+					changed(false);
+				}, 100000.f);
 
 			if (currentType == Components::LightComponent::Type::Point ||
 				currentType == Components::LightComponent::Type::Spot)
@@ -326,9 +329,26 @@ namespace Nuclear::Editor
 		if (auto* mesh = Component<Components::MeshComponent>(entity))
 		{
 			auto& section = componentSection.operator()<Components::MeshComponent>("MESH");
-			Label(section, mesh->GetMesh() ? mesh->GetMesh()->GetName() : "No mesh assigned").SetWrap(true);
-			Label(section, mesh->GetMaterial() ? mesh->GetMaterial()->GetName() : "No material assigned")
-				.SetWrap(true);
+			section.Add<EditorAssetProperty>(Assets::AssetType::Mesh, mesh->GetMesh(), mAssetPreviews,
+				[entity, changed, &history](Assets::IAsset* asset) {
+					auto* mesh = Component<Components::MeshComponent>(entity);
+					if (!mesh || mesh->GetMesh() == asset) return;
+					history.Edit(entity, "Assign mesh", [entity, asset]() {
+						if (auto* mesh = Component<Components::MeshComponent>(entity))
+							mesh->SetMesh(static_cast<Assets::Mesh*>(asset));
+					});
+					changed(true);
+				});
+			section.Add<EditorAssetProperty>(Assets::AssetType::Material, mesh->GetMaterial(), mAssetPreviews,
+				[entity, changed, &history](Assets::IAsset* asset) {
+					auto* mesh = Component<Components::MeshComponent>(entity);
+					if (!mesh || mesh->GetMaterial() == asset) return;
+					history.Edit(entity, "Assign material", [entity, asset]() {
+						if (auto* mesh = Component<Components::MeshComponent>(entity))
+							mesh->SetMaterial(static_cast<Assets::Material*>(asset));
+					});
+					changed(true);
+				});
 			toggle(section, "Visible", mesh->GetEnableRendering(), [entity](bool value) {
 				if (auto* mesh = Component<Components::MeshComponent>(entity))
 					mesh->SetEnableRendering(value);

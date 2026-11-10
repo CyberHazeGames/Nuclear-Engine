@@ -36,7 +36,10 @@ namespace Nuclear
 		{
 			if (!mUsableTextures.empty())
 			{
-				for (auto& tex : mUsableTextures.at(index))
+				// A material chosen for unrelated geometry can have fewer texture sets than the mesh.
+				// Reuse its first set for unmatched slots, preserving every valid source slot.
+				const auto setIndex = index < mUsableTextures.size() ? index : 0;
+				for (auto& tex : mUsableTextures.at(setIndex))
 				{
 					pipeline->GetRenderingSRB()->GetVariableByIndex(Diligent::SHADER_TYPE_PIXEL, tex.mSlot)->Set(tex.mTex.pTexture->GetTextureView());
 				}

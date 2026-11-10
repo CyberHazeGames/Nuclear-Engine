@@ -13,6 +13,8 @@
 #include <Assets/Animations.h>
 #include "Animation\Bone.h"
 #include <Platform/FileSystem.h>
+#include <filesystem>
+#include <algorithm>
 
 namespace Nuclear {
 	namespace Assets {
@@ -34,6 +36,10 @@ namespace Nuclear {
 
 			bool AssimpImporter::Import(const std::string& importPath, const std::string& _exportPath, const Model& model, const Assets::MeshImportingDesc& desc)
 			{
+				mTextureOptions = desc.mCommonOptions;
+				mTextureOptions.mAssetName.clear();
+				mDiscoverCompanions = desc.mDiscoverCompanionTextures;
+				mTextureCache.clear();
 				save_materials_names = desc.mSaveMaterialNames;
 				mModel = model;
 				exportPath = _exportPath;
@@ -46,7 +52,7 @@ namespace Nuclear {
 					NUCLEAR_ERROR("[AssimpImporter] Assimp Failed to import mesh: '{0}' Info: '{1}'", importPath, importer.GetErrorString());
 					return false;
 				}
-				mDirectory = importPath.substr(0, importPath.find_last_of('/'));
+				mDirectory = std::filesystem::path(importPath).parent_path().generic_string();
 				ProcessNode(scene->mRootNode, scene);
 
 				if (mModel.pAnimations && scene->mAnimations != nullptr)
@@ -93,7 +99,7 @@ namespace Nuclear {
 					NUCLEAR_ERROR("[AssimpImporter] Assimp Failed to load mesh: '{0}' Info: '{1}'", Path, importer.GetErrorString());
 					return false;
 				}
-				mDirectory = Path.substr(0, Path.find_last_of('/'));
+				mDirectory = std::filesystem::path(Path).parent_path().generic_string();
 				ProcessNode(scene->mRootNode, scene);
 
 				if (mModel.pAnimations && scene->mAnimations != nullptr)
@@ -156,6 +162,7 @@ namespace Nuclear {
 						}
 					}
 
+					mAlbedoPath.clear();
 					std::vector<aiTextureType> LoadTypes{
 						aiTextureType_DIFFUSE,
 						aiTextureType_SPECULAR,
@@ -168,27 +175,26 @@ namespace Nuclear {
 						aiTextureType_DISPLACEMENT,
 						aiTextureType_LIGHTMAP,
 						aiTextureType_REFLECTION,
-						aiTextureType_UNKNOWN
+						aiTextureType_UNKNOWN,
+						aiTextureType_BASE_COLOR,
+						aiTextureType_METALNESS,
+						aiTextureType_DIFFUSE_ROUGHNESS,
+						aiTextureType_AMBIENT_OCCLUSION
 					};
 					for (auto i : LoadTypes)
 					{
 						auto Textures = ProcessMaterialTexture(MeshMat, i);
 						TexSet.mData.insert(TexSet.mData.end(), Textures.mData.begin(), Textures.mData.end());
 					}
+					if (mDiscoverCompanions) ImportCompanions(TexSet);
 
-					if (!TexSet.mData.empty())
+					// Preserve untextured material slots too: submeshes must not inherit another slot's textures.
+					if (save_materials_names)
 					{
-						//auto MeshName = std::string(MeshMat->GetName().C_Str());
-						//TexSet.mHashedName = Utilities::Hash(MeshName);
-						if (save_materials_names == true)
-						{
-							TexSet.mName = MeshName;
-						}
-
-						materialtextures.push_back(TexSet);
-
-						return static_cast<Uint32>(materialtextures.size() - 1);
+						TexSet.mName = MeshName;
 					}
+					materialtextures.push_back(TexSet);
+					return static_cast<Uint32>(materialtextures.size() - 1);
 				}
 				return 0;
 			}
@@ -255,16 +261,80 @@ namespace Nuclear {
 				}
 			}
 
+			std::string AssimpImporter::ResolveTexturePath(const std::string& reference) const
+			{
+				std::string normalized = reference;
+				std::replace(normalized.begin(), normalized.end(), '\\', '/');
+				const std::filesystem::path path(normalized);
+				const std::filesystem::path directory(mDirectory);
+				const std::filesystem::path candidates[] = {
+					path.is_absolute() ? path : directory / path,
+					directory / path.filename(),
+					directory / "Textures" / path.filename(),
+					directory / "textures" / path.filename()};
+				for (const auto& candidate : candidates)
+				{
+					std::error_code error;
+					if (std::filesystem::is_regular_file(candidate, error)) return candidate.lexically_normal().generic_string();
+				}
+				return candidates[0].generic_string();
+			}
+
+			Assets::Texture* AssimpImporter::ImportExternalTexture(const std::string& path, Assets::TextureUsageType usage)
+			{
+				const bool srgb = usage == Assets::TextureUsageType::Albedo;
+				const auto key = path + (srgb ? "|srgb" : "|linear");
+				if (auto found = mTextureCache.find(key); found != mTextureCache.end()) return found->second;
+				TextureImportingDesc desc;
+				desc.mCommonOptions = mTextureOptions;
+				desc.mCommonOptions.mExportPath = exportPath + "Textures/";
+				desc.mIsSRGB = srgb;
+				auto* texture = Assets::Importer::Get().ImportTexture(path, desc);
+				mTextureCache.emplace(key, texture);
+				return texture;
+			}
+
+			void AssimpImporter::ImportCompanions(Assets::MaterialTextureSet& textures)
+			{
+				if (mAlbedoPath.empty()) return;
+				const std::filesystem::path albedo(mAlbedoPath);
+				const auto stem = albedo.stem().string();
+				if (stem.size() < 2 || stem[stem.size() - 2] != '_' ||
+					(stem.back() != 'A' && stem.back() != 'a')) return;
+				const char* suffixes[] = {"_N", "_M", "_R", "_AO"};
+				const Assets::TextureUsageType usages[] = {Assets::TextureUsageType::Normal,
+					Assets::TextureUsageType::Metallic, Assets::TextureUsageType::Roughness, Assets::TextureUsageType::AO};
+				for (size_t i = 0; i < 4; ++i)
+				{
+					const auto usage = usages[i];
+					if (std::any_of(textures.mData.begin(), textures.mData.end(), [usage](const auto& texture) {
+						return texture.mUsageType == usage;
+					})) continue;
+					const auto path = albedo.parent_path() / (stem.substr(0, stem.size() - 2) + suffixes[i] + albedo.extension().string());
+					std::error_code error;
+					if (!std::filesystem::is_regular_file(path, error)) continue;
+					textures.mData.push_back({ImportExternalTexture(path.generic_string(), usage), usage});
+				}
+			}
+
 			Assets::TextureUsageType GetTextureType(aiTextureType type)
 			{
 				switch (type)
 				{
 				case aiTextureType_DIFFUSE:
+				case aiTextureType_BASE_COLOR:
 					return Assets::TextureUsageType::Diffuse;
 				case aiTextureType_SPECULAR:
 					return Assets::TextureUsageType::Specular;
 				case aiTextureType_HEIGHT:
+				case aiTextureType_NORMALS:
 					return Assets::TextureUsageType::Normal;
+				case aiTextureType_METALNESS:
+					return Assets::TextureUsageType::Metallic;
+				case aiTextureType_DIFFUSE_ROUGHNESS:
+					return Assets::TextureUsageType::Roughness;
+				case aiTextureType_AMBIENT_OCCLUSION:
+					return Assets::TextureUsageType::AO;
 				}
 
 				return Assets::TextureUsageType::Unknown;
@@ -299,6 +369,7 @@ namespace Nuclear {
 						else
 						{
 							TextureImportingDesc imagedesc;
+							imagedesc.mCommonOptions = mTextureOptions;
 							imagedesc.mCommonOptions.mExportPath = exportPath + "Textures/";
 
 							imagedesc.mLoadFromMemory = true;
@@ -310,6 +381,7 @@ namespace Nuclear {
 
 							//imagedesc.mMemData = (Byte*)embeddedtex->pcData;
 							texture.pTexture = Assets::Importer::Get().ImportTexture(embeddedtex->mFilename.C_Str(),imagedesc);
+							if (!imagedesc.mCommonOptions.mAsyncImport) free(imagedesc.mData.mMemData);
 							texture.mUsageType = textype;
 						}
 
@@ -317,13 +389,10 @@ namespace Nuclear {
 					else
 					{
 						//Load Texture normally
-						std::string filename = str.C_Str();
-						filename = mDirectory + '/' + filename;
+						const auto filename = ResolveTexturePath(str.C_Str());
 						auto textype = GetTextureType(type);
-						TextureImportingDesc teximportdesc;
-						teximportdesc.mCommonOptions.mExportPath = exportPath + "Textures/";
-						//teximportdesc.mCommonOptions.mAssetName = 
-						texture.pTexture = Assets::Importer::Get().ImportTexture(filename, teximportdesc);
+						texture.pTexture = ImportExternalTexture(filename, textype);
+						if (textype == Assets::TextureUsageType::Albedo) mAlbedoPath = filename;
 						texture.mUsageType = textype;
 					}
 

@@ -121,6 +121,20 @@ namespace Nuclear::Editor
 		return true;
 	}
 
+	entt::entity EditorEntityState::CreateCopy(const std::string& name) const
+	{
+		if (!Exists) return entt::null;
+		auto& scene = Core::Scene::Get();
+		const auto entity = scene.CreateEntity(name).GetEntityID();
+		if (!Restore(entity))
+		{
+			scene.GetRegistry().destroy(entity);
+			return entt::null;
+		}
+		scene.GetRegistry().get<Components::EntityInfoComponent>(entity).mName = name;
+		return entity;
+	}
+
 	bool EditorEntityState::operator==(const EditorEntityState& other) const
 	{
 		if (!Exists || !other.Exists)

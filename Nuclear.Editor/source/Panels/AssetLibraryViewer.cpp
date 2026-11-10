@@ -2,6 +2,7 @@
 #include <EditorSettings.h>
 #include <EditorWidgets.h>
 #include <AssetDocument.h>
+#include <EditorAssetItem.h>
 #include <Nuclear.Platform/FileDialog.h>
 #include <algorithm>
 #include <cctype>
@@ -9,9 +10,109 @@
 #include <Fallbacks/FallbacksModule.h>
 namespace Nuclear::Editor
 {
+	Assets::IAsset* AssetLibraryViewer::ResolveAsset(Assets::AssetType type, const Core::UUID& id)
+	{
+		if (type == Assets::AssetType::Scene)
+			return Assets::AssetLibrary::Get().mImportedScenes.GetAsset(id);
+		return AssetDocument::Resolve(type, id);
+	}
+
+	void AssetLibraryViewer::AddToScene(const Core::UUID& id)
+	{
+		auto* mesh = Assets::AssetLibrary::Get().mImportedMeshes.GetAsset(id);
+		if (!pProject || !mesh || mesh->GetState() != Assets::IAsset::State::Created)
+			return;
+		auto entity = Core::Scene::Get().CreateEntity(mesh->GetName());
+		entity.AddComponent<Components::MeshComponent>(mesh, pProject->GetMeshMaterial(*mesh));
+		if (OnEntityAdded)
+			OnEntityAdded(entity.GetEntityID());
+	}
+
+	EditorMenuPopup::Items AssetLibraryViewer::AssetCommands(Assets::IAsset& asset)
+	{
+		const auto type = asset.GetType();
+		const auto id = asset.GetUUID();
+		std::function<void()> add;
+		if (type == Assets::AssetType::Mesh && asset.GetState() == Assets::IAsset::State::Created)
+			add = [this, id]() { AddToScene(id); };
+		return {
+			{"Add to scene", std::move(add)},
+			{"Delete", [this, type, id]() { DeleteAsset(type, id); }},
+			{"Rename", [this, type, id]() {
+				if (auto* target = ResolveAsset(type, id))
+				{
+					mRenameType = type;
+					mRenameId = id;
+					mRenameText = target->GetName();
+					mRenaming = true;
+					if (OnChanged) OnChanged();
+				}
+			}}
+		};
+	}
+
+	void AssetLibraryViewer::DeleteAsset(Assets::AssetType type, const Core::UUID& id)
+	{
+		// Transfer the node into a private map without moving or destroying the asset.
+		// Reinsertion keeps existing scene/history/preview references usable under the node-handle contract.
+		auto retire = [this, &id](auto& map) {
+			auto retired = std::make_shared<decltype(map.mData)>();
+			auto node = map.mData.extract(id);
+			if (node.empty())
+				return false;
+			retired->insert(std::move(node));
+			mRetiredAssets.push_back(std::move(retired));
+			return true;
+		};
+		auto& library = Assets::AssetLibrary::Get();
+		bool removed = false;
+		switch (type)
+		{
+		case Assets::AssetType::Texture: removed = retire(library.mImportedTextures); break;
+		case Assets::AssetType::Mesh: removed = retire(library.mImportedMeshes); break;
+		case Assets::AssetType::Material: removed = retire(library.mImportedMaterials); break;
+		case Assets::AssetType::Scene: removed = retire(library.mImportedScenes); break;
+		default: break;
+		}
+		if (!removed) return;
+		mRenaming = false;
+		mStatus = "Asset removed from the session library. Source files are unchanged.";
+		if (OnAssetChanged) OnAssetChanged(type, id, true);
+		if (OnChanged) OnChanged();
+	}
+
+	void AssetLibraryViewer::RenameAsset(const std::string& name)
+	{
+		const auto first = name.find_first_not_of(" \t\r\n");
+		if (first == std::string::npos)
+		{
+			mStatus = "Enter a nonblank asset name.";
+			if (OnChanged) OnChanged();
+			return;
+		}
+		if (auto* asset = ResolveAsset(mRenameType, mRenameId))
+		{
+			asset->SetName(name.substr(first, name.find_last_not_of(" \t\r\n") - first + 1));
+			mStatus = "Asset renamed: " + asset->GetName();
+			if (OnAssetChanged) OnAssetChanged(mRenameType, mRenameId, false);
+		}
+		else mStatus = "This asset is no longer available.";
+		mRenaming = false;
+		if (OnChanged) OnChanged();
+	}
+
 	void AssetLibraryViewer::SetProject(Project* project)
 	{
 		pProject = project;
+	}
+
+	void AssetLibraryViewer::Shutdown()
+	{
+		mMeshPreviewCache.Clear();
+		mRetiredAssets.clear();
+		mPendingImport.clear();
+		mOpenImportDialog = mRenaming = false;
+		pProject = nullptr;
 	}
 
 	void AssetLibraryViewer::Update(Platform::Window& dialogOwner)
@@ -56,7 +157,8 @@ namespace Nuclear::Editor
 					 extension == ".gltf" || extension == ".glb")
 			{
 				Assets::MeshImportingDesc desc;
-				desc.mImportMaterial = false;
+				desc.mImportMaterial = true;
+				desc.mSaveMaterialNames = true;
 				desc.mImportAnimations = false;
 				desc.mCommonOptions.mAsyncImport = false;
 				desc.mCommonOptions.mLoadOnly = true;
@@ -65,6 +167,8 @@ namespace Nuclear::Editor
 				auto& threading = Threading::ThreadingModule::Get();
 				while (!threading.GetMainTasks().empty())
 					threading.ExecuteMainThreadTasks(1);
+				if (result && result->GetState() == Assets::IAsset::State::Created && OnMeshImported)
+					OnMeshImported(*static_cast<Assets::Mesh*>(result));
 			}
 			else if (extension == ".nuclearshader")
 			{
@@ -140,6 +244,20 @@ namespace Nuclear::Editor
 		auto& content = scroll.Add<UI::VerticalBox>();
 		content.SetSpacing(6);
 		Label(content, mStatus, 13).SetWrap(true);
+		if (mRenaming)
+		{
+			auto& form = Section(content, "Rename asset");
+			auto& name = form.Add<UI::TextBox>(mRenameText);
+			name.OnChanged = [this](const std::string& value) { mRenameText = value; };
+			name.OnCommitted = [this](const std::string& value) { RenameAsset(value); };
+			auto& actions = form.Add<UI::HorizontalBox>();
+			actions.SetSpacing(6);
+			Action(actions, "Save name", [this]() { RenameAsset(mRenameText); });
+			Action(actions, "Cancel rename", [this]() {
+				mRenaming = false;
+				if (OnChanged) OnChanged();
+			});
+		}
 		if (!pProject)
 		{
 			Label(content, "Create a project to browse assets.");
@@ -199,7 +317,7 @@ namespace Nuclear::Editor
 				if (assets.empty())
 					Label(content, "No assets in this category.");
 
-				if (category == 1) // Textures
+				if (category == 1 || category == 3) // Texture and material thumbnail buttons.
 				{
 					// Unreal-style grid of image buttons (thumbnail icon with asset name label underneath).
 					UI::HorizontalBox* currentRow = nullptr;
@@ -212,7 +330,8 @@ namespace Nuclear::Editor
 							currentRow = &content.Add<UI::HorizontalBox>();
 							currentRow->SetSpacing(8);
 						}
-						auto* texture = static_cast<Assets::Texture*>(asset);
+						auto* texture = category == 1 ? static_cast<Assets::Texture*>(asset)
+							: mMeshPreviewCache.GetMaterialPreview(static_cast<Assets::Material*>(asset));
 						const auto id = asset->GetUUID();
 						UI::Brush brush;
 						if (texture && texture->GetState() == Assets::IAsset::State::Created && texture->GetTextureView())
@@ -222,12 +341,13 @@ namespace Nuclear::Editor
 
 						const auto title = AssetDocument::GetTitle(asset->GetType(), asset->GetName());
 						std::string subtext;
-						if (texture && texture->GetState() == Assets::IAsset::State::Created)
+						if (category == 1 && texture && texture->GetState() == Assets::IAsset::State::Created)
 							subtext = std::to_string(texture->GetWidth()) + " x " + std::to_string(texture->GetHeight());
 
-						AssetTile(*currentRow, title, brush, {72, 72}, [this, id]() {
+						auto& item = currentRow->Add<EditorAssetItem>(AssetCommands(*asset));
+						AssetTile(item, title, brush, {72, 72}, [this, id, type = asset->GetType()]() {
 							if (OnAssetOpened)
-								OnAssetOpened(Assets::AssetType::Texture, id);
+								OnAssetOpened(type, id);
 						}, subtext);
 						++count;
 					}
@@ -265,24 +385,21 @@ namespace Nuclear::Editor
 						}
 						std::string subtext = std::to_string(indices / 3) + " tris";
 
-						auto& cell = currentRow->Add<UI::VerticalBox>();
+						auto& item = currentRow->Add<EditorAssetItem>(AssetCommands(*asset));
+						auto& cell = item.Add<UI::VerticalBox>();
 						cell.SetSpacing(4);
 
 						AssetTile(cell, title, brush, {72, 72}, [this, id]() {
 							if (OnAssetOpened)
 								OnAssetOpened(Assets::AssetType::Mesh, id);
-						}, subtext);
+						}, subtext, [this, id](UI::UIContext& context, UI::Vec2 point, bool dropped) {
+							if (OnMeshDragged) OnMeshDragged(id, context, point, dropped);
+						}, [this]() { if (OnMeshDragCancelled) OnMeshDragCancelled(); });
 
 						if (mesh->GetState() == Assets::IAsset::State::Created)
 						{
 							auto& addBtn = Action(cell, "Add to scene / " + asset->GetName(), [this, id]() {
-								auto* mesh = Assets::AssetLibrary::Get().mImportedMeshes.GetAsset(id);
-								if (!mesh || mesh->GetState() != Assets::IAsset::State::Created)
-									return;
-								auto entity = Core::Scene::Get().CreateEntity(mesh->GetName());
-								entity.AddComponent<Components::MeshComponent>(mesh, pProject->GetDefaultMaterial());
-								if (OnEntityAdded)
-									OnEntityAdded(entity.GetEntityID());
+								AddToScene(id);
 							});
 							addBtn.SetPadding({4, 3, 4, 3});
 						}
@@ -290,22 +407,14 @@ namespace Nuclear::Editor
 						++count;
 					}
 				}
-				else // Materials, Scenes
+				else // Scenes
 				{
 					for (auto* asset : assets)
 					{
 						const auto title = AssetDocument::GetTitle(asset->GetType(), asset->GetName());
-						auto& card = Section(content, title);
+						auto& item = content.Add<EditorAssetItem>(AssetCommands(*asset));
+						auto& card = Section(item, title);
 						Label(card, "State / " + std::to_string(static_cast<int>(asset->GetState())), 12);
-						if (asset->GetType() == Assets::AssetType::Texture || asset->GetType() == Assets::AssetType::Mesh ||
-							asset->GetType() == Assets::AssetType::Material)
-						{
-							const auto id = asset->GetUUID();
-							const auto type = asset->GetType();
-							Action(card, "Open / " + title, [this, id, type]() {
-								if (OnAssetOpened) OnAssetOpened(type, id);
-							});
-						}
 					}
 				}
 			};

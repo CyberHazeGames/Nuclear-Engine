@@ -5,6 +5,7 @@ These notes help future agents navigate and change this repository without repea
 | Guide | Read it when |
 | --- | --- |
 | [Architecture.md](Architecture.md) | Understanding startup, ECS, rendering, assets, and runtime boundaries |
+| [Rendering.md](Rendering.md) | Material texture sets, shader variants/bindings, render passes, cameras and sample examples |
 | [BuildAndValidation.md](BuildAndValidation.md) | Configuring dependencies, building, launching samples, or diagnosing setup failures |
 | [ChangeWorkflows.md](ChangeWorkflows.md) | Adding components, script bindings, assets, shaders, or source files |
 | [Platform.md](Platform.md) | Native windows, events, input, clipboard, DLL loading, or future platform backends |

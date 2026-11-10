@@ -24,6 +24,9 @@ namespace Nuclear::Editor
 		void SetTabs(const std::vector<Tab>& tabs, const std::string& active);
 		/// Returns a tab's visible logical bounds after layout, or an empty rectangle if absent.
 		UI::Rect GetTabBounds(const std::string& id) const;
+		/// Returns the width-fitted UTF-8 caption after layout; long names retain both ends around "...".
+		/// The full title and stable identity remain unchanged. Returns empty if the tab is absent.
+		std::string GetDisplayTitle(const std::string& id) const;
 		/// Returns a tab insertion position for a header drop, clamped to [0, tab count].
 		size_t InsertionAt(UI::Vec2 point) const;
 		std::function<void(const std::string&)> OnSelected; ///< Requests activation of a stable tab ID.
@@ -37,7 +40,10 @@ namespace Nuclear::Editor
 		void OnArrange(UI::Rect content) override; ///< Keeps active tabs in the scrollable header range.
 		void OnPaint(UI::DrawList& list, UI::Rect clip) const override; ///< Paints labels and close/tear-off controls.
 	private:
+		/// Fits a caption to logical width using the current font, without splitting UTF-8 codepoints.
+		std::string FitTitle(const std::string& title, float width) const;
 		std::vector<Tab> mTabs; ///< Copied header order, no content ownership.
+		std::vector<std::string> mDisplayTitles; ///< Measured captions, recomputed when tab geometry changes.
 		std::vector<UI::Rect> mBounds; ///< Unclipped tab allocations in logical coordinates.
 		std::string mActive; ///< Selected identity.
 		std::string mPressed; ///< Identity captured by the current pointer gesture.

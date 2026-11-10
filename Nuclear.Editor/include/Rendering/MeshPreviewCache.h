@@ -1,5 +1,6 @@
 #pragma once
 #include <Assets/Mesh.h>
+#include <Assets/Material.h>
 #include <Assets/Texture.h>
 #include <Diligent/Common/interface/RefCntAutoPtr.hpp>
 #include <Diligent/Graphics/GraphicsEngine/interface/Buffer.h>
@@ -29,6 +30,10 @@ namespace Nuclear::Editor
 		///         Lifetime of the returned pointer is owned by this cache instance until Clear() or cache destruction.
 		Assets::Texture* GetPreview(Assets::Mesh* mesh);
 
+		/// Returns a cached studio-lit sphere using a private copy of the material's static forward shader and first texture set.
+		/// Null/unready assets return null. The cache owns the returned texture until Clear().
+		Assets::Texture* GetMaterialPreview(Assets::Material* material);
+
 		/// Clears all cached preview textures and releases allocated GPU render targets and pipeline resources.
 		void Clear();
 
@@ -36,6 +41,8 @@ namespace Nuclear::Editor
 		/// Compiles shaders and creates the offscreen graphics pipeline, constant buffer, and depth target.
 		/// @return True if the rendering pipeline and resources are successfully initialized and ready for draw calls.
 		bool InitializePipeline();
+		/// Renders ready geometry into a new neutral cache-owned thumbnail.
+		std::unique_ptr<Assets::Texture> RenderPreview(Assets::Mesh& mesh);
 
 		/// Uniform buffer layout matching the mesh preview vertex and pixel shaders.
 		struct Constants
@@ -64,6 +71,8 @@ namespace Nuclear::Editor
 
 		/// Map from source mesh asset pointers to their cached preview texture wrappers.
 		std::unordered_map<Assets::Mesh*, std::unique_ptr<Assets::Texture>> mCachedTextures;
+		/// Library material identities mapped to independent sphere thumbnails.
+		std::unordered_map<Assets::Material*, std::unique_ptr<Assets::Texture>> mMaterialTextures;
 
 		/// Flag indicating whether pipeline creation has been attempted.
 		bool mInitialized = false;

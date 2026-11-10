@@ -1,11 +1,12 @@
 #include <SceneSettings.h>
 #include <EditorHistory.h>
 #include <EditorWidgets.h>
+#include <EditorColorProperty.h>
 
 namespace Nuclear::Editor
 {
-	SceneSettings::SceneSettings(EditorHistory& history, std::function<void()> changed)
-		: mHistory(history), mChanged(std::move(changed))
+	SceneSettings::SceneSettings(EditorHistory& history, std::function<void()> changed, EditorColorPickerWindow& colors)
+		: mHistory(history), mColors(colors), mChanged(std::move(changed))
 	{
 		Refresh();
 	}
@@ -36,20 +37,14 @@ namespace Nuclear::Editor
 			mChanged();
 		};
 		auto& color = Section(*root, "CLEAR COLOR");
-		Label(color, "Linear RGBA, from 0 to 1. Enter commits each value.", 12).SetWrap(true);
-		auto& preview = color.Add<UI::Border>();
-		preview.SetBrush({nullptr, {state.ClearColor.r, state.ClearColor.g, state.ClearColor.b, state.ClearColor.a}});
-		preview.SetSizeLimits({0, 40}, {1000000, 40});
-		const char* channels[] = {"Red", "Green", "Blue", "Alpha"};
-		for (int channel = 0; channel < 4; ++channel)
-			Number(color, channels[channel], state.ClearColor[channel], [this, channel](float value) {
+		color.Add<EditorColorProperty>(mColors, "Clear color", state.ClearColor, [this](Math::Vector4 value) {
 				mHistory.EditScene("Scene clear color", [&]() {
 					auto current = EditorSceneState::Capture();
-					current.ClearColor[channel] = value;
+					current.ClearColor = value;
 					current.Restore();
 				});
 				mChanged();
-			}, 0, 1);
+			});
 		SetContent(std::move(root));
 	}
 }

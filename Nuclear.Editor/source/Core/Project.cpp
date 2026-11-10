@@ -17,6 +17,14 @@ namespace Nuclear::Editor
 		return mDefaultMaterial;
 	}
 
+	Assets::Material* Project::GetMeshMaterial(Assets::Mesh& mesh)
+	{
+		auto* material = mesh.GetImportedMaterial();
+		if (material && material->GetState() == Assets::IAsset::State::Created && material->GetShader())
+			return material;
+		return mDefaultMaterial;
+	}
+
 	void Project::SetDefaultMaterial(Assets::Material* material)
 	{
 		mDefaultMaterial = material;

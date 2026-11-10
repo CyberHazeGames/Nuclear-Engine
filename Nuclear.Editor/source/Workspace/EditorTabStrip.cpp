@@ -21,6 +21,45 @@ namespace Nuclear::Editor
 		InvalidateLayout();
 	}
 
+	std::string EditorTabStrip::FitTitle(const std::string& title, float width) const
+	{
+		const auto* font = ResolveFont(nullptr);
+		auto fits = [font, width](const std::string& text) {
+			return UI::DrawList::MeasureText(font, text, 14).x <= width;
+		};
+		if (width <= 0) return {};
+		if (fits(title)) return title;
+		if (!fits("...")) return {};
+
+		// Each boundary starts a complete UTF-8 codepoint, including the final empty suffix.
+		std::vector<size_t> boundaries;
+		for (size_t i = 0; i < title.size(); ++i)
+			if ((static_cast<unsigned char>(title[i]) & 0xC0) != 0x80)
+				boundaries.push_back(i);
+		boundaries.push_back(title.size());
+		const size_t count = boundaries.size() - 1;
+		auto caption = [&](size_t kept) {
+			return title.substr(0, boundaries[(kept + 1) / 2]) + "..." +
+				title.substr(boundaries[count - kept / 2]);
+		};
+		size_t low = 0;
+		size_t high = count;
+		while (low < high)
+		{
+			const size_t middle = low + (high - low + 1) / 2;
+			if (fits(caption(middle))) low = middle;
+			else high = middle - 1;
+		}
+		return caption(low);
+	}
+
+	std::string EditorTabStrip::GetDisplayTitle(const std::string& id) const
+	{
+		for (size_t index = 0; index < mTabs.size() && index < mDisplayTitles.size(); ++index)
+			if (mTabs[index].Id == id) return mDisplayTitles[index];
+		return {};
+	}
+
 	void EditorTabStrip::OnArrange(UI::Rect content)
 	{
 		const float available = std::max(0.f, content.Width - 30);
@@ -38,8 +77,13 @@ namespace Nuclear::Editor
 			mRevealActive = false;
 		}
 		mBounds.clear();
+		mDisplayTitles.clear();
 		for (size_t index = 0; index < mTabs.size(); ++index)
+		{
 			mBounds.push_back({content.x + index * width - mScroll, content.y, width - 3, content.Height});
+			mDisplayTitles.push_back(FitTitle(mTabs[index].Title,
+				mBounds.back().Width - (mTabs[index].Closable ? 38.f : 18.f)));
+		}
 	}
 
 	UI::Rect EditorTabStrip::GetTabBounds(const std::string& id) const
@@ -163,12 +207,13 @@ namespace Nuclear::Editor
 			list.Add(rect, tabClip, active ? UI::Color{.09f, .14f, .17f, 1} : UI::Color{.065f, .08f, .10f, 1});
 			if (active)
 				list.Add({rect.x, rect.y, rect.Width, 2}, tabClip, EditorSettings::Get().GetAccentColor());
-			list.Text(ResolveFont(nullptr), mTabs[index].Title,
-				{rect.x + 10, rect.y + 9, rect.Width - (mTabs[index].Closable ? 38.f : 18.f), 20},
-				tabClip, 14, {.8f, .86f, .9f, 1}, UI::Alignment::Start, false);
+			const UI::Rect label = {rect.x + 10, rect.y + 9,
+				std::max(0.f, rect.Width - (mTabs[index].Closable ? 38.f : 18.f)), 20};
+			list.Text(ResolveFont(nullptr), mDisplayTitles[index], label,
+				tabClip.Intersect(label), 14, {.8f, .86f, .9f, 1}, UI::Alignment::Start, false);
 			if (mTabs[index].Closable)
 				list.Text(ResolveFont(nullptr), "x", {rect.x + rect.Width - 20, rect.y + 9, 18, 20},
-					tabClip, 13, {.6f, .67f, .72f, 1}, UI::Alignment::Start, false);
+					tabClip.Intersect(rect), 13, {.6f, .67f, .72f, 1}, UI::Alignment::Start, false);
 		}
 		for (const auto& tab : mTabs)
 		{

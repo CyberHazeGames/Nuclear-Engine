@@ -64,7 +64,7 @@ namespace Nuclear
 		}
 		Assets::Texture* FallbacksModule::GetDefaultWhiteImage()
 		{
-			return nullptr;
+			return DefaultWhiteImage;
 		}
 		const Assets::MaterialTexture& FallbacksModule::GetDefaultDiffuseTex() const
 		{

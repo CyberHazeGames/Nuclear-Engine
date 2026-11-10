@@ -1,6 +1,7 @@
 #pragma once
 #include <EditorDockLayout.h>
 #include <EditorFloatingWindow.h>
+#include <EditorColorPickerWindow.h>
 #include <map>
 
 namespace Nuclear::Editor
@@ -40,6 +41,8 @@ namespace Nuclear::Editor
 		EditorDockArea* GetArea(const std::string& id) const; ///< Borrowed current group; null for closed tabs.
 		const std::vector<std::unique_ptr<EditorFloatingWindow>>& GetWindows() const { return mWindows; }
 		///< Borrowed native windows; entries can disappear on the next Update.
+		/// Shared external color chooser; owned until workspace shutdown, outside dockable tab transfers.
+		EditorColorPickerWindow& GetColorPicker() { return mColorPicker; }
 	private:
 		/// Controller metadata never owns an attached widget a second time.
 		struct TabState
@@ -85,6 +88,7 @@ namespace Nuclear::Editor
 		std::map<std::string, TabState> mTabs; ///< Stable records for all registered tab IDs.
 		std::map<EditorDockArea*, AreaState> mAreas; ///< Group ownership and validated native event origins.
 		std::vector<std::unique_ptr<EditorFloatingWindow>> mWindows; ///< Owned independent native windows.
+		EditorColorPickerWindow mColorPicker; ///< Single external chooser, cancelled when its source property disappears.
 		std::vector<std::function<void()>> mPending; ///< Input callbacks enqueue ownership-changing work here.
 		UI::WidgetId mMenu = 0; ///< Main-context recovery menu identity, or zero.
 		std::string mMenuDocument; ///< Owner of the open recovery menu; switching documents closes it.

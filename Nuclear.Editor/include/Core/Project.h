@@ -16,6 +16,9 @@ namespace Nuclear::Editor
 		void Initalize(const ProjectInfo& info); ///< Copies project identity.
 		ProjectInfo GetProjectInfo() const;		 ///< Returns a copy of project identity.
 		Assets::Material* GetDefaultMaterial();	 ///< Borrowed primitive material, or null.
+		/// Returns the mesh's created, shader-backed imported material, otherwise the borrowed primitive default.
+		/// The mesh and returned material remain owned by the asset library; does not create resources.
+		Assets::Material* GetMeshMaterial(Assets::Mesh& mesh);
 		void SetDefaultMaterial(Assets::Material* material); ///< Borrows a material for scene creation.
 		void SetPath(const std::filesystem::path& path);	 ///< Stores a normalized browsing path.
 		const std::filesystem::path& GetPath() const;		 ///< Borrowed browsing path.

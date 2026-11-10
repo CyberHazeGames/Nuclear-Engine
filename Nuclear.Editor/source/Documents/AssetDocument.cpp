@@ -4,6 +4,9 @@
 #include <Assets/Mesh.h>
 #include <Assets/Material.h>
 #include <Assets/Texture.h>
+#include <MeshPreviewViewport.h>
+#include <AssetViewerLayout.h>
+#include <TexturePreviewViewport.h>
 
 namespace Nuclear::Editor
 {
@@ -37,39 +40,46 @@ namespace Nuclear::Editor
 	}
 
 	std::unique_ptr<UI::Widget> AssetDocument::Build(Assets::AssetType type, const Core::UUID& id,
-		std::function<void()> instantiate)
+		std::function<void()> instantiate, UI::TextBlock** heading, MeshPreviewViewport** preview)
 	{
-		auto scroll = std::make_unique<UI::ScrollBox>();
-		auto& root = scroll->Add<UI::VerticalBox>();
+		if (heading) *heading = nullptr;
+		if (preview) *preview = nullptr;
+		auto document = std::make_unique<AssetViewerLayout>();
+		auto& scroll = document->GetProperties().Add<UI::ScrollBox>();
+		auto& root = scroll.Add<UI::VerticalBox>();
 		root.SetPadding({20, 18, 20, 18});
 		root.SetSpacing(14);
+		Label(root, "PROPERTIES", 12);
 		auto* asset = Resolve(type, id);
 		if (!asset)
 		{
 			Label(root, "This asset is no longer available in the session.").SetWrap(true);
-			return scroll;
+			return document;
 		}
-		Label(root, GetTitle(type, asset->GetName()), 25).SetWrap(true);
+		auto& title = Label(root, GetTitle(type, asset->GetName()), 25);
+		title.SetWrap(true);
+		if (heading) *heading = &title;
 		const char* names[] = {"Unknown", "Deserialized", "Queued", "Loaded", "Created"};
 		const auto state = static_cast<size_t>(asset->GetState());
 		Label(root, std::string("Resource / ") + (state < 5 ? names[state] : "Unknown"), 13);
 		Label(root, "UUID / " + id.str(), 12).SetWrap(true);
+		MeshPreviewViewport* surface = nullptr;
+		if ((type == Assets::AssetType::Mesh || type == Assets::AssetType::Material) &&
+			asset->GetState() == Assets::IAsset::State::Created)
+		{
+			surface = &document->GetPreview().Add<MeshPreviewViewport>(type, id);
+			if (preview) *preview = surface;
+		}
+		else if (type != Assets::AssetType::Texture)
+			Label(document->GetPreview(), "Preview is waiting for a ready resource.").SetWrap(true);
 		if (type == Assets::AssetType::Texture)
 		{
 			auto* texture = static_cast<Assets::Texture*>(asset);
 			Label(root, "TEXTURE DETAILS", 14);
 			Label(root, std::to_string(texture->GetWidth()) + " x " + std::to_string(texture->GetHeight()) + " pixels");
-			if (asset->GetState() == Assets::IAsset::State::Created && texture->GetTextureView())
-			{
-				auto& image = root.Add<UI::Image>();
-				const float ratio = texture->GetHeight() ? float(texture->GetWidth()) / texture->GetHeight() : 1;
-				image.SetBrush({texture});
-				image.SetImageSize(ratio >= 1 ? UI::Vec2{560, 560 / ratio} : UI::Vec2{420 * ratio, 420});
-				auto slot = root.GetSlot(image.GetId());
-				slot.Horizontal = UI::Alignment::Start;
-				root.SetSlot(image.GetId(), slot);
-			}
-			else Label(root, "Texture preview is waiting for a ready GPU resource.").SetWrap(true);
+			document->GetPreview().Add<TexturePreviewViewport>(id);
+			if (asset->GetState() != Assets::IAsset::State::Created || !texture->GetTextureView())
+				Label(root, "Texture preview is waiting for a ready GPU resource.").SetWrap(true);
 		}
 		else if (type == Assets::AssetType::Mesh)
 		{
@@ -90,6 +100,11 @@ namespace Nuclear::Editor
 			Label(root, "Bones / " + std::to_string(mesh->mBoneInfoMap.size()));
 			if (instantiate && asset->GetState() == Assets::IAsset::State::Created)
 				Action(root, "Add mesh to scene", std::move(instantiate));
+			if (surface)
+			{
+				Action(root, "Frame mesh", [surface]() { surface->FrameMesh(); });
+				Label(root, "Right-drag: look | WASD: fly | Wheel: travel | F: frame mesh", 12).SetWrap(true);
+			}
 		}
 		else if (type == Assets::AssetType::Material)
 		{
@@ -98,12 +113,22 @@ namespace Nuclear::Editor
 			if (asset->GetState() == Assets::IAsset::State::Created && material->GetShader())
 				Label(root, "Shader / " + material->GetShader()->GetName()).SetWrap(true);
 			Label(root, "Texture sets / " + std::to_string(material->GetTextures().size()));
+			if (surface)
+			{
+				Action(root, "Frame sphere", [surface]() { surface->FrameMesh(); });
+				Label(root, "Right-drag: look | WASD: fly | Wheel: travel | F: frame sphere", 12).SetWrap(true);
+			}
 			for (size_t index = 0; index < material->GetTextures().size(); ++index)
 			{
 				auto& set = material->GetTextures()[index];
-				Label(root, "Set " + std::to_string(index) + " / " + std::to_string(set.mData.size()) + " textures", 13);
+				Label(root, "Set " + std::to_string(index) + " / " +
+					(set.mName.empty() ? "Unnamed" : set.mName) + " / " +
+					std::to_string(set.mData.size()) + " textures", 13).SetWrap(true);
+				if (surface && material->GetTextures().size() > 1)
+					Action(root, "Preview set / " + (set.mName.empty() ? std::to_string(index) : set.mName),
+						[surface, index]() { surface->SetTextureSet(static_cast<Uint32>(index)); });
 			}
 		}
-		return scroll;
+		return document;
 	}
 }

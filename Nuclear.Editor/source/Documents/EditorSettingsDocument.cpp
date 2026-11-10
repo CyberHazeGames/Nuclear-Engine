@@ -1,6 +1,7 @@
 #include <EditorSettingsDocument.h>
 #include <EditorSettings.h>
 #include <EditorWidgets.h>
+#include <EditorColorProperty.h>
 #include <UI/Border.h>
 #include <UI/BoxPanel.h>
 #include <UI/Button.h>
@@ -24,7 +25,7 @@ namespace Nuclear::Editor
 			UI::TextBlock* pLabel = nullptr;
 		};
 
-		std::unique_ptr<UI::Widget> BuildThemePage(std::function<void()> refreshPage)
+		std::unique_ptr<UI::Widget> BuildThemePage(std::function<void()> refreshPage, EditorColorPickerWindow& colors)
 		{
 			auto scroll = std::make_unique<UI::ScrollBox>();
 			auto& page = scroll->Add<UI::VerticalBox>();
@@ -44,31 +45,12 @@ namespace Nuclear::Editor
 			desc.SetWrap(true);
 			desc.SetColor({.65f, .72f, .80f, 1.0f});
 
-			// Preview swatch row
-			auto& previewRow = accentSection.Add<UI::HorizontalBox>();
-			previewRow.SetSpacing(10);
-			auto& previewLabelBox = previewRow.Add<UI::SizeBox>();
-			previewLabelBox.SetSizeLimits({90, 0}, {90, 1000000});
-			Label(previewLabelBox, "Live Preview", 12);
-			auto previewSlot = previewRow.GetSlot(previewLabelBox.GetId());
-			previewSlot.Vertical = UI::Alignment::Center;
-			previewRow.SetSlot(previewLabelBox.GetId(), previewSlot);
-
-			auto& swatchBorder = previewRow.Add<UI::Border>();
-			swatchBorder.SetSizeLimits({120, 26}, {120, 26});
-			swatchBorder.SetBrush({nullptr, EditorSettings::Get().GetAccentColor()});
-
-			// Vector RGB Property
 			const auto currentAccent = EditorSettings::Get().GetAccentColor();
-			Vector(accentSection, "Accent RGB", {currentAccent.r, currentAccent.g, currentAccent.b},
-				[&swatchBorder, &title, refreshPage](int axis, float value) {
-					auto col = EditorSettings::Get().GetAccentColor();
-					float rgb[3] = {col.r, col.g, col.b};
-					rgb[axis] = value;
-					EditorSettings::Get().SetAccentColor({rgb[0], rgb[1], rgb[2], 1.0f});
-					swatchBorder.SetBrush({nullptr, EditorSettings::Get().GetAccentColor()});
+			accentSection.Add<EditorColorProperty>(colors, "Accent color", Math::Vector3(currentAccent.r, currentAccent.g, currentAccent.b),
+				[&title](Math::Vector3 value) {
+					EditorSettings::Get().SetAccentColor({value.r, value.g, value.b, 1.f});
 					title.SetColor(EditorSettings::Get().GetAccentColor());
-				}, 0.0f, 1.0f, 90.0f);
+				});
 
 			// Presets row
 			Label(accentSection, "Color Presets", 12);
@@ -175,7 +157,7 @@ namespace Nuclear::Editor
 		return "Editor Settings";
 	}
 
-	std::unique_ptr<UI::Widget> EditorSettingsDocument::Build()
+	std::unique_ptr<UI::Widget> EditorSettingsDocument::Build(EditorColorPickerWindow& colors)
 	{
 		auto root = std::make_unique<UI::HorizontalBox>();
 
@@ -237,12 +219,12 @@ namespace Nuclear::Editor
 			}
 		};
 
-		auto loadPage = [&pageHost, activePage](auto self) -> void {
-			std::function<void()> refresh = [&pageHost, activePage, self]() {
+		auto loadPage = [&pageHost, activePage, &colors](auto self) -> void {
+			std::function<void()> refresh = [&pageHost, activePage, &colors, self]() {
 				self(self);
 			};
 			if (*activePage == 0)
-				pageHost.SetContent(BuildThemePage(refresh));
+				pageHost.SetContent(BuildThemePage(refresh, colors));
 			else if (*activePage == 1)
 				pageHost.SetContent(BuildGeneralPage());
 			else

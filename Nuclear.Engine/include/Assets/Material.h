@@ -24,7 +24,8 @@ namespace Nuclear
 
 			void Create(Assets::Shader* shader);
 
-			//Note: doesnt validate the shaders!
+			/// Binds a texture set to a compatible pipeline; an unmatched mesh slot uses set zero.
+			/// The pipeline and its shader resources must be ready. Does not validate shader compatibility.
 			void BindTexSet(Graphics::ShaderPipelineVariant* pipeline ,Uint32 index);
 
 			std::vector<MaterialTextureSet>& GetTextures();

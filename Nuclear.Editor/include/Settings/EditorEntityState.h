@@ -14,6 +14,10 @@ namespace Nuclear::Editor
 		/// Restores authoring data at the same ECS identity, or destroys it for an absent snapshot.
 		/// Returns false if another live entity occupies the slot. Call only in the authoring registry.
 		bool Restore(entt::entity entity) const;
+		/// Creates a fresh entity with the supported snapshot values and supplied display name.
+		/// Assets remain borrowed; runtime services remain inactive. Returns null for an absent snapshot or failed restore.
+		entt::entity CreateCopy(const std::string& name) const;
+		const std::string& GetName() const { return mName; } ///< Captured display name, valid for this snapshot's lifetime.
 		/// Compares authored values, ignoring renderer caches and runtime-only state.
 		bool operator==(const EditorEntityState& other) const;
 		bool Exists = false; ///< Whether the captured entity existed.

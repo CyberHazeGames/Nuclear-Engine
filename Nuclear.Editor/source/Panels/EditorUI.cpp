@@ -1,4 +1,6 @@
 #include <EditorUI.h>
+#include <EditorHierarchyRow.h>
+#include <EditorAssetPicker.h>
 #include <EditorTitleBar.h>
 #include <SceneSettings.h>
 #include <EditorAddMenu.h>
@@ -8,6 +10,8 @@
 #include <EditorWidgets.h>
 #include <EditorToolbar.h>
 #include <AssetDocument.h>
+#include <MeshPreviewViewport.h>
+#include <MeshPlacementPreview.h>
 #include <AboutDocument.h>
 #include <EditorSettings.h>
 #include <EditorSettingsDocument.h>
@@ -30,6 +34,196 @@ namespace Nuclear::Editor
 
 	EditorUI::EditorUI(Project& project) : mProject(project) {}
 	EditorUI::~EditorUI() = default;
+
+	UI::UIContext* EditorUI::GetHierarchyMenuContext() const
+	{
+		if (pHierarchyMenuContext == &UI::UIModule::Get().GetContext()) return pHierarchyMenuContext;
+		if (pWorkspace)
+			for (const auto& window : pWorkspace->GetWindows())
+				if (pHierarchyMenuContext == &window->GetContext()) return pHierarchyMenuContext;
+		return nullptr;
+	}
+
+	void EditorUI::CloseHierarchyMenu()
+	{
+		const auto id = std::exchange(mHierarchyMenu, 0);
+		if (auto* context = GetHierarchyMenuContext(); context && id) context->RemoveFromViewport(id);
+		pHierarchyMenuContext = nullptr;
+		mHierarchyMenuEntity = entt::null;
+	}
+
+	void EditorUI::OpenHierarchyMenu(entt::entity entity, UI::UIContext& context, UI::Vec2 point)
+	{
+		auto& registry = Core::Scene::Get().GetRegistry();
+		if (mModal || entity == mCamera || !registry.valid(entity) || !registry.all_of<Components::EntityInfoComponent>(entity)) return;
+		CloseHierarchyMenu();
+		CloseAddMenu();
+		pTitleBar->CloseMenu();
+		pViewport->CancelInteraction();
+		mSelected = entity;
+		mHierarchyDirty = mInspectorDirty = true;
+		pInspector->SetOffset(0);
+		EditorMenuPopup::Items items{
+			{"Duplicate", [this, entity]() { DuplicateEntity(entity); }},
+			{"Copy", [this, entity]() { CopyEntity(entity); }},
+			{"Delete", [this, entity]() { DeleteEntity(entity); }}
+		};
+		auto popup = std::make_unique<EditorMenuPopup>(UI::Rect{point.x, point.y, 0, 0}, items,
+			[this]() { CloseHierarchyMenu(); },
+			[this](UI::Vec2, bool clicked) { if (clicked) CloseHierarchyMenu(); }, [](int) {});
+		mHierarchyMenu = popup->GetId();
+		pHierarchyMenuContext = &context;
+		mHierarchyMenuEntity = entity;
+		context.AddToViewport(std::move(popup), 60);
+		context.SetFocus(mHierarchyMenu);
+	}
+
+	void EditorUI::DeleteEntity(entt::entity entity)
+	{
+		auto& registry = Core::Scene::Get().GetRegistry();
+		if (mModal || entity == mCamera || !registry.valid(entity)) return;
+		CloseHierarchyMenu();
+		pViewport->SetSelectedEntity(entt::null);
+		mHistory.Edit(entity, "Delete entity", [&]() { registry.destroy(entity); });
+		Core::Scene::Get().SetMainCamera(registry.try_get<Components::CameraComponent>(mCamera));
+		mSelected = entt::null;
+		mHierarchyDirty = mInspectorDirty = mRendererDirty = true;
+	}
+
+	void EditorUI::CopyEntity(entt::entity entity)
+	{
+		if (mModal || entity == mCamera) return;
+		CloseHierarchyMenu();
+		pViewport->CancelInteraction();
+		const auto state = EditorEntityState::Capture(entity);
+		if (!state.Exists) return;
+		mCopiedEntity = state;
+		mNotice = "Entity copied / Ctrl+V or Edit / Paste";
+	}
+
+	void EditorUI::DuplicateEntity(entt::entity entity)
+	{
+		if (mModal || entity == mCamera) return;
+		pViewport->CancelInteraction();
+		PasteEntity(EditorEntityState::Capture(entity));
+	}
+
+	void EditorUI::PasteEntity(const EditorEntityState& state)
+	{
+		if (mModal || !state.Exists) return;
+		CloseHierarchyMenu();
+		pViewport->CancelInteraction();
+		auto& registry = Core::Scene::Get().GetRegistry();
+		const auto base = (state.GetName().empty() ? std::string("Entity") : state.GetName()) + " Copy";
+		auto exists = [&](const std::string& name) {
+			for (auto entity : registry.view<Components::EntityInfoComponent>())
+				if (registry.get<Components::EntityInfoComponent>(entity).mName == name) return true;
+			return false;
+		};
+		std::string name = base;
+		for (size_t suffix = 2; exists(name); ++suffix) name = base + " " + std::to_string(suffix);
+		const auto copy = state.CreateCopy(name);
+		Core::Scene::Get().SetMainCamera(registry.try_get<Components::CameraComponent>(mCamera));
+		if (copy == entt::null) return;
+		mSelected = copy;
+		mHistory.RecordCreated(copy);
+		mHierarchyDirty = mInspectorDirty = mRendererDirty = true;
+		mRevealSelection = true;
+		pInspector->SetOffset(0);
+		pWorkspace->Show("viewport");
+		mNotice = "Entity copied into scene / Undo removes this copy";
+	}
+
+	void EditorUI::CancelMeshPlacement()
+	{
+		if (pMeshPlacement) pMeshPlacement->Cancel();
+		mMeshPlacementPoint.reset();
+		pMeshPlacementContext = nullptr;
+		mMeshPlacementDropped = false;
+	}
+
+	void EditorUI::DragMesh(const Core::UUID& mesh, UI::UIContext& source, UI::Vec2 point, bool dropped)
+	{
+		if (!pMeshPlacement || !pViewport || mModal)
+		{
+			CancelMeshPlacement();
+			return;
+		}
+		pMeshPlacement->Begin(mesh);
+		mMeshPlacementPoint.reset();
+		auto* target = pViewport->GetContext();
+		if (!target || !pViewport->IsVisible() || !pViewport->IsEnabled() ||
+			target->GetInputMode() == UI::InputMode::GameOnly)
+		{
+			if (dropped) CancelMeshPlacement();
+			return;
+		}
+		auto windowFor = [this](UI::UIContext* context) -> Platform::Window* {
+			if (context == &UI::UIModule::Get().GetContext()) return Core::Engine::Get().GetMainWindow();
+			for (const auto& window : pWorkspace->GetWindows())
+				if (context == &window->GetContext()) return &window->GetWindow();
+			return nullptr;
+		};
+		if (&source != target)
+		{
+			auto* originWindow = windowFor(&source);
+			auto* targetWindow = windowFor(target);
+			int x = int(std::lround(point.x * source.GetScale()));
+			int y = int(std::lround(point.y * source.GetScale()));
+			if (!originWindow || !targetWindow || !originWindow->ClientToScreen(x, y) || !targetWindow->ScreenToClient(x, y))
+			{
+				if (dropped) CancelMeshPlacement();
+				return;
+			}
+			point = {x / target->GetScale(), y / target->GetScale()};
+		}
+		target->Layout();
+		if (!pViewport->GetBounds().Contains(point))
+		{
+			if (dropped) CancelMeshPlacement();
+			return;
+		}
+		mMeshPlacementPoint = point;
+		mMeshPlacementBounds = pViewport->GetBounds();
+		pMeshPlacementContext = target;
+		mMeshPlacementDropped = dropped;
+	}
+
+	void EditorUI::UpdateMeshPlacement()
+	{
+		if (!pMeshPlacement || !pMeshPlacement->GetMesh()) return;
+		const auto bounds = pViewport->GetBounds();
+		if (mModal || !pViewport->IsVisible() || !pViewport->IsEnabled() ||
+			(mMeshPlacementPoint && (pViewport->GetContext() != pMeshPlacementContext ||
+			bounds.x != mMeshPlacementBounds.x || bounds.y != mMeshPlacementBounds.y ||
+			bounds.Width != mMeshPlacementBounds.Width || bounds.Height != mMeshPlacementBounds.Height)))
+		{
+			CancelMeshPlacement();
+			return;
+		}
+		if (!mMeshPlacementPoint) return;
+		auto* camera = Core::Scene::Get().GetMainCamera();
+		const bool valid = camera && pMeshPlacement->Update(*camera, bounds, *mMeshPlacementPoint);
+		if (!mMeshPlacementDropped) return;
+		if (valid)
+		{
+			auto* mesh = Assets::AssetLibrary::Get().mImportedMeshes.GetAsset(*pMeshPlacement->GetMesh());
+			if (mesh && mesh->GetState() == Assets::IAsset::State::Created)
+			{
+				auto entity = Core::Scene::Get().CreateEntity(mesh->GetName());
+				entity.GetComponent<Components::EntityInfoComponent>().mTransform.SetPosition(pMeshPlacement->GetPosition());
+				entity.AddComponent<Components::MeshComponent>(mesh, mProject.GetMeshMaterial(*mesh));
+				mSelected = entity.GetEntityID();
+				mHistory.RecordCreated(mSelected);
+				mHierarchyDirty = mInspectorDirty = true;
+				mRevealSelection = true;
+				pInspector->SetOffset(0);
+				mNotice = "Mesh placed / Undo removes this placement";
+			}
+		}
+		CancelMeshPlacement();
+	}
+
 	void EditorUI::Initialize()
 	{
 		mHistory.OnSceneRestored = [this]() {
@@ -51,6 +245,11 @@ namespace Nuclear::Editor
 			"@NuclearAssets@/Shaders/BlinnPhong.NuclearShader", desc);
 		if (!pShader || pShader->GetState() != Assets::IAsset::State::Loaded)
 			throw std::runtime_error("Editor preview shader could not be imported");
+		desc.mExcludedVariants = {"NE_DEFFERED", "NE_SHADOWS", "NE_ANIMATION", "NE_SSAO", "IBL_ENABLED"};
+		pImportedShader = Assets::AssetManager::Get().Import<Assets::Shader>(
+			"@NuclearAssets@/Shaders/PBR/PBR.NuclearShader", desc);
+		if (!pImportedShader || pImportedShader->GetState() != Assets::IAsset::State::Loaded)
+			throw std::runtime_error("Editor imported-material shader could not be imported");
 		auto& material = Assets::AssetLibrary::Get().mImportedMaterials.AddAsset();
 		material.SetName("Editor / Default material");
 		pMaterial = &material;
@@ -61,6 +260,7 @@ namespace Nuclear::Editor
 		mAssets.OnChanged = [this]() {
 			mAssetsDirty = true;
 		};
+		mAssets.OnMeshImported = [this](Assets::Mesh& mesh) { PrepareImportedMaterial(mesh); };
 		mAssets.OnEntityAdded = [this](entt::entity entity) {
 			mHistory.RecordCreated(entity);
 			mSelected = entity;
@@ -70,6 +270,25 @@ namespace Nuclear::Editor
 		};
 		mAssets.OnAssetOpened = [this](Assets::AssetType type, Core::UUID id) {
 			mPendingDocuments.emplace_back(type, id);
+		};
+		pMeshPlacement = std::make_unique<MeshPlacementPreview>();
+		mAssets.OnMeshDragged = [this](Core::UUID mesh, UI::UIContext& source, UI::Vec2 point, bool dropped) {
+			DragMesh(mesh, source, point, dropped);
+		};
+		mAssets.OnMeshDragCancelled = [this]() { CancelMeshPlacement(); };
+		mAssets.OnAssetChanged = [this](Assets::AssetType type, Core::UUID id, bool removed) {
+			if (!pWorkspace) return;
+			const auto key = "asset_" + std::to_string(static_cast<int>(type)) + "_" + id.str();
+			if (removed)
+				pWorkspace->Close(key);
+			else if (auto* asset = AssetDocument::Resolve(type, id))
+			{
+				const auto title = AssetDocument::GetTitle(type, asset->GetName());
+				pWorkspace->SetTitle(key, title);
+				auto found = mAssetHeadings.find(key);
+				if (found != mAssetHeadings.end() && found->second)
+					found->second->SetText(title);
+			}
 		};
 		NewScene();
 		pSelectionRenderer = std::make_unique<EditorSelectionRenderer>();
@@ -90,6 +309,11 @@ namespace Nuclear::Editor
 
 	void EditorUI::NewScene()
 	{
+		if (pWorkspace) pWorkspace->GetColorPicker().Close();
+		CloseHierarchyMenu();
+		mCopiedEntity.reset();
+		if (pAssets && pAssets->GetContext()) pAssets->GetContext()->CancelSubtree(*pAssets);
+		CancelMeshPlacement();
 		mPendingPick.reset();
 		mRevealSelection = false;
 		CloseAddMenu();
@@ -135,6 +359,14 @@ namespace Nuclear::Editor
 	{
 		pRenderer = std::make_unique<Systems::RenderSystem>();
 		pRenderer->RegisterShader(pShader);
+		pRenderer->RegisterShader(pImportedShader);
+		std::unordered_set<Assets::Shader*> shaders = {pShader, pImportedShader};
+		for (auto entity : Core::Scene::Get().GetRegistry().view<Components::MeshComponent>())
+		{
+			auto* material = Core::Scene::Get().GetRegistry().get<Components::MeshComponent>(entity).GetMaterial();
+			auto* shader = material ? material->GetShader() : nullptr;
+			if (shader && shaders.insert(shader).second) pRenderer->RegisterShader(shader);
+		}
 		Systems::RenderSystemBakingDesc desc;
 		desc.RTWidth = 800;
 		desc.RTHeight = 600;
@@ -155,6 +387,41 @@ namespace Nuclear::Editor
 			mesh.SetMaterial(mesh.GetMaterial());
 		}
 		mRendererDirty = false;
+	}
+
+	void EditorUI::PrepareImportedMaterial(Assets::Mesh& mesh)
+	{
+		auto* material = mesh.GetImportedMaterial();
+		if (!material || (material->GetState() == Assets::IAsset::State::Created && material->GetShader()))
+			return;
+
+		auto& sets = material->GetTextures();
+		// Even untextured submeshes need a complete set; keep every existing index stable.
+		for (const auto& part : mesh.mSubMeshes)
+			if (sets.size() <= part.data.TexSetIndex)
+				sets.resize(size_t(part.data.TexSetIndex) + 1);
+
+		auto& fallbacks = Fallbacks::FallbacksModule::Get();
+		const std::array<Assets::MaterialTexture, 5> defaults = {{
+			{fallbacks.GetDefaultWhiteImage(), Assets::TextureUsageType::Albedo},
+			{fallbacks.GetDefaultBlackImage(), Assets::TextureUsageType::Metallic},
+			fallbacks.GetDefaultNormalTex(),
+			{fallbacks.GetDefaultGreyImage(), Assets::TextureUsageType::Roughness},
+			{fallbacks.GetDefaultWhiteImage(), Assets::TextureUsageType::AO}}};
+		for (auto& set : sets)
+		{
+			for (const auto& fallback : defaults)
+			{
+				auto found = std::find_if(set.mData.begin(), set.mData.end(), [&fallback](const auto& texture) {
+					return texture.mUsageType == fallback.mUsageType;
+				});
+				if (found == set.mData.end())
+					set.mData.push_back(fallback);
+				else if (!found->pTexture || !found->pTexture->GetTextureView())
+					*found = fallback;
+			}
+		}
+		material->Create(pImportedShader);
 	}
 
 	void EditorUI::CreateEntity(int shape)
@@ -274,15 +541,7 @@ namespace Nuclear::Editor
 			}
 		});
 		auto& deleteSelected = Action(viewActions, "Delete selected", [this]() {
-			auto& registry = Core::Scene::Get().GetRegistry();
-			if (registry.valid(mSelected) && mSelected != mCamera)
-			{
-				pViewport->SetSelectedEntity(entt::null);
-				mHistory.Edit(mSelected, "Delete entity", [&]() { registry.destroy(mSelected); });
-				Core::Scene::Get().SetMainCamera(registry.try_get<Components::CameraComponent>(mCamera));
-				mSelected = entt::null;
-				mHierarchyDirty = mInspectorDirty = mRendererDirty = true;
-			}
+			DeleteEntity(mSelected);
 		});
 		pViewport = &scene.Add<GameViewPort>();
 		pViewport->OnSelectionRequested = [this](UI::Vec2 position) {
@@ -308,7 +567,7 @@ namespace Nuclear::Editor
 		pWorkspace->Add("inspector", "Inspector", std::move(inspectorWidget), EditorDockRegion::Right);
 		auto settings = std::make_unique<SceneSettings>(mHistory, [this]() {
 			mSceneSettingsDirty = mAssetsDirty = true;
-		});
+		}, pWorkspace->GetColorPicker());
 		pSceneSettings = settings.get();
 		pWorkspace->Add("scene-settings", "Scene settings", std::move(settings), EditorDockRegion::Right);
 		pWorkspace->Close("scene-settings");
@@ -353,7 +612,7 @@ namespace Nuclear::Editor
 				pWorkspace->Show("editor-settings");
 				return;
 			}
-			pWorkspace->Add("editor-settings", EditorSettingsDocument::GetTitle(), EditorSettingsDocument::Build(),
+			pWorkspace->Add("editor-settings", EditorSettingsDocument::GetTitle(), EditorSettingsDocument::Build(pWorkspace->GetColorPicker()),
 				EditorDockRegion::Documents, true);
 		};
 
@@ -367,9 +626,15 @@ namespace Nuclear::Editor
 			{"Delete selected", deleteSelected.OnClicked},
 			{"Editor Settings...", openSettings}});
 		pTitleBar->SetMenuProvider("Edit", [this, remove = deleteSelected.OnClicked, openSettings]() {
+			auto& registry = Core::Scene::Get().GetRegistry();
+			const bool canCopy = mSelected != mCamera && registry.valid(mSelected) &&
+				registry.all_of<Components::EntityInfoComponent>(mSelected);
 			return EditorMenuPopup::Items{
 				{"Undo", mHistory.CanUndo() ? std::function<void()>([this]() { ReplayHistory(false); }) : nullptr},
 				{"Redo", mHistory.CanRedo() ? std::function<void()>([this]() { ReplayHistory(true); }) : nullptr},
+				{"Duplicate", canCopy ? std::function<void()>([this]() { DuplicateEntity(mSelected); }) : nullptr},
+				{"Copy", canCopy ? std::function<void()>([this]() { CopyEntity(mSelected); }) : nullptr},
+				{"Paste", mCopiedEntity ? std::function<void()>([this]() { PasteEntity(*mCopiedEntity); }) : nullptr},
 				{"Delete selected", remove},
 				{"Editor Settings...", openSettings}};
 		});
@@ -453,7 +718,7 @@ namespace Nuclear::Editor
 	void EditorUI::RefreshHierarchy()
 	{
 		auto column = std::make_unique<UI::VerticalBox>();
-		column->SetSpacing(6);
+		column->SetSpacing(3);
 		auto& registry = Core::Scene::Get().GetRegistry();
 		std::vector<entt::entity> entities;
 		for (auto entity : registry.view<Components::EntityInfoComponent>())
@@ -467,11 +732,17 @@ namespace Nuclear::Editor
 		for (auto entity : entities)
 		{
 			auto& info = registry.get<Components::EntityInfoComponent>(entity);
-			auto& row = Action(*column, (entity == mSelected ? "> " : "  ") + info.mName, [this, entity]() {
+			auto& row = column->Add<EditorHierarchyRow>();
+			Label(row, (entity == mSelected ? "> " : "  ") + info.mName);
+			row.OnClicked = [this, entity]() {
 				mSelected = entity;
 				pInspector->SetOffset(0);
 				mHierarchyDirty = mInspectorDirty = true;
-			});
+			};
+			row.OnContextRequested = [this, entity](UI::UIContext& context, UI::Vec2 point) {
+				OpenHierarchyMenu(entity, context, point);
+			};
+			//row.SetPadding({ 0, 0, 0, 0 });
 			if (entity == mSelected)
 			{
 				selectedRow = &row;
@@ -538,7 +809,7 @@ namespace Nuclear::Editor
 			scene.SetMainCamera(scene.GetRegistry().try_get<Components::CameraComponent>(mCamera));
 			mHierarchyDirty = mInspectorDirty = true;
 			mRendererDirty = mRendererDirty || structural;
-		}, mHistory));
+		}, mHistory, pWorkspace->GetColorPicker()));
 		mInspectorDirty = false;
 	}
 
@@ -614,6 +885,19 @@ namespace Nuclear::Editor
 		for (const auto& [type, id] : documents)
 			OpenAssetDocument(type, id);
 		pWorkspace->Update();
+		EditorAssetPicker::Update(context);
+		for (const auto& window : pWorkspace->GetWindows()) EditorAssetPicker::Update(window->GetContext());
+		if (mHierarchyMenu)
+		{
+			auto* menuContext = GetHierarchyMenuContext();
+			auto& registry = Core::Scene::Get().GetRegistry();
+			if (!menuContext || !menuContext->Find(mHierarchyMenu) || mModal ||
+				!registry.valid(mHierarchyMenuEntity) || pHierarchy->GetContext() != menuContext ||
+				!pHierarchy->IsVisible() || !pHierarchy->IsEnabled()) CloseHierarchyMenu();
+		}
+		context.Layout();
+		for (const auto& window : pWorkspace->GetWindows()) window->GetContext().Layout();
+		UpdateMeshPlacement();
 		pSceneToolbar->SetVisibility(pWorkspace->GetDocumentLayout("viewport")->IsVisible()
 			? UI::Visibility::Visible : UI::Visibility::Collapsed);
 		if (mAddMenu)
@@ -684,12 +968,20 @@ namespace Nuclear::Editor
 
 	void EditorUI::Render(float deltaTime)
 	{
+		for (const auto& window : pWorkspace->GetWindows()) window->GetContext().Layout();
 		auto& context = UI::UIModule::Get().GetContext();
 		context.Layout();
+		for (auto& [key, preview] : mMeshPreviews)
+			if (preview)
+			{
+				preview->Update(deltaTime);
+				preview->Render();
+			}
 		auto bounds = pViewport->GetBounds();
 		auto* camera = Core::Scene::Get().GetMainCamera();
-		const auto width = static_cast<Uint32>(std::max(1.f, bounds.Width * context.GetScale()));
-		const auto height = static_cast<Uint32>(std::max(1.f, bounds.Height * context.GetScale()));
+		const float viewportScale = pViewport->GetContext() ? pViewport->GetContext()->GetScale() : context.GetScale();
+		const auto width = static_cast<Uint32>(std::max(1.f, bounds.Width * viewportScale));
+		const auto height = static_cast<Uint32>(std::max(1.f, bounds.Height * viewportScale));
 		if (pViewport->IsVisible() && camera->GetColorRT().GetDimensions() != Math::Vector2ui(width, height))
 		{
 			camera->ResizeRTs(width, height);
@@ -710,7 +1002,8 @@ namespace Nuclear::Editor
 					pSkybox->Render(*camera);
 					break;
 				}
-			pSelectionRenderer->Render(*camera, mSelected, context.GetScale());
+			pSelectionRenderer->Render(*camera, mSelected, viewportScale);
+			if (pMeshPlacement && !mModal) pMeshPlacement->Render(*camera);
 		}
 		auto& graphics = Graphics::GraphicsModule::Get();
 		auto* target = graphics.GetSwapChain()->GetCurrentBackBufferRTV();
@@ -730,12 +1023,17 @@ namespace Nuclear::Editor
 
 	void EditorUI::Shutdown()
 	{
+		CloseHierarchyMenu();
+		mCopiedEntity.reset();
+		CancelMeshPlacement();
 		mInspector.Reset();
 		CloseAddMenu();
 		mPendingSkybox = false;
 		mHistory.Clear();
 		mHistoryModifiers.fill(false);
 		mPendingPick.reset();
+		mAssetHeadings.clear();
+		mMeshPreviews.clear();
 		pWorkspace.reset();
 		mPendingDocuments.clear();
 		UI::UIModule::Get().GetContext().Clear();
@@ -745,6 +1043,8 @@ namespace Nuclear::Editor
 		Core::Scene::Get().SetMainCamera(static_cast<Components::CameraComponent*>(nullptr));
 		Core::Scene::Get().Clear();
 		mRoot = mModal = 0;
+		pMeshPlacement.reset();
+		mAssets.Shutdown();
 		pHierarchy = nullptr;
 		pHierarchyFilter = nullptr;
 		pInspector = nullptr;
@@ -767,6 +1067,9 @@ namespace Nuclear::Editor
 	{
 		if (mModal)
 			return;
+		CloseHierarchyMenu();
+		if (pAssets && pAssets->GetContext()) pAssets->GetContext()->CancelSubtree(*pAssets);
+		CancelMeshPlacement();
 		pViewport->CancelInteraction();
 		pTitleBar->CloseMenu();
 		const bool restored = redo ? mHistory.Redo() : mHistory.Undo();
@@ -775,6 +1078,7 @@ namespace Nuclear::Editor
 
 	bool EditorUI::ProcessShortcut(const Platform::Event& event, UI::UIContext& context)
 	{
+		if (EditorAssetPicker::ProcessEvent(context, event)) return true;
 		using Key = Platform::Input;
 		if (event.mType == Platform::EventType::FocusChanged)
 			mHistoryModifiers.fill(false);
@@ -786,15 +1090,25 @@ namespace Nuclear::Editor
 				mHistoryModifiers[index] = event.mPressed;
 		const bool control = mHistoryModifiers[0] || mHistoryModifiers[1];
 		const bool shift = mHistoryModifiers[2] || mHistoryModifiers[3];
-		if (!control || !event.mPressed || (event.mKey != Key::KEYCODE_Z && event.mKey != Key::KEYCODE_Y))
+		if (!control || !event.mPressed || (event.mKey != Key::KEYCODE_Z && event.mKey != Key::KEYCODE_Y &&
+			event.mKey != Key::KEYCODE_C && event.mKey != Key::KEYCODE_V))
 			return false;
 		if (mModal || context.GetInputMode() == UI::InputMode::GameOnly)
 			return false;
+		for (auto* focus = context.Find(context.GetFocusedWidget()); focus; focus = focus->GetParent())
+			if (dynamic_cast<EditorAssetPicker*>(focus)) return false;
 		// Text boxes hold uncommitted text. Scene shortcuts belong to the workspace outside text editing.
 		if (dynamic_cast<UI::TextBox*>(context.Find(context.GetFocusedWidget())))
 			return false;
 		if (!event.mRepeat)
-			ReplayHistory(event.mKey == Key::KEYCODE_Y || shift);
+		{
+			if (event.mKey == Key::KEYCODE_C) CopyEntity(mSelected);
+			else if (event.mKey == Key::KEYCODE_V)
+			{
+				if (mCopiedEntity) PasteEntity(*mCopiedEntity);
+			}
+			else ReplayHistory(event.mKey == Key::KEYCODE_Y || shift);
+		}
 		return true;
 	}
 
@@ -816,13 +1130,13 @@ namespace Nuclear::Editor
 			if (!mesh || mesh->GetState() != Assets::IAsset::State::Created)
 				return;
 			auto entity = Core::Scene::Get().CreateEntity(mesh->GetName());
-			entity.AddComponent<Components::MeshComponent>(mesh, pMaterial);
+			entity.AddComponent<Components::MeshComponent>(mesh, mProject.GetMeshMaterial(*mesh));
 			mSelected = entity.GetEntityID();
 			mHistory.RecordCreated(mSelected);
 			mHierarchyDirty = mInspectorDirty = true;
 			pInspector->SetOffset(0);
 			pWorkspace->Show("viewport");
-		});
+		}, &mAssetHeadings[key], &mMeshPreviews[key]);
 		pWorkspace->Add(key, title, std::move(content), EditorDockRegion::Documents, true);
 	}
 } // namespace Nuclear::Editor

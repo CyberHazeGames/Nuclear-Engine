@@ -2,6 +2,7 @@
 #include <EntityEditor.h>
 #include <EditorComponentButton.h>
 #include <EditorHistory.h>
+#include <EditorColorPickerWindow.h>
 #include <SkyboxComponent.h>
 #include <iostream>
 #include <stdexcept>
@@ -74,6 +75,7 @@ namespace Nuclear::Editor::Tests
 		const auto other = scene.CreateEntity("Other inspector fixture").GetEntityID();
 		EntityEditor inspector;
 		EditorHistory history;
+		EditorColorPickerWindow colors;
 		UIContext context;
 		context.SetViewport(300, 480);
 		context.SetDefaultFont(UIModule::Get().GetContext().GetDefaultFont());
@@ -83,7 +85,7 @@ namespace Nuclear::Editor::Tests
 			context.SetDefaultFont(UIModule::Get().GetContext().GetDefaultFont());
 			auto scroll = std::make_unique<ScrollBox>();
 			scroll->SetContent(inspector.Build(selected == entt::null ? entity : selected,
-				[&](bool structural) { structuralChange = structural; }, history));
+				[&](bool structural) { structuralChange = structural; }, history, colors));
 			context.AddToViewport(std::move(scroll));
 			context.Layout();
 		};

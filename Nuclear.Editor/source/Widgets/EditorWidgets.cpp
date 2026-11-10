@@ -213,9 +213,12 @@ namespace Nuclear::Editor
 
 	UI::Button& AssetTile(UI::PanelWidget& parent, const std::string& name,
 						  const UI::Brush& brush, UI::Vec2 imageSize,
-						  std::function<void()> callback, const std::string& subtext)
+						  std::function<void()> callback, const std::string& subtext,
+						  EditorAssetButton::DragCallback dragged, std::function<void()> cancelled)
 	{
-		auto& button = parent.Add<UI::Button>();
+		UI::Button& button = dragged
+			? parent.Add<EditorAssetButton>(std::move(dragged), std::move(cancelled))
+			: parent.Add<UI::Button>();
 		const float buttonWidth = imageSize.x + 16.0f;
 		button.SetSizeLimits({buttonWidth, 0}, {buttonWidth + 12.0f, 1000000});
 		button.SetPadding({6, 6, 6, 6});
@@ -239,6 +242,9 @@ namespace Nuclear::Editor
 
 		auto& label = Label(tile, name, 11);
 		label.SetWrap(true);
+		// A grid measures each tile against the wider row. Reserve three lines for the
+		// name so its wrapped text remains visible when arranged at thumbnail width.
+		label.SetSizeLimits({imageSize.x, 36}, {imageSize.x, 36});
 		label.SetTextAlignment(UI::Alignment::Center);
 		auto lblSlot = tile.GetSlot(label.GetId());
 		lblSlot.Horizontal = UI::Alignment::Center;

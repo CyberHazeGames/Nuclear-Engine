@@ -46,6 +46,9 @@ namespace Nuclear
 			bool mImportMesh = true;
 			bool mImportAnimations = true;
 			bool mImportMaterial = true;
+			/// When material import finds a referenced *_A image, also import existing sibling _N, _M, _R and _AO maps.
+			/// Explicit material slots take precedence; discovery stays in the referenced image's directory.
+			bool mDiscoverCompanionTextures = true;
 
 			bool mExportMaterial = true;
 		};

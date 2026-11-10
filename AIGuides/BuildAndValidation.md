@@ -127,6 +127,46 @@ Sample1 and the selector import the supplied vampire Collada model as `dancing_v
 
 ## Retained editor validation
 
+Asset viewer checks build `Nuclear.Editor/Nuclear.Editor.vcxproj` and
+`Nuclear.Editor/Nuclear.Editor.Tests.vcxproj` in Debug x64, then run
+`../Bin/DebugX64/Nuclear.Editor.Tests.exe --asset-viewers` from `Nuclear.Editor/`.
+The focused D3D11 check covers clickable material sphere thumbnails, left-preview/right-properties
+layouts for texture/mesh/material documents, private PBR shader isolation, switching
+source texture sets, aspect-preserving texture display, divider cancellation and native
+document transfer/DPI. It writes browser, material-scene, viewer and detached-viewer
+readbacks under `Nuclear.Editor/Build/DebugX64/`. The related `--mesh-preview`,
+`--mesh-material` and `--asset-properties` cases cover existing mesh navigation,
+material import/assignment and inspector asset fields. These checks exclude deferred-only
+preview shaders, IBL/shadow variants, Release and other rendering backends.
+
+Mesh-component asset fields have a focused Debug x64 check: build
+`Nuclear.Editor/Nuclear.Editor.vcxproj` and `Nuclear.Editor/Nuclear.Editor.Tests.vcxproj`,
+then run `../Bin/DebugX64/Nuclear.Editor.Tests.exe --asset-properties` from
+`Nuclear.Editor/`. The 2026-11-09 run passed typed registry selection, name search,
+disabled unready entries, independent mesh/material assignment, clear, undo/redo,
+Escape/outside/native-focus dismissal, scaled pointer input and teardown. D3D11
+readbacks checked large uploaded mesh geometry and material-sphere thumbnails; draw
+submission checked an unmatched texture-set index and a cleared mesh. These are
+focused Debug/D3D11 checks, not custom shader thumbnail equivalence or other backends.
+
+The shared color picker has a focused Debug x64 check: build the editor and
+`Nuclear.Editor/Nuclear.Editor.Tests.vcxproj`, then run
+`../Bin/DebugX64/Nuclear.Editor.Tests.exe --color-picker` from `Nuclear.Editor/`.
+The 2026-11-09 run covers RGB(A)/HSV/HEX, HDR, captured/cancelled gestures, DPI,
+external native chooser creation and Apply/Cancel, light history, theme accent and scene-settings integration including D3D11 clear
+target readback and detached controls. See [Editor.md](Editor.md#color-picker)
+for channel units, commit/cancellation behavior and HEX encoding.
+
+Automatic imported-material assignment on 2026-11-09 passed Debug x64 builds of
+the engine, editor and `Nuclear.Editor/Nuclear.Editor.Tests.vcxproj`. From
+`Nuclear.Editor/`, `../Bin/DebugX64/Nuclear.Editor.Tests.exe --mesh-material` passed
+PBR baking, material-browser/document visibility, all three mesh insertion routes,
+undo/redo and renderer rebaking, plus mixed textured/untextured slots and missing-map
+GPU defaults. The local Cerberus texture-import checks also passed. The existing
+`--asset-drag` D3D11 regression passed, including fallback meshes and detached DPI.
+See [Editor.md](Editor.md#launch-and-validation). These runs check draw submission,
+not material color accuracy, private material previews, Release or other backends.
+
 Undo/redo follow-up on 2026-11-08: Debug x64 builds of the editor, focused editor
 tests and UI tests passed. Run `../Bin/DebugX64/Nuclear.Editor.Tests.exe` from
 `Nuclear.Editor/` for history ordering, restored entity identities/component data,

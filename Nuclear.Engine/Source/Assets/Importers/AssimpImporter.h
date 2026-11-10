@@ -55,6 +55,14 @@ namespace Nuclear
 
 				void InitBoneData(const aiNodeAnim* channel, Animation::BoneData& data);
 				bool save_materials_names;
+				CommonImportingOptions mTextureOptions; ///< Parent import policy propagated to material textures; texture names remain independent.
+				bool mDiscoverCompanions = false; ///< Enables bounded companion discovery for model imports only.
+				std::string mAlbedoPath; ///< Resolved external albedo path for the material currently being processed.
+				std::unordered_map<std::string, Assets::Texture*> mTextureCache; ///< Borrowed texture results keyed by resolved path and color space within this import.
+				/// Resolves absolute/relative references, then model-local filenames and Textures directories.
+				std::string ResolveTexturePath(const std::string& reference) const;
+				Assets::Texture* ImportExternalTexture(const std::string& path, Assets::TextureUsageType usage); ///< Imports once using the parent policy.
+				void ImportCompanions(Assets::MaterialTextureSet& textures); ///< Adds missing conventional sibling maps without replacing explicit slots.
 			};
 		}
 	}

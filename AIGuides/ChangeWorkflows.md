@@ -60,6 +60,16 @@ Use 32-bit integers for boolean callback results, dispose temporary Nuclear.Mana
 
 ## Change asset import/load behavior
 
+Mesh material textures inherit the parent import's async/load-only policy. Keep
+referenced file paths relative to the model when possible; stale absolute paths
+have bounded model-local filename/Textures fallbacks. Default mesh imports may
+discover `_N`, `_M`, `_R` and `_AO` siblings of a referenced `_A` image, respecting
+explicit material slots and `mDiscoverCompanionTextures`. Do not replace this with
+unbounded directory scanning. After successful mesh import, the editor prepares
+the library material with a static forward PBR shader and missing-map defaults;
+all scene insertion routes prefer that material. Private mesh-document/thumbnail
+previews remain neutral. See [Rendering.md](Rendering.md) and [Editor.md](Editor.md).
+
 - Follow `AssetManager` -> `Importer` or `Loader` -> the asset-specific task -> main-thread resource creation where applicable.
 - Check `ImportingDescs.h`, `LoadingDescs.h`, `AssetMetadata.h`, and the asset's UUID/library mapping.
 - Preserve the distinction between disk data being `Loaded` and the resource being `Created`. Test both successful completion and a missing/invalid input.
@@ -68,6 +78,9 @@ Use 32-bit integers for boolean callback results, dispose temporary Nuclear.Mana
 - When adding fixture content, inspect `.gitignore`: broad image and generated-content rules can hide files required by the change. Avoid force-adding large imported libraries as incidental validation output.
 
 ## Change rendering or shaders
+
+- Start with [Rendering.md](Rendering.md) for material texture sets, per-mesh
+  variants, naming contracts, ordered passes and the sample map.
 
 - Trace the affected camera/mesh/material through `RenderSystem`, pipeline baking/reflection, the chosen rendering path, and the relevant pass.
 - For `.NuclearShader` changes, inspect `ShaderParser.cpp` and a neighboring description. These are TOML-style files, not raw HLSL alone.

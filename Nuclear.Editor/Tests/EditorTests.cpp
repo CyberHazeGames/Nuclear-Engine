@@ -1,6 +1,13 @@
 #include "EditorHistoryTests.h"
 #include "ComponentInspectorTests.h"
+#include "AssetPropertyTests.h"
+#include "AssetViewerTests.h"
 #include "SceneSettingsTests.h"
+#include "ColorPickerTests.h"
+#include "MeshPreviewTests.h"
+#include "AssetDragTests.h"
+#include "HierarchyMenuTests.h"
+#include "MeshMaterialImportTests.h"
 #include <NuclearEditor.h>
 #include <GameViewPort.h>
 #include <EditorTitleBar.h>
@@ -245,12 +252,12 @@ namespace
 		context->UnmapTextureSubresource(staging, 0, 0);
 		return result;
 	}
-	void Readback(const char* path)
+	void Readback(const char* path, Diligent::ITexture* source = nullptr, bool checkScene = true)
 	{
 		using namespace Diligent;
 		auto& graphics = Graphics::GraphicsModule::Get();
 		auto* context = graphics.GetContext();
-		auto* source = graphics.GetSwapChain()->GetCurrentBackBufferRTV()->GetTexture();
+		if (!source) source = graphics.GetSwapChain()->GetCurrentBackBufferRTV()->GetTexture();
 		auto desc = source->GetDesc();
 		desc.Usage = USAGE_STAGING;
 		desc.BindFlags = BIND_NONE;
@@ -296,15 +303,75 @@ namespace
 		const float minimumScenePixels = std::max(20.f,
 			sceneBounds.Width * sceneBounds.Height * scale * scale * .001f);
 		Check(
-			scenePixels > minimumScenePixels,
+			!checkScene || scenePixels > minimumScenePixels,
 			"Scene framebuffer contains neutral shaded geometry, independently of labels and colored gizmos");
 	}
 } // namespace
 
-int main()
+namespace
+{
+	void RunTabTitleTests()
+	{
+		UIContext context;
+		const auto* font = Context().GetDefaultFont();
+		Check(font != nullptr, "Tab title tests use the editor font");
+		context.SetDefaultFont(font);
+		auto strip = std::make_unique<Nuclear::Editor::EditorTabStrip>();
+		auto* tabs = strip.get();
+		context.AddToViewport(std::move(strip));
+		const std::string title = "WBP_CenterAbilityBar";
+		const std::string expected = "WBP_Cente...ilityBar";
+		const float width = DrawList::MeasureText(font, expected, 14).x + 71.05f;
+		context.SetViewport(width, 34);
+		tabs->SetTabs({{"asset", title}}, "asset");
+		context.Layout();
+		Check(tabs->GetDisplayTitle("asset") == expected, "Long captions retain balanced beginning and end around dots");
+		const auto bounds = tabs->GetTabBounds("asset");
+		bool paintedLabel = false;
+		for (const auto& quad : context.BuildDrawList().Quads)
+			if (quad.SDF && std::abs(quad.Tint.r - .8f) < .001f)
+			{
+				paintedLabel = true;
+				Check(quad.Clip.x >= bounds.x + 10 && quad.Clip.x + quad.Clip.Width <= bounds.x + bounds.Width - 28.0f + .01f,
+					"Title glyphs are clipped before the close-button area");
+			}
+		Check(paintedLabel, "Fitted tab caption emits glyphs");
+		std::string closed;
+		tabs->OnClosed = [&](const std::string& id) { closed = id; };
+		Platform::Event click;
+		click.mType = Platform::EventType::MouseButton;
+		click.mButton = MOUSE_BUTTON_LEFT;
+		click.mMouseX = int(bounds.x + bounds.Width - 12);
+		click.mMouseY = 16;
+		click.mPressed = true;
+		context.ProcessEvent(click);
+		click.mPressed = false;
+		context.ProcessEvent(click);
+		Check(closed == "asset", "Truncation preserves close-button activation and full tab identity");
+		context.SetViewport(width * 1.25f, 34 * 1.25f, 1.25f);
+		context.Layout();
+		Check(tabs->GetDisplayTitle("asset") == expected, "Logical caption fitting follows DPI scaling");
+		context.SetViewport(400, 34);
+		tabs->SetTabs({{"asset", "Short"}}, "asset");
+		context.Layout();
+		Check(tabs->GetDisplayTitle("asset") == "Short", "Short names remain unchanged");
+		const std::string unicode = "Caf\xC3\xA9_\xE4\xB8\xAD_LongAssetTitle_\xE4\xB8\xAD_\xC3\xA9";
+		tabs->SetTabs({{"asset", unicode}, {"other", "Other"}, {"third", "Third"}}, "asset");
+		context.Layout();
+		const auto fitted = tabs->GetDisplayTitle("asset");
+		Check(fitted.find("...") != std::string::npos &&
+			MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, fitted.data(), int(fitted.size()), nullptr, 0) > 0,
+			"Truncation preserves complete UTF-8 characters");
+		Check(fitted.starts_with("Caf") && fitted.ends_with("\xC3\xA9"), "Unicode titles retain both ends");
+		std::cout << "Tab title fitting, clipping, close activation, DPI and UTF-8 passed.\n";
+	}
+}
+
+int main(int argc, char** argv)
 {
 	try
 	{
+		const bool skipNativePicker = argc == 2 && std::string(argv[1]) == "--skip-native-picker";
 		Nuclear::Editor::Tests::RunTransformGizmoTests();
 		Core::EngineStartupDesc desc;
 		desc.EnableImGui = false;
@@ -319,7 +386,82 @@ int main()
 		auto& engine = Core::Engine::Get();
 		Check(engine.Start(desc), "Editor engine startup");
 		engine.GetMainWindow()->Display(false);
+		if (argc == 2 && std::string(argv[1]) == "--color-picker")
+		{
+			Nuclear::Editor::Tests::RunColorPickerTests();
+			NuclearEditor editor;
+			editor.Load();
+			auto frame = [&]() {
+				engine.BeginFrame();
+				editor.Update(1.f / 60);
+				editor.Render(1.f / 60);
+				engine.EndFrame();
+			};
+			for (int index = 0; index < 4; ++index) frame();
+			Action("Window");
+			Action("Scene settings");
+			frame();
+			UIModule::Get().Render();
+			Readback("Build/DebugX64/editor-color-picker.ppm");
+			Action("Clear color...");
+			frame();
+			auto& colors = editor.GetWorkspace()->GetColorPicker();
+			Check(colors.GetWindow() != nullptr, "Clicking the property opens a separate native chooser");
+			colors.GetWindow()->GetWindow().Display(false);
+			colors.GetWindow()->Render();
+			Readback("Build/DebugX64/editor-color-window.ppm",
+				colors.GetWindow()->GetSwapChain()->GetCurrentBackBufferRTV()->GetTexture(), false);
+			colors.Close();
+			editor.GetWorkspace()->Update();
+			Nuclear::Editor::Tests::RunSceneSettingsTests(editor, frame);
+			editor.Shutdown();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--mesh-material")
+		{
+			Nuclear::Editor::Tests::RunMeshMaterialImportTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--asset-properties")
+		{
+			Nuclear::Editor::Tests::RunAssetPropertyTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--asset-viewers")
+		{
+			Nuclear::Editor::Tests::RunAssetViewerTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--hierarchy-menu")
+		{
+			Nuclear::Editor::Tests::RunHierarchyMenuTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--asset-drag")
+		{
+			Nuclear::Editor::Tests::RunAssetDragTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--tab-titles")
+		{
+			RunTabTitleTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--mesh-preview")
+		{
+			Nuclear::Editor::Tests::RunMeshPreviewTests();
+			engine.Shutdown();
+			return 0;
+		}
 		Nuclear::Editor::Tests::RunEditorHistoryTests();
+		Nuclear::Editor::Tests::RunColorPickerTests();
 		Nuclear::Editor::Tests::RunComponentInspectorTests();
 		{
 			NuclearEditor editor;
@@ -795,10 +937,19 @@ int main()
 			frame();
 			const auto directoryBeforeImport = std::filesystem::current_path();
 			const auto meshCountBeforeImport = Assets::AssetLibrary::Get().mImportedMeshes.mData.size();
-			ImportFile({}, frame);
-			Check(Assets::AssetLibrary::Get().mImportedMeshes.mData.size() == meshCountBeforeImport,
-				"Cancelling the picker creates no asset");
-			ImportFile(fixture / "triangle.obj", frame);
+			if (skipNativePicker)
+			{
+				std::cout << "Native picker checks skipped; importing through the browser file row.\n";
+				Action("Import / triangle.obj");
+				frame();
+			}
+			else
+			{
+				ImportFile({}, frame);
+				Check(Assets::AssetLibrary::Get().mImportedMeshes.mData.size() == meshCountBeforeImport,
+					"Cancelling the picker creates no asset");
+				ImportFile(fixture / "triangle.obj", frame);
+			}
 			Check(std::filesystem::current_path() == directoryBeforeImport,
 				"Native file selection preserves the engine working directory");
 			Action("Meshes");

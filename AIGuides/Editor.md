@@ -26,14 +26,14 @@ buttons on the right. The emblem uses a UV region of the original wordmark store
 at `Assets/NuclearEngine/Editor/NuclearLogo.png`.
 
 Dropdown commands reuse scene/project/selection/workspace actions. Edit offers
-Undo, Redo, Delete selected, and Editor Settings... (also accessible from Window / Editor Settings...).
+Undo, Redo, Duplicate, Copy, Paste, Delete selected, and Editor Settings... (also accessible from Window / Editor Settings...).
 Saving and project settings remain disabled because they are not implemented.
 Hover switches open menus; outside click, Escape and focus loss dismiss. Left/Right switches
 headers, Up/Down selects enabled commands, and Enter executes. Window / Manage
 panels opens the active document's recovery menu. Edit / Editor Settings... opens
 [EditorSettingsDocument](../Nuclear.Editor/include/Documents/EditorSettingsDocument.h) featuring a two-pane layout
 with a left vertical navigation menu and a right main view for settings pages (Theme, General, Viewport).
-The Theme page exposes an interactive linear RGB color property, preview swatch, and presets that control
+The Theme page exposes a clickable accent-color swatch and presets that control
 the editor's live accent color via [EditorSettings](../Nuclear.Editor/include/Settings/EditorSettings.h); the General
 page provides VSync swap chain presentation controls, DPI scaling, and session settings.
 Help / About Nuclear Engine opens the About document showing engine and editor build information, repository
@@ -68,6 +68,28 @@ Callbacks resolve ECS handles again before editing. The protected editor camera
 does not appear in the authoring hierarchy. Deletion clears selection before the
 next inspector rebuild.
 
+Right-click a hierarchy entity for **Duplicate**, **Copy** or **Delete**. The row
+under the pointer becomes selected before commands execute; each command resolves
+its versioned entity handle again. Duplicate creates a fresh entity at the same
+transform with a unique **Copy** name. Copy captures a session snapshot without
+changing scene history; **Ctrl+C**, **Ctrl+V** and **Edit / Paste** use this clipboard
+outside focused text inputs. New scenes/projects and shutdown clear the entity
+clipboard. This clipboard is separate from the platform text clipboard.
+
+Duplicate and Paste preserve the supported authored values from
+`EditorEntityState`, including mesh/material references, transform, mesh flags,
+light values and supported component presence. Runtime physics/audio/script
+instances and preview camera targets are excluded, matching undo snapshots.
+Duplicate, Paste and Delete each enter scene history as one action. The protected
+editor camera is excluded from hierarchy commands. Copy remains usable after
+the source is changed or deleted within the same scene.
+
+[EditorHierarchyRow](../Nuclear.Editor/include/Widgets/EditorHierarchyRow.h) reuses
+the context-owned EditorMenuPopup in main or detached hierarchy windows. The
+popup survives selection-driven row rebuilding. Outside click, Escape, focus
+loss, scene replacement, invalid targets or native-context removal dismiss it;
+context pointers are checked against live windows before access.
+
 Every inspector component section has a small disclosure arrow before its name
 and an **X** at the right. The arrow points down when expanded and right when
 collapsed. Disclosure hides only the property body; it preserves component data,
@@ -86,6 +108,26 @@ required. The protected preview camera stays outside the authoring inspector.
 font-independent arrow/cross glyphs; [EntityEditor](../Nuclear.Editor/source/Panels/EntityEditor.cpp)
 owns section construction and disclosure state.
 
+The **Mesh** component has separate **Mesh** and **Material** asset fields. Each shows
+the current name (or **None**), a 64-unit thumbnail and a **...** button.
+[EditorAssetProperty](../Nuclear.Editor/include/Widgets/EditorAssetProperty.h) opens
+[EditorAssetPicker](../Nuclear.Editor/include/Widgets/EditorAssetPicker.h) in the property's
+current UI context, including detached inspectors. The dropdown offers **Clear**,
+case-insensitive name search and a scrollable list from the matching AssetLibrary map.
+Uncreated entries are disabled; a choice resolves the UUID again before assigning it.
+Changing either field preserves the other, records one undoable entity edit and
+requests renderer rebaking. Unmatched mesh texture-set indices use the chosen
+material's first set. Clearing either reference stops mesh drawing.
+
+Escape, outside click and native focus loss dismiss the chooser; rebuilding or
+removing its owning inspector removes it. The dropdown clamps to its context in
+logical units and can open above the field when space below is limited.
+[MeshPreviewCache](../Nuclear.Editor/include/Rendering/MeshPreviewCache.h) owns the
+cached GPU thumbnails until scene reset/shutdown. Mesh thumbnails use staging readback
+to frame geometry after CPU upload data is released. Material thumbnails use the same
+private forward shader and studio-lit sphere as the material viewer, with the first
+texture set and defaults for missing standard maps. They are cached after rendering.
+
 New-project creation is a modal form: disabling the workspace isolates pointer
 and Tab input until Create or Cancel removes the modal. Panel rebuilds are
 requested by callbacks and performed from Update. The shell persists across
@@ -99,15 +141,46 @@ splitters control the main workspace proportions.
 [EditorWorkspace](../Nuclear.Editor/include/Workspace/EditorWorkspace.h) coordinates the
 browser-style document strip above the toolbar and a separate retained dock layout
 for every document. Each layout has five optional dock groups.
-**Main viewport** is a pinned document. In the Asset Browser, selecting a texture or mesh thumbnail
-tile button, or using **Open / ...** on materials opens detail documents; opening an asset again
+**Main viewport** is a pinned document. In the Asset Browser, selecting a texture, mesh or material thumbnail
+tile opens its detail document; opening an asset again
 activates its existing tab. Texture documents preview ready resources, mesh documents expose
-geometry counts and an Add to scene action, and material documents show shader and
-texture-set information. These are resource details, not shader/material authoring.
+geometry counts, a flyable mesh preview and an Add to scene action, and material documents show a flyable
+material sphere with shader/texture-set information. These are resource details, not shader/material authoring.
+
+All three viewers use [AssetViewerLayout](../Nuclear.Editor/include/Widgets/AssetViewerLayout.h):
+the preview fills the left side at full document height and a scrollable **Properties**
+panel fills the right. Drag the vertical divider to resize them; Escape/focus loss
+cancels an unfinished drag. The split remains with the document through tab switches
+and native transfer. [TexturePreviewViewport](../Nuclear.Editor/include/Widgets/TexturePreviewViewport.h)
+fits textures to the left pane without stretching and shows transparency over a checkerboard.
+
+Material documents render the built-in sphere with
+[MaterialPreviewRenderer](../Nuclear.Editor/include/Rendering/MaterialPreviewRenderer.h),
+which owns a copy of the source shader's forward build description, private camera/light
+buffers and private texture bindings. Two directional studio lights illuminate the
+sphere against the generated sky. The library shader, material sets, authored entities and main
+camera stay untouched. **Frame sphere** restores the camera; **Preview set / ...** buttons
+choose among source texture sets. Static forward material shaders are supported; deferred-only
+materials, scene shadows, IBL variants and animated material/mesh variants are excluded.
+
+Ready mesh documents include a private lit preview with the generated default
+skybox. Click the preview and use WASD to fly, right-drag to look, wheel to travel,
+and F or **Frame mesh** to frame the asset. Escape/focus loss stops navigation.
+Each document keeps its own camera through tab switches and native docking; no
+preview entities or camera are registered in the authored scene. Mesh bounds are
+measured once, using staging vertex-buffer readback when upload released CPU data.
+Movement speed and clipping planes follow mesh size. The neutral diffuse preview
+shows static geometry rather than imported materials or animated poses.
+
+[MeshPreviewViewport](../Nuclear.Editor/include/Widgets/MeshPreviewViewport.h) owns
+[MeshPreviewScene](../Nuclear.Editor/include/Rendering/MeshPreviewScene.h). The controller
+updates/renders visible surfaces before main/detached UI painting, using each
+context's DPI. Closed documents retain their resources until workspace shutdown;
+their input and rendering stay inactive. Targets are capped at 4096 pixels per axis.
 
 Hierarchy, Inspector, Scene settings, Asset Browser and Performance belong to **Main viewport**.
-Asset viewers start with only their own central content and fill the available
-workspace; they do not inherit viewport panels. Switching documents preserves each
+Asset viewers fill the available workspace with their own preview/properties split;
+they do not inherit viewport panels. Switching documents preserves each
 layout, tool state and split proportions. Future asset-specific tools can be
 registered with `EditorWorkspace::Add` using the owning document ID. Dock transfers
 cannot move a tool into another document's layout.
@@ -117,6 +190,13 @@ meaningful name and otherwise supplies **Unnamed Texture**, **Unnamed Mesh**,
 **Unnamed Material**, or the corresponding asset type. The Asset Browser actions,
 new viewer headings and native document captions use the same policy. Reopening
 an existing document updates its tab title while keeping its UUID and contents.
+
+Tab captions reserve space for **x** and use measured middle truncation when
+needed, for example **WBP_Cente...ilityBar**. Both ends remain visible, UTF-8
+characters stay intact, and text is clipped to its own label rectangle. Main,
+tool and detached tab headers share this behavior; full titles and IDs remain
+unchanged. `Nuclear.Editor.Tests.exe --tab-titles` checks the example, glyph
+clipping, close activation, DPI scaling and UTF-8 preservation.
 
 Click a tab to switch, drag tabs along a header to reorder, and use each tab's **x**
 to close it. Headers scroll with the wheel when tabs overflow; focused headers also
@@ -175,8 +255,10 @@ WASD also works during right-button look, and pauses during transform drags. Fra
 places the camera six world units behind the selected entity along the current
 view direction. Pointer capture ends on release/cancellation.
 
-The controller owns a RenderSystem and GeometryPass, with a forward BlinnPhong
-shader and a library-owned default material. New scenes contain an editor camera
+The controller owns a RenderSystem and GeometryPass, with forward BlinnPhong for
+primitives and a static forward PBR shader for imported mesh materials. Both shaders
+are registered again when scene lights or other structural changes rebuild the
+renderer. The library owns shaders/materials. New scenes contain an editor camera
 and directional key light; the initial workspace also creates a box. The camera
 uses an RGBA8 sRGB target matching the shader PSO and a separate depth target.
 Rendering sets the GPU viewport to the physical scene-surface size, restores the
@@ -248,9 +330,8 @@ docks beside Inspector and uses the same float, redock, close/reopen and panel
 recovery controls as the other viewport tools. Asset documents do not inherit it.
 
 The panel edits the scene asset's display name and the preview camera's clear
-color. Red, Green, Blue and Alpha are linear values in the inclusive range 0 to 1;
-Enter commits a field, and invalid/nonfinite values leave scene data unchanged.
-A swatch previews the color. Blank scene names become **Untitled Scene**. Changes
+color through a compact swatch that opens the external RGBA picker. Channels are linear values in the inclusive
+range 0 to 1. Blank scene names become **Untitled Scene**. Changes
 refresh the scene heading and settings controls outside input dispatch.
 
 [EditorSceneState](../Nuclear.Editor/include/Settings/EditorSceneState.h) captures these
@@ -261,6 +342,46 @@ Snapshots from another scene are rejected. New scenes/projects restore the
 default name and clear color, including in an open detached settings panel;
 project modals disable its input. These settings are held in memory; the existing
 scene binary format and disk persistence remain unchanged.
+
+## Color picker
+
+[EditorColorProperty](../Nuclear.Editor/include/Widgets/EditorColorProperty.h) is a compact
+swatch button; the full color editor never appears inline. Clicking the color
+property (or activating it with the keyboard) requests a separate native window,
+managed by the workspace-owned
+[EditorColorPickerWindow](../Nuclear.Editor/include/Workspace/EditorColorPickerWindow.h).
+Only one chooser is open at a time, independently from dockable panel windows.
+It reuses EditorFloatingWindow's platform window, private context, renderer and
+shared-device swap chain. Creation and destruction run outside input dispatch.
+
+[EditorColorPicker](../Nuclear.Editor/include/Widgets/EditorColorPicker.h) is the owning
+retained editor inside that window, with vec3 and vec4 constructors and copied callbacks.
+Light color and theme accent use vec3; scene clear color uses vec4. The editor
+contains [EditorColorWheel](../Nuclear.Editor/include/Widgets/EditorColorWheel.h),
+a hue/saturation disk, a value strip, an optional alpha strip, and a checkerboard
+preview. Numeric RGB(A), HSV and HEX controls stay synchronized. Hue uses degrees,
+saturation and alpha use 0 to 1, and RGB/value use linear channels. HEX deliberately
+encodes those linear channels as 8-bit #RRGGBB or #RRGGBBAA, with an optional hash
+and case-insensitive input; it does not perform an sRGB conversion.
+
+Enter validates text locally. Invalid, nonfinite or out-of-range values restore
+the last valid text. Captured wheel/strip gestures preview within the chooser and
+finish on release. **Apply** commits the resulting color to the property as one
+scene/entity undo action and closes the chooser. **Cancel**, native close or
+Escape outside a captured gesture close without changing the model. Escape during
+a captured gesture restores its starting value; focus loss also cancels that gesture.
+The chooser tracks a weak property lifetime and closes when the source is removed,
+hidden, disabled or detached. New scenes, project modals and shutdown cancel it.
+Arrow keys adjust focused wheel hue/saturation; numeric fields support keyboard
+entry for all channels. Achromatic colors retain their chosen hue, and black
+retains saturation, allowing value to rise back to the selected color.
+
+The light picker preserves the existing 0 to 100000 HDR RGB/value range; the value
+strip spans 0 to at least 1 (or the current HDR value). HDR HEX previews clamp to
+8-bit range; entering HEX replaces the color with the represented 0-to-1 values.
+Theme accent remains opaque. The picker borrows no model pointers; the window
+validates source lifetime before invoking its copied setter, and callers resolve
+the current light/scene at Apply through existing history boundaries.
 
 ## Transform gizmos
 
@@ -341,8 +462,17 @@ Cancel creates no asset. Selection reuses the existing load-only import flow:
 resources belong to the current project session; no source copying or disk project
 persistence is added. Existing file-row Import actions remain available.
 Explicit Import actions queue work for Update. Texture, geometry, shader and TTF
-imports use existing importers; model imports deliberately omit materials and
-animations and use the editor default material when instantiated. Mesh GPU creation
+imports use existing importers; model imports include materials and their textures
+by default and omit animations. After successful GPU creation,
+`EditorUI::PrepareImportedMaterial` assigns the engine PBR shader to the associated
+library material, retaining named texture sets and submesh indices. Its editor
+shader excludes deferred, shadow, animation, SSAO and IBL variants. Missing maps use
+white albedo/AO, black metallic, flat normal and grey roughness; provided GPU-backed
+maps are preserved. Untextured source slots remain distinct from textured slots.
+The Materials category lists these library materials with shader and source-set
+names, and opens their material documents. One model material asset contains the
+source texture sets; the editor does not split it into unrelated per-submesh assets.
+Mesh GPU creation
 still uses the importer's main-thread task queue, which the editor drains after
 synchronous decoding. Readiness is checked separately from decoding; failed texture
 decoding must not report the fallback texture as a successful import. Textures and meshes
@@ -350,8 +480,64 @@ display in an Unreal-style grid of thumbnail icon buttons with asset names, dime
 triangle counts, and direct document-opening actions; mesh cards also retain an **Add to scene**
 action button. Mesh previews are rendered and cached on-demand by
 [MeshPreviewCache](../Nuclear.Editor/include/Rendering/MeshPreviewCache.h) using an offscreen depth-tested
-render target and directional Blinn-Phong lighting. Library assets are borrowed,
-never deleted by a panel.
+render target and directional Blinn-Phong lighting.
+
+Material texture imports inherit the mesh's synchronous/load-only policy, so the
+editor does not leave them queued on its disabled worker pool or export source
+textures as a side effect. Model-relative references are resolved first, with
+model-local filename/Textures fallbacks for stale author-machine paths. Referenced
+`*_A` images also discover existing sibling `_N`, `_M`, `_R` and `_AO` maps of the
+same extension by default. Explicit material slots take precedence; shared files
+are reused within a model import and nested Raw directories are not scanned.
+`MeshImportingDesc::mDiscoverCompanionTextures=false` disables this discovery.
+
+For the local Cerberus bundle, the FBX references the albedo through an obsolete
+absolute authoring path; the normal, metallic and roughness maps are companion
+files rather than FBX material references. Reimport the FBX to populate the
+Textures category and assign its material. Scene instances use that PBR material.
+Private mesh documents and cached thumbnail renderers still show neutral geometry;
+they do not evaluate the imported material shader or animated poses.
+
+Drag a ready mesh thumbnail into the scene viewport to place it. Movement must
+exceed six logical units; a normal click still opens the mesh viewer. A translucent
+green ghost follows the pointer. Release in the viewport creates and selects one
+entity, recorded as one undoable creation. `Project::GetMeshMaterial` selects the
+mesh's created shader-backed imported material, falling back to the primitive
+default only when unavailable. Browser Add to scene, mesh-document insertion and
+drag placement all use this resolver; undo/redo retains the material reference.
+Escape, source focus loss/removal, a project modal or releasing outside the scene
+cancels placement. Unready meshes and non-mesh categories do not create entities.
+
+[EditorAssetButton](../Nuclear.Editor/include/Widgets/EditorAssetButton.h) retains
+source input capture while dragging. The controller maps points between native
+client coordinates and each context's DPI, including detached Asset Browsers.
+[MeshPlacementPreview](../Nuclear.Editor/include/Rendering/MeshPlacementPreview.h)
+reads the last rendered depth to resolve a surface and estimates its normal from
+neighboring pixels. Local mesh bounds offset the upright asset against that
+surface; background falls back to ground Y=0, or ten units along the pointer ray
+when the ground is behind/parallel. Bounds use GPU staging if CPU vertices were
+released. The ghost creates no ECS entity and never writes scene depth, preventing
+self-snapping. Readback and resource creation run in Update/Render, outside input
+dispatch. Placement does not rotate to the surface, use physics collision, or
+implement grid snapping; screen-edge/unsupported-depth contacts fall back to up.
+
+Right-click an imported texture, mesh, material or scene card for **Add to scene**,
+**Delete** and **Rename**. Add to scene is enabled only for created meshes and uses
+the existing entity creation/history path. Rename opens a browser form; Enter or
+Save name commits a trimmed, nonblank session display name, preserving the UUID
+and updating any document caption and heading. Cancel rename leaves the original name intact.
+Delete removes the entry from the session library and closes its open document.
+Neither action changes source files or serialized assets on disk, and these asset
+edits do not enter scene undo history.
+
+[EditorAssetItem](../Nuclear.Editor/include/Widgets/EditorAssetItem.h) wraps each card
+and reuses EditorMenuPopup in the card's own context, including detached browsers.
+Outside click, Escape and focus loss dismiss the menu; removing the card closes
+its overlay. Left-click still opens the asset document. Deleted library map nodes
+remain owned by AssetLibraryViewer until editor shutdown, preserving borrowed
+resource addresses used by existing entities, history snapshots and previews.
+Shutdown clears preview caches and retired assets after widgets, history and scene
+entities are gone, before engine graphics teardown.
 
 The synchronous texture importer preserves the Created state assigned after a
 successful GPU upload. It must not downgrade an uploaded resource to Loaded:
@@ -364,6 +550,57 @@ values stay explicit. Diagnostics refresh twice per second. LoggerView reads onl
 the latest 16 KiB of `NuclearEngine.log`; it does not change the log or add a sink.
 
 ## Launch and validation
+
+Color-picker validation on 2026-11-09: Debug x64 editor and focused editor-test
+builds passed. From `Nuclear.Editor/`, `../Bin/DebugX64/Nuclear.Editor.Tests.exe --color-picker`
+checks vec3/vec4 RGB(A), HSV and HEX synchronization, strict invalid-input rejection,
+HDR retention, hue at black, captured drags at 100%/150% DPI, cancellation, external
+window creation, Apply/Cancel/native close, expired source lifetime, light history
+and theme application. It also runs scene-settings integration with camera
+clear-color readback, scene undo/redo, detached editing and modal isolation, and
+saves `Build/DebugX64/editor-color-picker.ppm` (compact property) and
+`Build/DebugX64/editor-color-window.ppm` (native chooser) for visual inspection. This validates
+D3D11 and automated input; Release, other backends and manual interaction were not run.
+
+Automatic-material assignment validation on 2026-11-09: Debug x64 engine, editor
+and focused editor-test builds passed. `Nuclear.Editor.Tests.exe --mesh-material`
+checks a single baked static forward PBR variant, library/material-browser identity,
+named source sets and material documents, browser Add to scene, drag placement,
+mesh-document insertion, and retained material/variant references through undo/redo
+and renderer rebaking. A mixed textured/untextured OBJ fixture verifies independent
+slots and complete GPU-backed defaults. The existing `--asset-drag` D3D11 run also
+passed fallback-mesh placement, ghost/depth, cancellation, history and detached DPI.
+These checks exercise draw submission; they do not establish color accuracy,
+private material previews, animated materials, Release or other graphics backends.
+
+Material-import validation on 2026-11-09: Debug x64 engine, editor and focused-test
+builds passed. `Nuclear.Editor.Tests.exe --mesh-material` imported an OBJ/MTL fixture
+through the editor and checked stale absolute path recovery, synchronous GPU
+readiness, material association, shared-map reuse, explicit normal-map precedence,
+bounded companion discovery and Textures-category visibility. The local Cerberus
+FBX also imported with ready A/N/M/R textures. These checks do not validate PBR
+rendering, Release, other backends or absent third-party bundles on a clean checkout.
+
+Hierarchy-menu validation on 2026-11-09: Debug x64 editor and focused-test builds
+passed. `Nuclear.Editor.Tests.exe --hierarchy-menu` checks right-click targeting,
+popup persistence during row rebuilding, duplicate transforms/mesh flags/light
+presence, unique naming, copied snapshots after source edits/deletion, Ctrl+V and
+Edit/Paste, undo/redo identities, text-input shortcut isolation, Escape, detached
+125% DPI menus, redocking with an open popup and scene/clipboard reset. This
+focused D3D11 run does not establish Release or physical input behavior.
+
+Mesh-drag validation on 2026-11-09: Debug x64 editor and focused-test builds
+passed. `Nuclear.Editor.Tests.exe --asset-drag` passed ghost pixel/depth checks,
+surface/ground placement, resource readiness, exactly-one entity on release,
+undo/redo identity, Escape/outside/focus cancellation, detached-source 125% DPI
+conversion and normal click-to-open. The ghost framebuffer was visually reviewed.
+This focused check did not run Release, other graphics backends or physical input.
+
+Mesh-preview validation on 2026-11-09: Debug x64 editor and focused-test builds
+passed. The `--mesh-preview` D3D11 run passed geometry/sky readback, complete mesh
+framing, WASD movement, right-drag look, focus cancellation, DPI resize and
+isolated resource teardown. The framebuffer was visually reviewed. This does not
+validate animated poses, imported-material rendering, Release or other backends.
 
 Viewport-selection validation on 2026-11-08: Debug x64 editor and focused-test
 builds passed. D3D11 checks cover frontmost selection, hidden/occluded meshes,
@@ -432,6 +669,16 @@ input/actions and renders to a hidden D3D11 window. Readbacks are written under
 ignored `Nuclear.Editor/Build/DebugX64/`. The UI test project additionally covers
 Unicode editing/deletion, self-removal on commit, focused-content replacement,
 scroll bubbling, focus reveal and resize clamping.
+
+`Nuclear.Editor.Tests.exe --mesh-preview` runs the focused D3D11 mesh-preview
+checks without native file pickers. It verifies mesh/sky pixels, complete initial
+framing of uploaded geometry, focused fly navigation, right-drag look, focus
+cancellation, DPI resize and isolated teardown, and writes `mesh-preview.ppm`
+under the ignored editor test output directory.
+
+`--skip-native-picker` runs the general editor suite using the browser file-row
+fixture import instead of the native picker checks. This explicitly leaves picker
+selection/cancellation unverified.
 
 Validation on 2026-11-08: the full Debug x64 solution build, focused editor tests,
 and headless UI tests passed. D3D11 editor readbacks at 1440x900 and 960x600 verified

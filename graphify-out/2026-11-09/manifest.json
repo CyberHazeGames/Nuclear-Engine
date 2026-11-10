@@ -11,112 +11,10 @@
     "ast_hash": "aa22021fcd244e517db394a727010bab",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/include/AssetLibraryViewer.h": {
-    "mtime": 1794176121.8893328,
-    "seen": 1794176747.0505688,
-    "ast_hash": "bba511dcd60d51484761353cd4f0db16",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/Common.h": {
-    "mtime": 1794092903.858008,
-    "seen": 1794094280.9178965,
-    "ast_hash": "712a87457af55b4ccbf8016d0ff78879",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorUI.h": {
-    "mtime": 1794169203.3816624,
-    "seen": 1794169358.4835358,
-    "ast_hash": "f253b739f3f2bcb61fb9ffa61b032543",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorUILayer.h": {
-    "mtime": 1789995572.1008759,
-    "seen": 1793802371.3720734,
-    "ast_hash": "51fcddd353128330fa1f90b403371fa3",
-    "semantic_hash": "51fcddd353128330fa1f90b403371fa3"
-  },
-  "Nuclear.Editor/include/EntityEditor.h": {
-    "mtime": 1794171369.4000092,
-    "seen": 1794171488.8973484,
-    "ast_hash": "018fecf86c3b9ddef249c5cc1b6a7e9b",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/GameViewPort.h": {
-    "mtime": 1794168921.2008784,
-    "seen": 1794169358.4835358,
-    "ast_hash": "35222cb4a484e4e37880c6e776c955d3",
-    "semantic_hash": ""
-  },
   "Nuclear.Editor/include/Nuclear.Editor.h": {
-    "mtime": 1794093386.128731,
-    "seen": 1794094280.9178965,
-    "ast_hash": "fc0a112c3c5761307bc57a52f1a28a64",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/Project.h": {
-    "mtime": 1794094082.7462819,
-    "seen": 1794094280.9178965,
-    "ast_hash": "b505e727b9ae9b0f5283ca4b2588122b",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/ProjectTemplate.h": {
-    "mtime": 1789995572.1023796,
-    "seen": 1793802371.3720734,
-    "ast_hash": "213a47f09a798b99aa7f1f32709f25bf",
-    "semantic_hash": "213a47f09a798b99aa7f1f32709f25bf"
-  },
-  "Nuclear.Editor/include/Systems.h": {
-    "mtime": 1789995572.1023796,
-    "seen": 1793802371.3720734,
-    "ast_hash": "a4e0a662b2bb3d3ce7d5d8e35f8f2479",
-    "semantic_hash": "a4e0a662b2bb3d3ce7d5d8e35f8f2479"
-  },
-  "Nuclear.Editor/include/SystemsEditor.h": {
-    "mtime": 1789995572.1023796,
-    "seen": 1793802371.3720734,
-    "ast_hash": "7fff4b7cefdadc192558d2ed471cc534",
-    "semantic_hash": "7fff4b7cefdadc192558d2ed471cc534"
-  },
-  "Nuclear.Editor/include/UILayers/LoggerView.h": {
-    "mtime": 1794093892.8180263,
-    "seen": 1794094280.9178965,
-    "ast_hash": "00646d2dd1708c1a68f257d2a5cb423d",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/AssetLibraryViewer.cpp": {
-    "mtime": 1794176146.4606705,
-    "seen": 1794176747.0505688,
-    "ast_hash": "9f23276e4e691eac2df934e5b7279c7a",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorUI.cpp": {
-    "mtime": 1794175382.9131098,
-    "seen": 1794176747.0505688,
-    "ast_hash": "af47a74b52eda35c22222f208e1a225f",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EntityEditor.cpp": {
-    "mtime": 1794174159.1749475,
-    "seen": 1794176747.0505688,
-    "ast_hash": "4b1f46e221ae8fe40496d52e80d86a97",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/Nuclear.Editor.cpp": {
-    "mtime": 1794149124.3114889,
-    "seen": 1794149679.7414215,
-    "ast_hash": "d59f93039344340977479fddbc600264",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/Project.cpp": {
-    "mtime": 1794094168.947531,
-    "seen": 1794094280.9178965,
-    "ast_hash": "55a3b825e1dfa88e02166449205eef8e",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/UILayers/LoggerView.cpp": {
-    "mtime": 1794094168.947531,
-    "seen": 1794094280.9178965,
-    "ast_hash": "08c6256dd5a39b8d52b28c6602170d4e",
+    "mtime": 1794180955.0552063,
+    "seen": 1794181586.8804653,
+    "ast_hash": "1b57790c5df3038e06a404e0b99eeac1",
     "semantic_hash": ""
   },
   "Nuclear.Engine/Source/Animation/AnimationClip.cpp": {
@@ -192,16 +90,16 @@
     "semantic_hash": "fcb69f54f12cd1316548956f02bec341"
   },
   "Nuclear.Engine/Source/Assets/Importers/AssimpImporter.cpp": {
-    "mtime": 1789995572.1103854,
-    "seen": 1793802371.3720734,
-    "ast_hash": "50876462d5b2fcde750764973719087f",
-    "semantic_hash": "50876462d5b2fcde750764973719087f"
+    "mtime": 1794235712.1857007,
+    "seen": 1794236092.7299943,
+    "ast_hash": "83ceb63589df7b9f07c37694a315b0bd",
+    "semantic_hash": ""
   },
   "Nuclear.Engine/Source/Assets/Importers/AssimpImporter.h": {
-    "mtime": 1789995572.1103854,
-    "seen": 1793802371.3720734,
-    "ast_hash": "de381af004a718c004a77388491498aa",
-    "semantic_hash": "de381af004a718c004a77388491498aa"
+    "mtime": 1794234625.488384,
+    "seen": 1794235046.1829798,
+    "ast_hash": "73bdf2c05b2c5b1e040e9fcdc2209168",
+    "semantic_hash": ""
   },
   "Nuclear.Engine/Source/Assets/Importers/AssimpManager.cpp": {
     "mtime": 1789995572.1103854,
@@ -222,10 +120,10 @@
     "semantic_hash": "3c935d46c90a505d78abad2ae3517794"
   },
   "Nuclear.Engine/Source/Assets/Material.cpp": {
-    "mtime": 1789995572.1113956,
-    "seen": 1793802371.3720734,
-    "ast_hash": "0110f6beaca4721d869ac243aa2e06ec",
-    "semantic_hash": "0110f6beaca4721d869ac243aa2e06ec"
+    "mtime": 1794251349.614228,
+    "seen": 1794251989.1075392,
+    "ast_hash": "c23454a8c48d45bdf8d19986d1a0a8e3",
+    "semantic_hash": ""
   },
   "Nuclear.Engine/Source/Assets/Mesh.cpp": {
     "mtime": 1789995572.1113956,
@@ -378,10 +276,10 @@
     "semantic_hash": "8ef41bbc66e3b5484fbce76f513d3cf4"
   },
   "Nuclear.Engine/Source/Fallbacks/FallbacksModule.cpp": {
-    "mtime": 1790356737.4163952,
-    "seen": 1793802371.3720734,
-    "ast_hash": "3669144510fe11e726b28db86ca1a655",
-    "semantic_hash": "3669144510fe11e726b28db86ca1a655"
+    "mtime": 1794235623.3050747,
+    "seen": 1794236092.7299943,
+    "ast_hash": "4505acc2b2cf40aec98ab09d734fc6cd",
+    "semantic_hash": ""
   },
   "Nuclear.Engine/Source/Graphics/Color.cpp": {
     "mtime": 1789995572.1168475,
@@ -792,9 +690,9 @@
     "semantic_hash": "6fee312dc7e7ad4ad9cd7d5ebe1a77b8"
   },
   "Nuclear.Engine/include/Assets/ImportingDescs.h": {
-    "mtime": 1794086647.1831565,
-    "seen": 1794086720.7246726,
-    "ast_hash": "508493d3c5a6d13df1de8385a799d57f",
+    "mtime": 1794234625.4252174,
+    "seen": 1794235046.1829798,
+    "ast_hash": "918b7a88b5364ac88f159d35ae7ab851",
     "semantic_hash": ""
   },
   "Nuclear.Engine/include/Assets/Loader.h": {
@@ -810,10 +708,10 @@
     "semantic_hash": "8e66d11be29d731bbc39c4e9ba8fe4e5"
   },
   "Nuclear.Engine/include/Assets/Material.h": {
-    "mtime": 1789995572.151707,
-    "seen": 1793802371.3720734,
-    "ast_hash": "c24af65ffd98c133314e489f35e9d368",
-    "semantic_hash": "c24af65ffd98c133314e489f35e9d368"
+    "mtime": 1794251349.6787434,
+    "seen": 1794251989.1075392,
+    "ast_hash": "4be88fc290e3f7bb6d7b2fa0deb544c2",
+    "semantic_hash": ""
   },
   "Nuclear.Engine/include/Assets/MaterialTypes.h": {
     "mtime": 1789995572.151707,
@@ -1128,10 +1026,10 @@
     "semantic_hash": "a3af87c79c5bfaa4f61bd1b64172190a"
   },
   "Nuclear.Engine/include/Fallbacks/FallbacksModule.h": {
-    "mtime": 1790356713.6832697,
-    "seen": 1793802371.372577,
-    "ast_hash": "f05d36d3e75360953b7c48519d416d31",
-    "semantic_hash": "f05d36d3e75360953b7c48519d416d31"
+    "mtime": 1794235623.3841698,
+    "seen": 1794236092.7299943,
+    "ast_hash": "d212e2e7fdb1839bc01548c6e18128c9",
+    "semantic_hash": ""
   },
   "Nuclear.Engine/include/Graphics/BakeStatus.h": {
     "mtime": 1789995572.1712408,
@@ -2274,27 +2172,27 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1794088675.6049933,
-    "seen": 1794094280.9188952,
-    "ast_hash": "f5d4f733e4c5f4bad2c3ab751608d37d",
+    "mtime": 1794181368.422479,
+    "seen": 1794181586.8804653,
+    "ast_hash": "b92c5217257bb1853d94e9ee6d96f1f5",
     "semantic_hash": ""
   },
   "AIGuides/Architecture.md": {
-    "mtime": 1794136557.833014,
-    "seen": 1794136933.3886433,
-    "ast_hash": "8422058006221995db5ca08c6e6d7f28",
-    "semantic_hash": "8422058006221995db5ca08c6e6d7f28"
-  },
-  "AIGuides/BuildAndValidation.md": {
-    "mtime": 1794151564.8462331,
-    "seen": 1794153182.3120632,
-    "ast_hash": "3ff69623d364b8fede88471391c0a48d",
+    "mtime": 1794248334.3803663,
+    "seen": 1794249284.510015,
+    "ast_hash": "542359962896546491483d6647a0986a",
     "semantic_hash": ""
   },
+  "AIGuides/BuildAndValidation.md": {
+    "mtime": 1794253467.4493842,
+    "seen": 1794253698.0994234,
+    "ast_hash": "",
+    "semantic_hash": "af180c419d958d85b1148228f79f7961"
+  },
   "AIGuides/ChangeWorkflows.md": {
-    "mtime": 1794088949.9720056,
-    "seen": 1794094280.9188952,
-    "ast_hash": "7523cf9094eee22060dba370a3c21665",
+    "mtime": 1794235848.0571861,
+    "seen": 1794249284.510015,
+    "ast_hash": "c4241dcfdced6d9fcf16c5ed2fdb6b29",
     "semantic_hash": ""
   },
   "AIGuides/KnowledgeGraph.md": {
@@ -2310,16 +2208,16 @@
     "semantic_hash": ""
   },
   "AIGuides/README.md": {
-    "mtime": 1794093962.8986354,
-    "seen": 1794129422.2425542,
-    "ast_hash": "f0d354d1535e96a786fd1952e1e997a3",
+    "mtime": 1794235847.8586338,
+    "seen": 1794249284.510015,
+    "ast_hash": "79359ca8518e3b30f8e71dd0fae02f98",
     "semantic_hash": ""
   },
   "AIGuides/SourceReference.md": {
-    "mtime": 1794169203.6636329,
-    "seen": 1794169487.513199,
-    "ast_hash": "9dea165882ffaa923fe690110dc7b0be",
-    "semantic_hash": "9dea165882ffaa923fe690110dc7b0be"
+    "mtime": 1794253349.9057426,
+    "seen": 1794253698.0994234,
+    "ast_hash": "",
+    "semantic_hash": "60a02672fede46c16da32627f37bba93"
   },
   "CMakeLists.txt": {
     "mtime": 1789995572.096874,
@@ -2910,39 +2808,9 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/EditorTests.cpp": {
-    "mtime": 1794171369.333928,
-    "seen": 1794171488.8973484,
-    "ast_hash": "d7e0a70328f0567a75bc228789623ece",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorWidgets.h": {
-    "mtime": 1794174813.7022748,
-    "seen": 1794176747.0505688,
-    "ast_hash": "89e95316c35a4198372acbc2a150f7af",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/NuclearEditor.h": {
-    "mtime": 1794132861.6360078,
-    "seen": 1794134261.6302357,
-    "ast_hash": "3742d99e2e4ec16abaf53cdfae7b0d97",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorWidgets.cpp": {
-    "mtime": 1794174830.237033,
-    "seen": 1794176747.0505688,
-    "ast_hash": "fc8ab4d4ea91306c970a0c84aae210ae",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/GameViewPort.cpp": {
-    "mtime": 1794168921.1432288,
-    "seen": 1794169358.4835358,
-    "ast_hash": "e966c251d7e65c14f594bcc3940d0cb9",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/NuclearEditor.cpp": {
-    "mtime": 1794132861.699298,
-    "seen": 1794134261.6302357,
-    "ast_hash": "bf11f2b2b502cc10613213ca7fd8d033",
+    "mtime": 1794253256.4748662,
+    "seen": 1794253560.715534,
+    "ast_hash": "2771c32039ada2a5eea4c6ba6f1c8fb2",
     "semantic_hash": ""
   },
   "Nuclear.Engine/Source/UI/ScrollBox.cpp": {
@@ -2970,10 +2838,10 @@
     "semantic_hash": ""
   },
   "AIGuides/Editor.md": {
-    "mtime": 1794176243.8013878,
-    "seen": 1794176747.052082,
-    "ast_hash": "9b330edef7b9ac5a8a715c45f2693248",
-    "semantic_hash": ""
+    "mtime": 1794253384.002515,
+    "seen": 1794253698.0994234,
+    "ast_hash": "",
+    "semantic_hash": "69db74e20edc16b8090a95925def90e8"
   },
   "Nuclear.Editor/Tests/TransformGizmoTests.cpp": {
     "mtime": 1794131826.378801,
@@ -2987,136 +2855,16 @@
     "ast_hash": "08b23be54f602854edeaf16daa974093",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/include/TransformGizmo.h": {
-    "mtime": 1794131594.1894734,
-    "seen": 1794131855.3005056,
-    "ast_hash": "c74076aeffa476f8231d51866744e418",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/TransformGizmo.cpp": {
-    "mtime": 1794131594.2543337,
-    "seen": 1794131855.3005056,
-    "ast_hash": "0a780568a26614aadf04e6bfedc617b8",
-    "semantic_hash": ""
-  },
   "Nuclear.Editor/Tests/WorkspaceTests.cpp": {
-    "mtime": 1794176216.2302132,
-    "seen": 1794176747.0505688,
-    "ast_hash": "9577fdb0621024d7aa2b62633e27c182",
+    "mtime": 1794253031.2313702,
+    "seen": 1794253560.715534,
+    "ast_hash": "4766e14715666df71e5ee83b59dbf232",
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/WorkspaceTests.h": {
     "mtime": 1794133250.167694,
     "seen": 1794134261.6302357,
     "ast_hash": "222bed26f2f25669e04cab69d02021a3",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/AssetDocument.h": {
-    "mtime": 1794135602.6379995,
-    "seen": 1794136723.2720249,
-    "ast_hash": "ac41b012620eaef067b792d66c76a50e",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorDockArea.h": {
-    "mtime": 1794135602.5080948,
-    "seen": 1794136723.2720249,
-    "ast_hash": "18b23c76acf309864988a1aaa65265e7",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorDockLayout.h": {
-    "mtime": 1794167596.0444448,
-    "seen": 1794167652.8589072,
-    "ast_hash": "1bc0a9f53ec8db744aee9cbc62724d19",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorFloatingWindow.h": {
-    "mtime": 1794149833.3096552,
-    "seen": 1794150034.2590308,
-    "ast_hash": "45e4b90cf081624725c4fc3218795385",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorTabStrip.h": {
-    "mtime": 1794133986.987112,
-    "seen": 1794134261.6302357,
-    "ast_hash": "60d7d1704ec7e84219a5e91d5511776d",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorWorkspace.h": {
-    "mtime": 1794136459.1934552,
-    "seen": 1794136723.2720249,
-    "ast_hash": "71e324a86cb79c6b923d36e0331bd600",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/AssetDocument.cpp": {
-    "mtime": 1794135602.702819,
-    "seen": 1794136723.2720249,
-    "ast_hash": "4bd757e41592a3a9c100833415400bcf",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorDockArea.cpp": {
-    "mtime": 1794135602.5728598,
-    "seen": 1794136723.2720249,
-    "ast_hash": "dde49d32fa4d21481059734094bcc8e7",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorDockLayout.cpp": {
-    "mtime": 1794167595.982159,
-    "seen": 1794167652.8589072,
-    "ast_hash": "bb091dbd7ffbc866b4eca5222e21bdb0",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorFloatingWindow.cpp": {
-    "mtime": 1794167170.8583624,
-    "seen": 1794167652.8589072,
-    "ast_hash": "c0a594a0a3b3b787a7deb88ac6da722d",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorTabStrip.cpp": {
-    "mtime": 1794133987.1158712,
-    "seen": 1794134261.6302357,
-    "ast_hash": "d9bf06c9151c04da6e8f5a23adefc535",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorWorkspace.cpp": {
-    "mtime": 1794167718.4479606,
-    "seen": 1794167968.7826614,
-    "ast_hash": "58108415378a72ab79c5171a9bf80c0f",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorMenuPopup.h": {
-    "mtime": 1794149435.2550125,
-    "seen": 1794149679.7414215,
-    "ast_hash": "87a0ced20dfd24094d8c965991a9d92b",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorTitleBar.h": {
-    "mtime": 1794150935.9335606,
-    "seen": 1794151536.486755,
-    "ast_hash": "628d954b483ddf567e4b51767cd3bcd9",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorWindowButton.h": {
-    "mtime": 1794149124.3063314,
-    "seen": 1794149679.7414215,
-    "ast_hash": "9ddcf617563fa4b4b2f6f4dc62599294",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorMenuPopup.cpp": {
-    "mtime": 1794149460.9351375,
-    "seen": 1794149679.7414215,
-    "ast_hash": "73a0afa82d8572027ed0718d36749611",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorTitleBar.cpp": {
-    "mtime": 1794150936.004878,
-    "seen": 1794151536.486755,
-    "ast_hash": "dd4897d090ee5135eb8a39a67083568c",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorWindowButton.cpp": {
-    "mtime": 1794149124.3109753,
-    "seen": 1794149679.7414215,
-    "ast_hash": "1c6740f84b5f7428cd3bf92d98605443",
     "semantic_hash": ""
   },
   "Assets/NuclearEngine/Editor/NuclearLogo.png": {
@@ -3137,112 +2885,16 @@
     "ast_hash": "f71b143ff4f5a5f26bce297506d2fcaa",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/include/EditorEntityState.h": {
-    "mtime": 1794154968.384193,
-    "seen": 1794155474.5135174,
-    "ast_hash": "a7e9c71358118d809ca865bbc8f9f66c",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorHistory.h": {
-    "mtime": 1794153459.1431043,
-    "seen": 1794153888.9241729,
-    "ast_hash": "74df8aab518257435cf5dea4f25abacc",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorEntityState.cpp": {
-    "mtime": 1794154968.4546607,
-    "seen": 1794155474.5135174,
-    "ast_hash": "d0f0048e56b46f9ad3849f2695cc2af6",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorHistory.cpp": {
-    "mtime": 1794153459.2099762,
-    "seen": 1794153888.9241729,
-    "ast_hash": "67297d30ccde064682ffe4bc87a77c9f",
-    "semantic_hash": ""
-  },
   "Nuclear.Editor/Tests/SceneSettingsTests.cpp": {
-    "mtime": 1794155014.0199382,
-    "seen": 1794155474.5135174,
-    "ast_hash": "27e1bd7a07d82b53c461eec777309340",
+    "mtime": 1794249667.6916628,
+    "seen": 1794249818.3051937,
+    "ast_hash": "9b42b6858b4763ce331cb4af6959628e",
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/SceneSettingsTests.h": {
     "mtime": 1794153608.0472643,
     "seen": 1794153888.9241729,
     "ast_hash": "5c90de9b23911d63c6d489cef993f44d",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorSceneState.h": {
-    "mtime": 1794153458.8709848,
-    "seen": 1794153888.9241729,
-    "ast_hash": "e70f95b51cf365f74fa8de2563e1027f",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/SceneSettings.h": {
-    "mtime": 1794153815.243152,
-    "seen": 1794153888.9241729,
-    "ast_hash": "e635e61f59e6eb4dd93e10b9a67213db",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorSceneState.cpp": {
-    "mtime": 1794153458.9435165,
-    "seen": 1794153888.9241729,
-    "ast_hash": "d467bae7a3cba5a1843818913203ebf1",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/SceneSettings.cpp": {
-    "mtime": 1794153459.0784144,
-    "seen": 1794153888.9241729,
-    "ast_hash": "da73508260112127dfac7dd942738d14",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorAddMenu.h": {
-    "mtime": 1794154915.8998046,
-    "seen": 1794155474.5135174,
-    "ast_hash": "5c533116dcf41e5d031e8fead0bbbaa3",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorSkybox.h": {
-    "mtime": 1794154916.1771154,
-    "seen": 1794155474.5135174,
-    "ast_hash": "b7268858ba53d8676ffeb78dd2e115dc",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/SkyboxComponent.h": {
-    "mtime": 1794154916.041384,
-    "seen": 1794155474.5135174,
-    "ast_hash": "8d17557b76682c20f275e78d85b846bc",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorAddMenu.cpp": {
-    "mtime": 1794154968.3192034,
-    "seen": 1794155474.5135174,
-    "ast_hash": "4fc22fbf64301021d3ec49bf089a919d",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorSkybox.cpp": {
-    "mtime": 1794155196.6826103,
-    "seen": 1794155474.5135174,
-    "ast_hash": "bc1a4dc363db9f47975273380e15fe55",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/SkyboxComponent.cpp": {
-    "mtime": 1794154916.1092775,
-    "seen": 1794155474.5135174,
-    "ast_hash": "5ed268f50bef4de706c95cb45b78de72",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorToolbar.h": {
-    "mtime": 1794167170.9292274,
-    "seen": 1794167652.8589072,
-    "ast_hash": "387d0538e366323ee9793e169dd2afdf",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorToolbar.cpp": {
-    "mtime": 1794167170.9922502,
-    "seen": 1794167652.8589072,
-    "ast_hash": "986808ee3b8fd1fc97766190996a2053",
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/ViewportSelectionTests.cpp": {
@@ -3255,18 +2907,6 @@
     "mtime": 1794168921.2696097,
     "seen": 1794169358.4835358,
     "ast_hash": "06e333b7d2f462ff0703582271b00637",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/include/EditorSelectionRenderer.h": {
-    "mtime": 1794168699.6941092,
-    "seen": 1794169358.4835358,
-    "ast_hash": "9c9f97d4c33f9f2849d6b67c60f853cd",
-    "semantic_hash": ""
-  },
-  "Nuclear.Editor/source/EditorSelectionRenderer.cpp": {
-    "mtime": 1794169091.9509401,
-    "seen": 1794169358.4835358,
-    "ast_hash": "a876ce9e3a2b2f29b23f51435546857b",
     "semantic_hash": ""
   },
   "Nuclear.Platform/Source/Windows/FileDialog.cpp": {
@@ -3282,9 +2922,9 @@
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/ComponentInspectorTests.cpp": {
-    "mtime": 1794171253.8854516,
-    "seen": 1794171488.8973484,
-    "ast_hash": "7f2bae18da05521df4d6657b90b1578a",
+    "mtime": 1794249605.2377377,
+    "seen": 1794249818.3051937,
+    "ast_hash": "37b56cb5235824e6356b5f5e7011f7cf",
     "semantic_hash": ""
   },
   "Nuclear.Editor/Tests/ComponentInspectorTests.h": {
@@ -3293,40 +2933,694 @@
     "ast_hash": "5ab2675747383aebf8b33c8039de94e9",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/include/EditorComponentButton.h": {
-    "mtime": 1794171154.7117121,
-    "seen": 1794171488.8973484,
-    "ast_hash": "5b620c8502eef38abe02ffbd6cfc24b8",
+  "Nuclear.Editor/include/Core/Common.h": {
+    "mtime": 1794092903.858008,
+    "seen": 1794181586.8804653,
+    "ast_hash": "712a87457af55b4ccbf8016d0ff78879",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/source/EditorComponentButton.cpp": {
-    "mtime": 1794171154.778717,
-    "seen": 1794171488.8973484,
-    "ast_hash": "a851ae9ea7573fe5bc09484bb4404082",
+  "Nuclear.Editor/include/Core/NuclearEditor.h": {
+    "mtime": 1794132861.6360078,
+    "seen": 1794181586.8804653,
+    "ast_hash": "3742d99e2e4ec16abaf53cdfae7b0d97",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/include/AboutDocument.h": {
+  "Nuclear.Editor/include/Core/Project.h": {
+    "mtime": 1794235622.8433692,
+    "seen": 1794236092.7299943,
+    "ast_hash": "62fda5556e46969d990a532c5173dd26",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Core/ProjectTemplate.h": {
+    "mtime": 1789995572.1023796,
+    "seen": 1794181586.8804653,
+    "ast_hash": "213a47f09a798b99aa7f1f32709f25bf",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Documents/AboutDocument.h": {
     "mtime": 1794175354.8559666,
-    "seen": 1794176747.0505688,
+    "seen": 1794181586.8804653,
     "ast_hash": "266345099e9baf82e08c8ebabe8b8329",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/include/MeshPreviewCache.h": {
-    "mtime": 1794176275.0835657,
-    "seen": 1794176747.0505688,
-    "ast_hash": "bb80182c63aec792a4ebfb8745d6c52f",
+  "Nuclear.Editor/include/Documents/AssetDocument.h": {
+    "mtime": 1794252975.4093902,
+    "seen": 1794253560.715534,
+    "ast_hash": "786068c4735d58ba1aa2c0ad791e662d",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/source/AboutDocument.cpp": {
-    "mtime": 1794175366.326848,
-    "seen": 1794176747.0505688,
-    "ast_hash": "e242d3094294efe93198dbddf1454891",
+  "Nuclear.Editor/include/Documents/EditorSettingsDocument.h": {
+    "mtime": 1794249583.4716291,
+    "seen": 1794249818.3051937,
+    "ast_hash": "1fec90bdab2df6f65e20692181999037",
     "semantic_hash": ""
   },
-  "Nuclear.Editor/source/MeshPreviewCache.cpp": {
-    "mtime": 1794176286.5963497,
-    "seen": 1794176747.0505688,
-    "ast_hash": "c7c073f66ab5b30e549418f2daaea906",
+  "Nuclear.Editor/include/Panels/AssetLibraryViewer.h": {
+    "mtime": 1794253349.7761326,
+    "seen": 1794253560.715534,
+    "ast_hash": "b27c04d4ad18ce096a645bb20aea900a",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Panels/EditorUI.h": {
+    "mtime": 1794235623.1109762,
+    "seen": 1794236092.7299943,
+    "ast_hash": "bff141a38c90f6c2e93c8a7921b7d985",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Panels/EditorUILayer.h": {
+    "mtime": 1789995572.1008759,
+    "seen": 1794181586.8804653,
+    "ast_hash": "51fcddd353128330fa1f90b403371fa3",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Panels/EntityEditor.h": {
+    "mtime": 1794251757.2261019,
+    "seen": 1794251989.1075392,
+    "ast_hash": "58c63916697a6dfdc8cc283142758668",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Panels/GameViewPort.h": {
+    "mtime": 1794168921.2008784,
+    "seen": 1794181586.8804653,
+    "ast_hash": "35222cb4a484e4e37880c6e776c955d3",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Panels/LoggerView.h": {
+    "mtime": 1794093892.8180263,
+    "seen": 1794181586.8804653,
+    "ast_hash": "00646d2dd1708c1a68f257d2a5cb423d",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Panels/SceneSettings.h": {
+    "mtime": 1794249583.3311408,
+    "seen": 1794249818.3051937,
+    "ast_hash": "e819a0efcf2de02f28146413b5a3440e",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/EditorSelectionRenderer.h": {
+    "mtime": 1794168699.6941092,
+    "seen": 1794181586.8804653,
+    "ast_hash": "9c9f97d4c33f9f2849d6b67c60f853cd",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/EditorSkybox.h": {
+    "mtime": 1794154916.1771154,
+    "seen": 1794181586.8804653,
+    "ast_hash": "b7268858ba53d8676ffeb78dd2e115dc",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/MeshPreviewCache.h": {
+    "mtime": 1794253078.944577,
+    "seen": 1794253560.715534,
+    "ast_hash": "c97911469950911173aaa90fc8d2bcd0",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/SkyboxComponent.h": {
+    "mtime": 1794154916.041384,
+    "seen": 1794181586.8804653,
+    "ast_hash": "8d17557b76682c20f275e78d85b846bc",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/TransformGizmo.h": {
+    "mtime": 1794131594.1894734,
+    "seen": 1794181586.8804653,
+    "ast_hash": "c74076aeffa476f8231d51866744e418",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Settings/EditorEntityState.h": {
+    "mtime": 1794233445.080074,
+    "seen": 1794233913.4437037,
+    "ast_hash": "d8e283b41dda6a25d59d69c4eb599168",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Settings/EditorHistory.h": {
+    "mtime": 1794153459.1431043,
+    "seen": 1794181586.8804653,
+    "ast_hash": "74df8aab518257435cf5dea4f25abacc",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Settings/EditorSceneState.h": {
+    "mtime": 1794153458.8709848,
+    "seen": 1794181586.8804653,
+    "ast_hash": "e70f95b51cf365f74fa8de2563e1027f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Settings/EditorSettings.h": {
+    "mtime": 1794179388.6122313,
+    "seen": 1794181586.8804653,
+    "ast_hash": "0cf1c0c8434350b03fbc6462d41374f3",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Systems/Systems.h": {
+    "mtime": 1789995572.1023796,
+    "seen": 1794181586.8804653,
+    "ast_hash": "a4e0a662b2bb3d3ce7d5d8e35f8f2479",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Systems/SystemsEditor.h": {
+    "mtime": 1789995572.1023796,
+    "seen": 1794181586.8804653,
+    "ast_hash": "7fff4b7cefdadc192558d2ed471cc534",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorAddMenu.h": {
+    "mtime": 1794154915.8998046,
+    "seen": 1794181586.8804653,
+    "ast_hash": "5c533116dcf41e5d031e8fead0bbbaa3",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorComponentButton.h": {
+    "mtime": 1794171154.7117121,
+    "seen": 1794181586.8804653,
+    "ast_hash": "5b620c8502eef38abe02ffbd6cfc24b8",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorMenuPopup.h": {
+    "mtime": 1794149435.2550125,
+    "seen": 1794181586.8804653,
+    "ast_hash": "87a0ced20dfd24094d8c965991a9d92b",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorTitleBar.h": {
+    "mtime": 1794150935.9335606,
+    "seen": 1794181586.8804653,
+    "ast_hash": "628d954b483ddf567e4b51767cd3bcd9",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorToolbar.h": {
+    "mtime": 1794167170.9292274,
+    "seen": 1794181586.8804653,
+    "ast_hash": "387d0538e366323ee9793e169dd2afdf",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorWidgets.h": {
+    "mtime": 1794232232.1141686,
+    "seen": 1794232984.0811973,
+    "ast_hash": "be7a7b98365287e15d85639c849e3eff",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorWindowButton.h": {
+    "mtime": 1794149124.3063314,
+    "seen": 1794181586.8804653,
+    "ast_hash": "9ddcf617563fa4b4b2f6f4dc62599294",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Workspace/EditorDockArea.h": {
+    "mtime": 1794135602.5080948,
+    "seen": 1794181586.8804653,
+    "ast_hash": "18b23c76acf309864988a1aaa65265e7",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Workspace/EditorDockLayout.h": {
+    "mtime": 1794167596.0444448,
+    "seen": 1794181586.8804653,
+    "ast_hash": "1bc0a9f53ec8db744aee9cbc62724d19",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Workspace/EditorFloatingWindow.h": {
+    "mtime": 1794249582.8583374,
+    "seen": 1794249818.3051937,
+    "ast_hash": "c8ebb545a02c4b4701ffc80f8f6882ea",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Workspace/EditorTabStrip.h": {
+    "mtime": 1794231682.7633696,
+    "seen": 1794231803.131238,
+    "ast_hash": "7be65cc61c3856fa23eb4f0789f8298c",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Workspace/EditorWorkspace.h": {
+    "mtime": 1794249582.987317,
+    "seen": 1794249818.3051937,
+    "ast_hash": "025c1088553bbf8749aacb3d1ef843d4",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Core/Nuclear.Editor.cpp": {
+    "mtime": 1794149124.3114889,
+    "seen": 1794181586.8804653,
+    "ast_hash": "d59f93039344340977479fddbc600264",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Core/NuclearEditor.cpp": {
+    "mtime": 1794132861.699298,
+    "seen": 1794181586.8804653,
+    "ast_hash": "bf11f2b2b502cc10613213ca7fd8d033",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Core/Project.cpp": {
+    "mtime": 1794235622.902716,
+    "seen": 1794236092.7299943,
+    "ast_hash": "474ba45e6486336d926acf1361cd1228",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Documents/AboutDocument.cpp": {
+    "mtime": 1794178534.7396448,
+    "seen": 1794181586.8804653,
+    "ast_hash": "48adb0ce1562f1bd1aa0b71ed4c9d83f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Documents/AssetDocument.cpp": {
+    "mtime": 1794252975.3462062,
+    "seen": 1794253560.715534,
+    "ast_hash": "57f5477e068bbad18e5260e6656efd58",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Documents/EditorSettingsDocument.cpp": {
+    "mtime": 1794249583.5413096,
+    "seen": 1794249818.3051937,
+    "ast_hash": "551dc988225343855bd570bdcb3db731",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Panels/AssetLibraryViewer.cpp": {
+    "mtime": 1794253467.321512,
+    "seen": 1794253560.715534,
+    "ast_hash": "5fc41d10e0f958a60d0de9f1b7fde170",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Panels/EditorUI.cpp": {
+    "mtime": 1794252261.574232,
+    "seen": 1794252305.2451935,
+    "ast_hash": "6c625e0c9be7278feadae538bf626c60",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Panels/EntityEditor.cpp": {
+    "mtime": 1794251257.7415798,
+    "seen": 1794251989.1075392,
+    "ast_hash": "c811af73a5ed64acd04cc9a864f2930f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Panels/GameViewPort.cpp": {
+    "mtime": 1794168921.1432288,
+    "seen": 1794181586.8804653,
+    "ast_hash": "e966c251d7e65c14f594bcc3940d0cb9",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Panels/LoggerView.cpp": {
+    "mtime": 1794181107.7167838,
+    "seen": 1794181586.8804653,
+    "ast_hash": "87d08fd9dfb914fc7234f22307d89eb7",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Panels/SceneSettings.cpp": {
+    "mtime": 1794249583.4009888,
+    "seen": 1794249818.3051937,
+    "ast_hash": "956075d8d60dcf72ea058a7cb9af04d7",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/EditorSelectionRenderer.cpp": {
+    "mtime": 1794169091.9509401,
+    "seen": 1794181586.8804653,
+    "ast_hash": "a876ce9e3a2b2f29b23f51435546857b",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/EditorSkybox.cpp": {
+    "mtime": 1794155196.6826103,
+    "seen": 1794181586.8804653,
+    "ast_hash": "bc1a4dc363db9f47975273380e15fe55",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/MeshPreviewCache.cpp": {
+    "mtime": 1794253079.0152793,
+    "seen": 1794253560.715534,
+    "ast_hash": "732762b2f2f56f1539a5e5dd46aaa25f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/SkyboxComponent.cpp": {
+    "mtime": 1794154916.1092775,
+    "seen": 1794181586.8804653,
+    "ast_hash": "5ed268f50bef4de706c95cb45b78de72",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/TransformGizmo.cpp": {
+    "mtime": 1794131594.2543337,
+    "seen": 1794181586.8804653,
+    "ast_hash": "0a780568a26614aadf04e6bfedc617b8",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Settings/EditorEntityState.cpp": {
+    "mtime": 1794233445.1433966,
+    "seen": 1794233913.4437037,
+    "ast_hash": "0bd8561ac7d1824e7892fbde149dfe50",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Settings/EditorHistory.cpp": {
+    "mtime": 1794153459.2099762,
+    "seen": 1794181586.8804653,
+    "ast_hash": "67297d30ccde064682ffe4bc87a77c9f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Settings/EditorSceneState.cpp": {
+    "mtime": 1794153458.9435165,
+    "seen": 1794181586.8804653,
+    "ast_hash": "d467bae7a3cba5a1843818913203ebf1",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Settings/EditorSettings.cpp": {
+    "mtime": 1794179398.6041503,
+    "seen": 1794181586.8804653,
+    "ast_hash": "a74915df34e9466bcc2a6adc2f4d3d8a",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorAddMenu.cpp": {
+    "mtime": 1794154968.3192034,
+    "seen": 1794181586.8804653,
+    "ast_hash": "4fc22fbf64301021d3ec49bf089a919d",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorComponentButton.cpp": {
+    "mtime": 1794171154.778717,
+    "seen": 1794181586.8804653,
+    "ast_hash": "a851ae9ea7573fe5bc09484bb4404082",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorMenuPopup.cpp": {
+    "mtime": 1794149460.9351375,
+    "seen": 1794181586.8804653,
+    "ast_hash": "73a0afa82d8572027ed0718d36749611",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorTitleBar.cpp": {
+    "mtime": 1794150936.004878,
+    "seen": 1794181586.8804653,
+    "ast_hash": "dd4897d090ee5135eb8a39a67083568c",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorToolbar.cpp": {
+    "mtime": 1794167170.9922502,
+    "seen": 1794181586.8804653,
+    "ast_hash": "986808ee3b8fd1fc97766190996a2053",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorWidgets.cpp": {
+    "mtime": 1794253467.3725805,
+    "seen": 1794253560.715534,
+    "ast_hash": "c44604230df34955f68bcf48425b6abc",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorWindowButton.cpp": {
+    "mtime": 1794149124.3109753,
+    "seen": 1794181586.8804653,
+    "ast_hash": "1c6740f84b5f7428cd3bf92d98605443",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Workspace/EditorDockArea.cpp": {
+    "mtime": 1794135602.5728598,
+    "seen": 1794181586.8804653,
+    "ast_hash": "dde49d32fa4d21481059734094bcc8e7",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Workspace/EditorDockLayout.cpp": {
+    "mtime": 1794167595.982159,
+    "seen": 1794181586.8804653,
+    "ast_hash": "bb091dbd7ffbc866b4eca5222e21bdb0",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Workspace/EditorFloatingWindow.cpp": {
+    "mtime": 1794249582.921854,
+    "seen": 1794249818.3051937,
+    "ast_hash": "6f34ecd0155d6dc5b5ea4a124d2d701a",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Workspace/EditorTabStrip.cpp": {
+    "mtime": 1794231682.834131,
+    "seen": 1794231803.131238,
+    "ast_hash": "e9fa52623cd26722fe53dac6bd2e9790",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Workspace/EditorWorkspace.cpp": {
+    "mtime": 1794249583.0572374,
+    "seen": 1794249818.3051937,
+    "ast_hash": "0e9f1e8b7ad6928dca1a97d715dc1492",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorAssetItem.h": {
+    "mtime": 1794229692.2952347,
+    "seen": 1794230024.1063437,
+    "ast_hash": "22c4e5e62c1de40913baaf4265c3bbf2",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorAssetItem.cpp": {
+    "mtime": 1794229692.3587086,
+    "seen": 1794230024.1063437,
+    "ast_hash": "f041a8cfd09b4c0d6445806e479d1a68",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/MeshPreviewTests.cpp": {
+    "mtime": 1794230759.81807,
+    "seen": 1794230865.4138536,
+    "ast_hash": "22604915f0139773d42d3b8ce87a3e44",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/MeshPreviewTests.h": {
+    "mtime": 1794230664.3291056,
+    "seen": 1794230865.4138536,
+    "ast_hash": "9c158467d4c887ae799c0682adfebe70",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/MeshPreviewScene.h": {
+    "mtime": 1794252928.5147011,
+    "seen": 1794253560.715534,
+    "ast_hash": "e22233b9ccff597fca90271979e0876e",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/MeshPreviewViewport.h": {
+    "mtime": 1794253349.7149527,
+    "seen": 1794253560.715534,
+    "ast_hash": "538535b731a3ffc24932eb6166fe6716",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/MeshPreviewScene.cpp": {
+    "mtime": 1794253031.0273468,
+    "seen": 1794253560.715534,
+    "ast_hash": "7ce41491f4ea37d351393e35c40fabf3",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/MeshPreviewViewport.cpp": {
+    "mtime": 1794252975.2674742,
+    "seen": 1794253560.715534,
+    "ast_hash": "201d75cfecd2314a4084db13fc572587",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/AssetDragTests.cpp": {
+    "mtime": 1794232840.9676478,
+    "seen": 1794232984.0811973,
+    "ast_hash": "7c32bfe0c2a3b5a8ff840d2b1b8f9a5b",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/AssetDragTests.h": {
+    "mtime": 1794232553.509024,
+    "seen": 1794232984.0811973,
+    "ast_hash": "5c1a2ee889efc243c6327c3c2d4efd26",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/MeshPlacementPreview.h": {
+    "mtime": 1794232840.8504088,
+    "seen": 1794232984.0811973,
+    "ast_hash": "fdbf8b55e115278656401deee3f8370f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorAssetButton.h": {
+    "mtime": 1794232231.9769485,
+    "seen": 1794232984.0811973,
+    "ast_hash": "6155d15ae1f6718a1ee75bd998c20688",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/MeshPlacementPreview.cpp": {
+    "mtime": 1794232924.190057,
+    "seen": 1794232984.0811973,
+    "ast_hash": "1cc30c701702aec4e71f17af517dc706",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorAssetButton.cpp": {
+    "mtime": 1794232954.8760183,
+    "seen": 1794232984.0811973,
+    "ast_hash": "c35409a7a3104517fa3021948beea6ef",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/HierarchyMenuTests.cpp": {
+    "mtime": 1794233894.2373662,
+    "seen": 1794233913.4437037,
+    "ast_hash": "661a1e3c7f18540b124c79cc4c276daa",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/HierarchyMenuTests.h": {
+    "mtime": 1794233735.2420304,
+    "seen": 1794233913.4437037,
+    "ast_hash": "b8b7f7b56a616ab950bc13961b8c25f6",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorHierarchyRow.h": {
+    "mtime": 1794233500.0067074,
+    "seen": 1794233913.4437037,
+    "ast_hash": "13c9fecfa0fa8052ce12dd6df4f85fcd",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorHierarchyRow.cpp": {
+    "mtime": 1794233735.1724174,
+    "seen": 1794233913.4437037,
+    "ast_hash": "80ae93018207608adad3c63aaade7dba",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/MeshMaterialImportTests.cpp": {
+    "mtime": 1794253151.501365,
+    "seen": 1794253560.715534,
+    "ast_hash": "2b8f0a98a401a147a16e2f429ac0a79e",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/MeshMaterialImportTests.h": {
+    "mtime": 1794234816.2432299,
+    "seen": 1794235046.1829798,
+    "ast_hash": "5b7ba01d0be2f58eb1b32d77f4ebda62",
+    "semantic_hash": ""
+  },
+  "AIGuides/Rendering.md": {
+    "mtime": 1794253349.9745598,
+    "seen": 1794253698.0994234,
+    "ast_hash": "",
+    "semantic_hash": "1318c2e5b501e7eef40005fbea64637e"
+  },
+  "Nuclear.Editor/Tests/ColorPickerTests.cpp": {
+    "mtime": 1794249667.6315987,
+    "seen": 1794249818.3051937,
+    "ast_hash": "7eb7dd4931c4f3f569758018517cbdda",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/ColorPickerTests.h": {
+    "mtime": 1794249032.595205,
+    "seen": 1794249284.510015,
+    "ast_hash": "3bfde24cfdf741118a8e3a702d08d84e",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorColorPicker.h": {
+    "mtime": 1794248919.2468286,
+    "seen": 1794249284.510015,
+    "ast_hash": "920fc7ddaf51431736667556f18b2787",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorColorWheel.h": {
+    "mtime": 1794248878.2839782,
+    "seen": 1794249284.510015,
+    "ast_hash": "1c38e1e95c4956e4e97b78e395e58713",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorColorPicker.cpp": {
+    "mtime": 1794248919.3170195,
+    "seen": 1794249284.510015,
+    "ast_hash": "2496fc3e37bca68ebf56f41dc3e1683f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorColorWheel.cpp": {
+    "mtime": 1794249251.2943664,
+    "seen": 1794249284.510015,
+    "ast_hash": "f281d321f2732ab4d1172a6b3673710b",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorColorProperty.h": {
+    "mtime": 1794249692.3808424,
+    "seen": 1794249818.3051937,
+    "ast_hash": "6ea2ba96177a25d4526f019d4388e876",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Workspace/EditorColorPickerWindow.h": {
+    "mtime": 1794249529.192662,
+    "seen": 1794249818.3051937,
+    "ast_hash": "d20bef242c3258554d9767438f5d11ed",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorColorProperty.cpp": {
+    "mtime": 1794249583.127528,
+    "seen": 1794249818.3051937,
+    "ast_hash": "1087b2256cddde0791d3b6cc70bfd9f7",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Workspace/EditorColorPickerWindow.cpp": {
+    "mtime": 1794249605.157694,
+    "seen": 1794249818.3051937,
+    "ast_hash": "13933a29f1d29e67807438483b0459b5",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/AssetPropertyTests.cpp": {
+    "mtime": 1794253151.5725057,
+    "seen": 1794253560.715534,
+    "ast_hash": "7591c2b10d2ca566694650fcbb164a8a",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/AssetPropertyTests.h": {
+    "mtime": 1794251524.9576035,
+    "seen": 1794251989.1075392,
+    "ast_hash": "e985b4f93d4578f208da13fc85dee50f",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorAssetPicker.h": {
+    "mtime": 1794252261.4365828,
+    "seen": 1794252305.2451935,
+    "ast_hash": "1e500b10666d2006343c32bb07d68d58",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/EditorAssetProperty.h": {
+    "mtime": 1794251154.6210208,
+    "seen": 1794251989.1075392,
+    "ast_hash": "f4d4853754c425813284880ee8a8c667",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorAssetPicker.cpp": {
+    "mtime": 1794252261.5032315,
+    "seen": 1794252305.2451935,
+    "ast_hash": "0a1bb9bdda401a023c23d1b18c37c0a6",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/EditorAssetProperty.cpp": {
+    "mtime": 1794251154.758103,
+    "seen": 1794251989.1075392,
+    "ast_hash": "6c7e76057ad711af39e85b0ff92e59eb",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/AssetViewerTests.cpp": {
+    "mtime": 1794253383.9277146,
+    "seen": 1794253560.715534,
+    "ast_hash": "44264f987921b4865c0a296b06495cef",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/Tests/AssetViewerTests.h": {
+    "mtime": 1794253256.3393896,
+    "seen": 1794253560.715534,
+    "ast_hash": "774a5cf6fa50c8e8661ea79a6dbe6c31",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Rendering/MaterialPreviewRenderer.h": {
+    "mtime": 1794252895.2395272,
+    "seen": 1794253560.715534,
+    "ast_hash": "479da0075e48b35fe7be1f556a62f945",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/AssetViewerLayout.h": {
+    "mtime": 1794252894.9843776,
+    "seen": 1794253560.715534,
+    "ast_hash": "a401fab11d85247efd14eb17404e2150",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/include/Widgets/TexturePreviewViewport.h": {
+    "mtime": 1794252895.113016,
+    "seen": 1794253560.715534,
+    "ast_hash": "dad2d2474ad0be2ab6b13e3886d2d3d9",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Rendering/MaterialPreviewRenderer.cpp": {
+    "mtime": 1794253151.437696,
+    "seen": 1794253560.715534,
+    "ast_hash": "cbd6d5981900d0305f5ee4b9519e26df",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/AssetViewerLayout.cpp": {
+    "mtime": 1794252975.2040591,
+    "seen": 1794253560.715534,
+    "ast_hash": "ca61bf5d08477b8cfd2e2700ba153556",
+    "semantic_hash": ""
+  },
+  "Nuclear.Editor/source/Widgets/TexturePreviewViewport.cpp": {
+    "mtime": 1794252895.1761537,
+    "seen": 1794253560.715534,
+    "ast_hash": "07fc861dd437ccca82887ec50fda76a2",
     "semantic_hash": ""
   }
 }

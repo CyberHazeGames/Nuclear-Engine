@@ -2,6 +2,8 @@
 #include <NuclearEditor.h>
 #include <GameViewPort.h>
 #include <AssetDocument.h>
+#include <EditorAssetItem.h>
+#include <EditorMenuPopup.h>
 #include <EditorSettings.h>
 #include <EditorSettingsDocument.h>
 #include <Nuclear.Platform/Platform.h>
@@ -227,7 +229,7 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Action(editor, "Materials");
 		frame();
-		Action(editor, "Open / Editor / Default material");
+		Action(editor, "Editor / Default material");
 		frame();
 		Check(documents.GetTabs().size() == 4, "Material details open beside texture, mesh and viewport tabs");
 		const auto materialId = documents.GetActive();
@@ -297,7 +299,7 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Action(editor, "Materials");
 		frame();
-		Action(editor, "Open / Unnamed Material");
+		Action(editor, "Unnamed Material");
 		frame();
 		Check(titleOf(materialId) == "Unnamed Material" && documents.GetTabs().size() == 4,
 			"Unnamed material titles stay nonempty without creating duplicate documents");
@@ -615,6 +617,99 @@ namespace Nuclear::Editor::Tests
 		Check(EditorSettings::Get().GetVSync(), "Toggling VSync checkbox again re-enables VSync");
 		workspace->Close("editor-settings");
 		frame();
+
+		workspace->Show("viewport");
+		frame();
+		Action(editor, "Meshes");
+		frame();
+		auto rightClickAsset = [&](const std::string& title) {
+			auto* label = Find<TextBlock>([&](const auto& text) {
+				if (!text.IsVisible() || text.GetText() != title) return false;
+				for (auto* parent = text.GetParent(); parent; parent = parent->GetParent())
+					if (dynamic_cast<EditorAssetItem*>(parent)) return true;
+				return false;
+			});
+			Check(label != nullptr, "Context target is visible");
+			auto* item = label->GetParent();
+			while (item && !dynamic_cast<EditorAssetItem*>(item)) item = item->GetParent();
+			Check(item != nullptr, "Asset label belongs to a context-menu card");
+			auto& context = *item->GetContext();
+			for (auto* parent = item->GetParent(); parent; parent = parent->GetParent())
+				if (auto* scroll = dynamic_cast<ScrollBox*>(parent)) scroll->ScrollIntoView(*item);
+			context.Layout();
+			const auto bounds = label->GetBounds();
+			Platform::Event event;
+			event.mType = Platform::EventType::MouseButton;
+			event.mButton = MOUSE_BUTTON_RIGHT;
+			event.mMouseX = int((bounds.x + bounds.Width / 2) * context.GetScale());
+			event.mMouseY = int((bounds.y + bounds.Height / 2) * context.GetScale());
+			event.mPressed = true;
+			context.ProcessEvent(event);
+			event.mPressed = false;
+			context.ProcessEvent(event);
+			context.Layout();
+			Check(Find<EditorMenuPopup>([](const auto& popup) { return popup.IsVisible(); }, context) != nullptr,
+				"Right-click opens an asset popup without opening a document");
+		};
+		rightClickAsset("editorfixtures_triangle");
+		Check(documents.GetActive() == "viewport", "Right-click leaves the active document unchanged");
+		auto meshInstances = [meshAsset]() {
+			size_t count = 0;
+			for (auto entity : Core::Scene::Get().GetRegistry().view<Components::MeshComponent>())
+				if (Core::Scene::Get().GetRegistry().get<Components::MeshComponent>(entity).GetMesh() == meshAsset) ++count;
+			return count;
+		};
+		const auto originalInstances = meshInstances();
+		Action(editor, "Add to scene");
+		frame();
+		Check(meshInstances() == originalInstances + 1, "Context action instantiates the clicked mesh");
+		Check(Find<EditorMenuPopup>([](const auto&) { return true; }) == nullptr, "Executing a context command closes the menu");
+		rightClickAsset("editorfixtures_triangle");
+		Action(editor, "Rename");
+		frame();
+		auto* renameHeading = Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "Rename asset"; });
+		Check(renameHeading != nullptr, "Rename form has a heading");
+		auto* renameInput = Find<TextBox>([&](const auto& input) {
+			return input.GetParent() == renameHeading->GetParent();
+		});
+		Check(renameInput != nullptr, "Rename presents an editable asset name");
+		renameInput->OnCommitted("   ");
+		frame();
+		Check(meshAsset->GetName() == "editorfixtures_triangle", "Blank asset names are rejected");
+		renameHeading = Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "Rename asset"; });
+		Check(renameHeading != nullptr, "Invalid rename preserves the form heading");
+		renameInput = Find<TextBox>([&](const auto& input) {
+			return input.GetParent() == renameHeading->GetParent();
+		});
+		Check(renameInput != nullptr, "Invalid rename keeps the form open");
+		renameInput->OnCommitted(" Renamed triangle ");
+		frame();
+		Check(meshAsset->GetName() == "Renamed triangle" && titleOf(meshId) == "Renamed triangle",
+			"Rename trims names and updates the existing document caption");
+		rightClickAsset("Renamed triangle");
+		Platform::Event escape;
+		escape.mType = Platform::EventType::Key;
+		escape.mKey = Platform::Input::KEYCODE_ESCAPE;
+		escape.mPressed = true;
+		Main().ProcessEvent(escape);
+		Check(Find<EditorMenuPopup>([](const auto&) { return true; }) == nullptr, "Escape dismisses the asset menu");
+		rightClickAsset("Renamed triangle");
+		Action(editor, "Delete");
+		frame();
+		Check(Assets::AssetLibrary::Get().mImportedMeshes.GetAsset(meshAsset->GetUUID()) == nullptr,
+			"Delete removes the mesh from session lookup");
+		Check(meshAsset->GetState() == Assets::IAsset::State::Created && !meshAsset->mSubMeshes.empty(),
+			"Deleted mesh resources remain alive for existing scene and history references");
+		Check(meshInstances() == originalInstances + 1, "Library deletion preserves existing mesh instances");
+		Action(editor, "Textures");
+		frame();
+		rightClickAsset("editorfixtures_preview");
+		auto* addLabel = Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "Add to scene"; });
+		Check(addLabel && !addLabel->IsEnabled(), "Non-mesh assets disable Add to scene");
+		Action(editor, "Delete");
+		frame();
+		Check(Assets::AssetLibrary::Get().mImportedTextures.GetAsset(previewTexture->GetUUID()) == nullptr &&
+			previewTexture->GetTextureView(), "Deleting a texture preserves borrowed preview resources");
 
 		std::cout << "Workspace document tabs, docking, tear-off, native input/render/resize, redock and recovery passed.\n";
 	}

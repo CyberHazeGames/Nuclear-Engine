@@ -124,7 +124,22 @@
     <!-- Widgets -->
     <ClCompile Include="source\Widgets\EditorAddMenu.cpp" />
     <ClCompile Include="source\Widgets\EditorComponentButton.cpp" />
+    <ClCompile Include="source\Widgets\EditorColorPicker.cpp" />
+    <ClCompile Include="source\Widgets\EditorColorProperty.cpp" />
+    <ClCompile Include="source\Workspace\EditorColorPickerWindow.cpp" />
+    <ClCompile Include="source\Widgets\EditorColorWheel.cpp" />
     <ClCompile Include="source\Widgets\EditorMenuPopup.cpp" />
+    <ClCompile Include="source\Widgets\EditorAssetProperty.cpp" />
+    <ClCompile Include="source\Widgets\EditorAssetPicker.cpp" />
+    <ClCompile Include="source\Widgets\EditorAssetItem.cpp" />
+    <ClCompile Include="source\Widgets\EditorHierarchyRow.cpp" />
+    <ClCompile Include="source\Rendering\MeshPlacementPreview.cpp" />
+    <ClCompile Include="source\Widgets\EditorAssetButton.cpp" />
+    <ClCompile Include="source\Rendering\MeshPreviewScene.cpp" />
+    <ClCompile Include="source\Rendering\MaterialPreviewRenderer.cpp" />
+    <ClCompile Include="source\Widgets\AssetViewerLayout.cpp" />
+    <ClCompile Include="source\Widgets\TexturePreviewViewport.cpp" />
+    <ClCompile Include="source\Widgets\MeshPreviewViewport.cpp" />
     <ClCompile Include="source\Widgets\EditorTitleBar.cpp" />
     <ClCompile Include="source\Widgets\EditorToolbar.cpp" />
     <ClCompile Include="source\Widgets\EditorWidgets.cpp" />
@@ -170,7 +185,22 @@
     <!-- Widgets -->
     <ClInclude Include="include\Widgets\EditorAddMenu.h" />
     <ClInclude Include="include\Widgets\EditorComponentButton.h" />
+    <ClInclude Include="include\Widgets\EditorColorPicker.h" />
+    <ClInclude Include="include\Widgets\EditorColorProperty.h" />
+    <ClInclude Include="include\Workspace\EditorColorPickerWindow.h" />
+    <ClInclude Include="include\Widgets\EditorColorWheel.h" />
     <ClInclude Include="include\Widgets\EditorMenuPopup.h" />
+    <ClInclude Include="include\Widgets\EditorAssetProperty.h" />
+    <ClInclude Include="include\Widgets\EditorAssetPicker.h" />
+    <ClInclude Include="include\Widgets\EditorAssetItem.h" />
+    <ClInclude Include="include\Widgets\EditorHierarchyRow.h" />
+    <ClInclude Include="include\Rendering\MeshPlacementPreview.h" />
+    <ClInclude Include="include\Widgets\EditorAssetButton.h" />
+    <ClInclude Include="include\Rendering\MeshPreviewScene.h" />
+    <ClInclude Include="include\Rendering\MaterialPreviewRenderer.h" />
+    <ClInclude Include="include\Widgets\AssetViewerLayout.h" />
+    <ClInclude Include="include\Widgets\TexturePreviewViewport.h" />
+    <ClInclude Include="include\Widgets\MeshPreviewViewport.h" />
     <ClInclude Include="include\Widgets\EditorTitleBar.h" />
     <ClInclude Include="include\Widgets\EditorToolbar.h" />
     <ClInclude Include="include\Widgets\EditorWidgets.h" />

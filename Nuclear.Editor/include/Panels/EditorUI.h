@@ -17,6 +17,8 @@ namespace Nuclear::Editor
 	class SceneSettings;
 	class EditorSkybox;
 	class EditorSelectionRenderer;
+	class MeshPreviewViewport;
+	class MeshPlacementPreview;
 	/// Retained editor workspace. Owns session tools; viewport context owns all widgets.
 	class EditorUI
 	{
@@ -33,6 +35,13 @@ namespace Nuclear::Editor
 	  private:
 		void BuildWorkspace();	 ///< Attaches the persistent shell and tool regions.
 		void RefreshHierarchy(); ///< Replaces hierarchy content outside dispatch.
+		void OpenHierarchyMenu(entt::entity entity, UI::UIContext& context, UI::Vec2 point); ///< Selects a live row and opens commands in its owning context.
+		void CloseHierarchyMenu(); ///< Dismisses through a still-live context, including after native-window removal.
+		UI::UIContext* GetHierarchyMenuContext() const; ///< Resolves the borrowed popup context against currently owned windows; null if gone.
+		void DeleteEntity(entt::entity entity); ///< Deletes a live authored entity as one history action; protects the preview camera.
+		void CopyEntity(entt::entity entity); ///< Stores a session snapshot without adding scene history.
+		void DuplicateEntity(entt::entity entity); ///< Creates a unique named copy from the current authored values.
+		void PasteEntity(const EditorEntityState& state); ///< Creates/selects a snapshot copy and records one undoable creation.
 		void RefreshInspector(); ///< Replaces inspector after selection/component changes.
 		void PickEntity(); ///< Applies a queued visible-mesh pick, synchronizing hierarchy and inspector without history edits.
 		void NewScene();		 ///< Resets renderer, selection and registry, then creates an editor camera.
@@ -42,15 +51,33 @@ namespace Nuclear::Editor
 		void CloseAddMenu(); ///< Safely dismisses the creation popup through the main context.
 		void RebuildRenderer();	  ///< Refreshes renderer light pointers and shader baking after structural
 								  ///< changes.
+		/// Assigns the editor PBR shader and missing-map defaults to a successfully imported mesh material.
+		/// Runs on the graphics thread after texture/mesh creation, preserving submesh texture-set indices.
+		void PrepareImportedMaterial(Assets::Mesh& mesh);
 		void UpdateDiagnostics(); ///< Samples completed profiler snapshots with explicit unavailable states.
 		void OpenAssetDocument(Assets::AssetType type, const Core::UUID& id); ///< Opens or activates a stable asset tab.
 		void ReplayHistory(bool redo); ///< Cancels live gestures, then replays one scene action.
+		void DragMesh(const Core::UUID& mesh, UI::UIContext& source, UI::Vec2 point, bool dropped);
+		///< Maps a captured asset drag between native contexts and queues viewport placement outside dispatch.
+		void UpdateMeshPlacement(); ///< Resolves depth/ground placement and commits one entity/history action on release.
+		void CancelMeshPlacement(); ///< Discards the transient ghost and any queued drop.
 		bool ProcessShortcut(const Platform::Event& event, UI::UIContext& context); ///< Tracks modifiers and consumes scene-history keys outside text input/modals.
 		Project& mProject;		  ///< Borrowed client-owned session model.
 		EntityEditor mInspector;  ///< Inspector builder.
 		EditorHistory mHistory; ///< Session scene history; cleared before scene replacement/shutdown.
+		std::optional<EditorEntityState> mCopiedEntity; ///< Session clipboard; cleared before scene replacement or asset shutdown.
+		UI::WidgetId mHierarchyMenu = 0; ///< Context-owned hierarchy popup identity, or zero while closed.
+		UI::UIContext* pHierarchyMenuContext = nullptr; ///< Borrowed identity; resolve against live windows before dereferencing.
+		entt::entity mHierarchyMenuEntity = entt::null; ///< Versioned command target, revalidated before execution.
 		std::array<bool, 4> mHistoryModifiers{}; ///< Left/right Ctrl and Shift; cleared on native focus changes.
 		AssetLibraryViewer mAssets; ///< Filesystem/library builder.
+		std::map<std::string, UI::TextBlock*> mAssetHeadings; ///< Borrowed document headings; workspace retains closed trees until Shutdown.
+		std::map<std::string, MeshPreviewViewport*> mMeshPreviews; ///< Borrowed mesh surfaces; document trees own GPU/input lifetime until Shutdown.
+		std::unique_ptr<MeshPlacementPreview> pMeshPlacement; ///< Owns transient ghost rendering and contact readback resources.
+		std::optional<UI::Vec2> mMeshPlacementPoint; ///< Latest logical point in the scene viewport's context.
+		UI::Rect mMeshPlacementBounds; ///< Target geometry when the latest pointer sample was converted.
+		UI::UIContext* pMeshPlacementContext = nullptr; ///< Borrowed target identity; compared with the current viewport context before use.
+		bool mMeshPlacementDropped = false; ///< Release queued for the next Update.
 		LoggerView mLogs;			///< Bounded file-log tail model.
 		std::unique_ptr<EditorWorkspace> pWorkspace; ///< Owns native windows and tab transfer commands.
 		std::unique_ptr<EditorSkybox> pSkybox; ///< Owns generated sky resources until Shutdown; components hold authoring data only.
@@ -65,6 +92,7 @@ namespace Nuclear::Editor
 			pRenderer;							 ///< Editor-owned renderer; never runs physics/scripts/audio.
 		Rendering::GeometryPass mGeometry;		 ///< Borrowed by pRenderer for this object's lifetime.
 		Assets::Shader* pShader = nullptr;		 ///< Library-owned preview shader.
+		Assets::Shader* pImportedShader = nullptr; ///< Library-owned static forward PBR shader for imported meshes.
 		Assets::Material* pMaterial = nullptr;	 ///< Library-owned preview primitive material.
 		entt::entity mSelected = entt::null;	 ///< Selected ECS handle; validated before editing.
 		entt::entity mCamera = entt::null;		 ///< Protected editor preview camera handle.

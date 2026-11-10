@@ -2,6 +2,7 @@
 #include <NuclearEditor.h>
 #include <SceneSettings.h>
 #include <EditorSceneState.h>
+#include <EditorColorProperty.h>
 #include <cmath>
 #include <stdexcept>
 
@@ -28,6 +29,12 @@ namespace Nuclear::Editor::Tests
 
 		void Send(NuclearEditor& editor, UIContext& context, Platform::Event event)
 		{
+			if (auto* chooser = editor.GetWorkspace()->GetColorPicker().GetWindow(); chooser && &chooser->GetContext() == &context)
+			{
+				event.pWindow = &chooser->GetWindow();
+				editor.OnAuxiliaryWindowEvent(event);
+				return;
+			}
 			if (&context == &UIModule::Get().GetContext())
 				context.ProcessEvent(event);
 			else
@@ -80,24 +87,37 @@ namespace Nuclear::Editor::Tests
 			Click(editor, *label->GetParent());
 		}
 
-		TextBox& Input(SceneSettings& panel, const std::string& title)
+		TextBox& Input(UIContext& context, const std::string& title)
 		{
-			auto* label = Find<TextBlock>(*panel.GetContext(), [&](const auto& label) {
+			auto* label = Find<TextBlock>(context, [&](const auto& label) {
 				return label.GetText() == title && label.IsVisible();
 			});
 			Check(label && label->GetParent(), "Scene settings property label exists");
 			// Stable IDs follow creation order: each property label is followed by its text field.
-			auto* input = Find<TextBox>(*panel.GetContext(), [label](const auto& input) {
+			auto* input = Find<TextBox>(context, [label](const auto& input) {
 				return input.GetParent() == label->GetParent() && input.GetId() > label->GetId();
 			});
 			Check(input != nullptr, "Scene settings label has a text field");
 			return *input;
 		}
+		TextBox& Input(SceneSettings& panel, const std::string& title) { return Input(*panel.GetContext(), title); }
 
 		void Edit(NuclearEditor& editor, SceneSettings& panel, const std::string& title, const std::string& text)
 		{
-			auto& input = Input(panel, title);
-			auto& context = *panel.GetContext();
+			auto& colors = editor.GetWorkspace()->GetColorPicker();
+			UIContext* inputContext = panel.GetContext();
+			if (title != "Scene name")
+			{
+				auto* property = Find<EditorColorProperty>(*inputContext, [](const auto& widget) { return widget.IsVisible(); });
+				Check(property != nullptr, "Scene clear color is a compact property");
+				Click(editor, *property);
+				editor.GetWorkspace()->Update();
+				Check(colors.GetWindow() != nullptr, "Scene color opens in its own native window");
+				colors.GetWindow()->GetWindow().Display(false);
+				inputContext = &colors.GetWindow()->GetContext();
+			}
+			auto& context = *inputContext;
+			auto& input = Input(context, title);
 			Click(editor, input);
 			Key(editor, context, Platform::Input::KEYCODE_LCTRL);
 			Key(editor, context, Platform::Input::KEYCODE_A);
@@ -111,6 +131,13 @@ namespace Nuclear::Editor::Tests
 			}
 			Key(editor, context, Platform::Input::KEYCODE_RETURN);
 			Key(editor, context, Platform::Input::KEYCODE_RETURN, false);
+			if (title != "Scene name")
+			{
+				auto* apply = Find<TextBlock>(context, [](const auto& label) { return label.GetText() == "Apply"; });
+				Check(apply != nullptr, "Color chooser provides Apply");
+				Click(editor, *apply->GetParent());
+				editor.GetWorkspace()->Update();
+			}
 		}
 
 		void CheckClearPixel()
