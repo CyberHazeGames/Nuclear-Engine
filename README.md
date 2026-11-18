@@ -7,9 +7,16 @@
   <a href="#Features">Features</a> |
   <a href="#Dependencies">Dependencies</a> |
   <a href="#RoadMap">RoadMap</a>
+</p>
 
 ## Preview
-For more examples, please see [Samples](https://github.com/Zone-organization/Nuclear-Engine/tree/master/Samples).
+
+The startup project opens with a cube, a directional light, and a skybox.
+
+![Nuclear Editor showing the selected startup cube against the default skybox, with the hierarchy, inspector, and asset browser visible.](docs/images/editor-startup.png)
+
+For more examples, see [Samples](Samples/).
+
 ![Sample2](Sample2.gif "Sample2 Demo Logo") 
 
 ## Features
