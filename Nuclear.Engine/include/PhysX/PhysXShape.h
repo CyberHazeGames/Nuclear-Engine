@@ -15,7 +15,7 @@ namespace Nuclear
 			~PhysXShape();
 
 
-			physx::PxShape* mPtr;
+			physx::PxShape* mPtr = nullptr; ///< Borrowed by component operations until the owning actor/shape is released.
 		};
 	}
 }

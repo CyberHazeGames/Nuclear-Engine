@@ -176,6 +176,7 @@ namespace Nuclear::Editor::Tests
 		workspace->Dock("inspector", EditorDockRegion::Right);
 		workspace->Show("viewport");
 		workspace->Close("scene-settings");
+		Action(editor, "New scene"); // Exercise the clear color in a map without a skybox.
 		frame();
 		Check(workspace->GetArea("scene-settings") == nullptr, "Closed Scene settings can be reopened from the menu");
 		Action(editor, "Window");

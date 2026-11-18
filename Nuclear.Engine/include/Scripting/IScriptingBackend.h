@@ -13,6 +13,8 @@ namespace Nuclear::Scripting
 		virtual bool IsValid() const = 0;
 		virtual void CallMethod(const std::string& method) = 0;
 		virtual void CallMethod(const std::string& method, float value) = 0;
+		/// Delivers a versioned entity ID to backends supporting contact callbacks.
+		virtual void CallEntityMethod(const std::string&, Uint32) {}
 	};
 
 	class IScriptClass

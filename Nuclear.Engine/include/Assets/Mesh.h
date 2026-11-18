@@ -87,9 +87,12 @@ namespace Nuclear {
 			static void CreateGrid(Mesh* model, float width = 10.0f, float depth = 10.0f, unsigned int m = 10, unsigned int n = 10);
 			static void CreateScreenQuad(Mesh* model);
 
+			/// Source files consumed by the model decoder and material importer, used when packaging a game.
+			std::vector<std::string> SourceFiles;
 			Material* GetImportedMaterial();
 			Animations* GetImportedAnimations();
 		protected:
+			friend class MeshCreateTask; // Finalizes optional clip ownership on the main thread.
 			friend class Importer;
 			friend class Loader;
 			friend class GraphicsEngine;

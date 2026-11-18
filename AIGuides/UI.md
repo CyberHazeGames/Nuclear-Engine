@@ -202,9 +202,12 @@ discarded. The editor creates an independent context/renderer per floating windo
 and shares the graphics device; UIModule still owns only the main viewport service.
 
 The existing font importer now preserves fractional advances, plane bounds, atlas
-UVs, ascender/line metrics, and pair kerning. The retained text shader samples its
-single-channel SDF atlas, with half of `fwidth` on each side of the contour for
-a one-pixel antialiasing band. Font creation checks upload success before setting
+UVs, ascender/line metrics, and pair kerning. The default retained UI font is
+generated at a minimum of 96 texels per em. The signed-distance field reserves
+two atlas texels plus one twelfth of an em for its distance range. The glyph shader
+averages coverage at 16 positions inside each physical pixel to preserve thin
+strokes and counters at small sizes and fractional scales. Brush quads keep their
+single texture sample. Font creation checks upload success before setting
 `Created`. `FontImportingDesc::Height` controls atlas scale, clamped to 8–256;
 the initial repertoire is ASCII. UTF-8 is decoded and validated, with unsupported
 codepoints replaced by `?`. Newlines, tabs, word wrapping, and oversized-word glyph
@@ -295,3 +298,7 @@ backends, a full Release engine build, physical input feel, or complex-script te
 The actual `Samples.exe --ui` entry point also reached rendering and completed
 client/module/window shutdown with exit code 0 after its engine window received a
 normal close message. This launch check used a hidden window.
+
+## Managed game menus
+
+[GameScreen](../Nuclear.ScriptCore/UI/GameScreen.cs) lets game scripts add focusable native buttons and dispatch activation callbacks during update. [ScreenDefinition](../Nuclear.ScriptCore/UI/ScreenDefinition.cs) accepts a title and caption/command pairs from a public script field. Twin Rooms supplies its title menu from the project file and builds the pause and key-rebinding menus in [RoomGame](../SamplesScripts/RoomGame.cs).

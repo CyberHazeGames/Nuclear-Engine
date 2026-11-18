@@ -12,5 +12,9 @@ namespace Nuclear::Scripting
 	{
 		if (IsValid() && !method.empty()) pObject->CallMethod(method, value);
 	}
+	void ScriptingObject::CallEntityMethod(const std::string& method, Uint32 entity)
+	{
+		if (IsValid()) pObject->CallEntityMethod(method, entity);
+	}
 	ScriptingClass* ScriptingObject::GetScriptingClass() { return pParent; }
 }

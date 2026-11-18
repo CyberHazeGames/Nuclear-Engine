@@ -14,6 +14,6 @@ namespace Nuclear::Editor
 		std::string Name; ///< Scene asset display name, owned by the snapshot.
 		Math::Vector4 ClearColor{.025f, .04f, .055f, 1.f}; ///< Linear RGBA values used to clear the preview target.
 	private:
-		Assets::Scene* pScene = nullptr; ///< Borrowed session asset identity; never owns or retains a camera pointer.
+		Core::UUID mSceneId; ///< Identifies the loaded map instance that owns these settings.
 	};
 }

@@ -102,3 +102,14 @@ client double-click press translation, work-area maximize bounds, restore dimens
 minimize, deferred close and callback cleanup. The Debug editor integration and
 hidden executable launch also passed; see [Editor.md](Editor.md#launch-and-validation).
 Physical input feel, automatic DPI transitions and a full Release engine remain unverified.
+
+## Editor file selection and child processes
+
+[FileDialog](../Nuclear.Platform/include/Nuclear.Platform/FileDialog.h) opens existing files and
+selects save destinations with extension and overwrite handling. [ChildProcess](../Nuclear.Platform/include/Nuclear.Platform/ChildProcess.h)
+starts a program with literal arguments and an independent working directory on Windows.
+The editor polls its game child's exit code and requests window closure for Stop.
+
+## Windows game controllers
+
+The Windows implementation of [Input](../Nuclear.Platform/include/Nuclear.Platform/Input.h) polls up to four XInput controllers. Scripts can read button and stick state through [Gamepad](../Nuclear.ScriptCore/Platform/Gamepad.cs) and combine keys and buttons through [InputActions](../Nuclear.ScriptCore/Platform/InputActions.cs). Twin Rooms uses the directional pad for movement and Start for pause. Physical controller behavior needs a hardware check.

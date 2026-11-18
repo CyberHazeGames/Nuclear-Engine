@@ -1,5 +1,6 @@
 #include "Components\CameraComponent.h"
 #include "Math/glm/gtc/matrix_inverse.hpp"
+#include <algorithm>
 
 namespace Nuclear
 {
@@ -73,6 +74,14 @@ namespace Nuclear
 
 		}
 		
+		void CameraComponent::SetOrientation(const Math::Quaternion& rotation)
+		{
+			const auto forward = rotation * Math::Vector3(0, 0, -1);
+			Yaw = Math::degrees(std::atan2(forward.z, forward.x));
+			Pitch = Math::degrees(std::asin(std::clamp(forward.y, -1.f, 1.f)));
+			WorldUp = rotation * Math::Vector3(0, 1, 0);
+		}
+
 		void CameraComponent::SetPosition(Math::Vector3 cameraposition)
 		{
 			Position = cameraposition;

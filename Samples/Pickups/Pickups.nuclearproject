@@ -1,0 +1,7 @@
+NuclearProject 3
+project "Three Pickups"
+assembly ""
+levels 0
+prefabs 0
+map "PickupRoom.NMap"
+end

@@ -58,6 +58,8 @@ cbuffer NEStatic_Camera : register(b0)
     //Needed for some objects (as skybox & 2D Sprites & etc)
     matrix View;
     matrix Projection;
+    float4 SurfaceTint;
+    float4 SurfacePBR;
 };
 #define MAX_BONES  100
 #define MAX_BONE_INFLUENCE 4

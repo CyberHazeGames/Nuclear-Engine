@@ -1,0 +1,20 @@
+NuclearMap 2
+prefabs 0
+startup "Atrium" 0.035 0.07 0.12 1 0
+entities 3
+entity "Player" "Atrium-0" ""
+transform 0 1 5 0 0 0 1 1 1 1
+mesh 0
+light 0
+components 1 1 1 -1 0 0 "" 1 "Samples.RoomGame" 0 "{\"PickupCount\":3}"
+entity "Light" "Atrium-1" ""
+transform 0 5 0 0 0 0 1 1 1 1
+mesh 0
+light 1 1 -0.4 -1 -0.3 1 1 1 1 0.09 0.032 0.97 0.96 1 1 50 90 0
+components 0 0 -1 -1 0 0 "" 0 "" 0 ""
+entity "Floor" "Atrium-2" ""
+transform 0 0 0 0 0 0 1 2 1 4
+mesh 1 "plane" "default" 1 1 1 1 1 1 -1 -1 -1 0.2
+light 0
+components 0 1 -1 -1 0 0 "" 0 "" 0 ""
+end

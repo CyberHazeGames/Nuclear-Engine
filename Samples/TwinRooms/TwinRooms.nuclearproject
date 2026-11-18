@@ -1,0 +1,10 @@
+NuclearProject 3
+project "Twin Rooms"
+assembly ""
+levels 2
+level "Gallery" "Gallery.NMap"
+level "Atrium" "Atrium.NMap"
+prefabs 1
+prefab "Coin" "Coin.nuclearprefab"
+map "Title.NMap"
+end

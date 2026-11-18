@@ -1,5 +1,6 @@
 #pragma once
 #include <NE_Common.h>
+#include <string>
 #include <Math/Math.h>
 namespace Nuclear
 {
@@ -13,6 +14,9 @@ namespace Nuclear
 		class NEAPI AudioSourceComponent
 		{
 		public:
+			/// Absolute clip source selected in the editor. Project documents store it relative to the project.
+			std::string ClipPath;
+
 			enum class State
 			{
 				Stopped = 0,

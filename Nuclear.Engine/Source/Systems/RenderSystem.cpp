@@ -24,9 +24,20 @@ namespace Nuclear
 		RenderSystem::RenderSystem()
 		{
 			mRenderData.pRenderer = this;
+			auto& registry = Core::Scene::Get().GetRegistry();
+			registry.on_construct<Components::LightComponent>().connect<&RenderSystem::InvalidateLights>(*this);
+			registry.on_destroy<Components::LightComponent>().connect<&RenderSystem::InvalidateLights>(*this);
 		}
 		RenderSystem::~RenderSystem()
 		{
+			auto& registry = Core::Scene::Get().GetRegistry();
+			registry.on_construct<Components::LightComponent>().disconnect<&RenderSystem::InvalidateLights>(*this);
+			registry.on_destroy<Components::LightComponent>().disconnect<&RenderSystem::InvalidateLights>(*this);
+		}
+
+		void RenderSystem::InvalidateLights()
+		{
+			mLightsChanged = true;
 		}
 
 		bool RenderSystem::NeedsBaking()
@@ -49,6 +60,8 @@ namespace Nuclear
 	
 		void RenderSystem::Bake(const RenderSystemBakingDesc& desc)
 		{								
+			mLastBake = desc;
+			mLightsChanged = false;
 			BakeLights();
 			mRenderToScreen = desc.mRenderToScreen;
 			Graphics::ShaderPipelineBakingDesc bakedesc;
@@ -132,6 +145,8 @@ namespace Nuclear
 		}
 		void RenderSystem::ResizeRTs(Uint32 RTWidth, Uint32 RTHeight)
 		{
+			mLastBake.RTWidth = RTWidth;
+			mLastBake.RTHeight = RTHeight;
 			Math::Vector2ui newsize(RTWidth, RTHeight);
 
 			for (auto pass : mRenderPasses)
@@ -168,9 +183,20 @@ namespace Nuclear
 
 		void RenderSystem::Update(ECS::TimeDelta dt)
 		{
+			Core::Scene::Get().UpdateTransforms();
 			//////////////////////////////////////////////////////////////////////////////////////////////
 			//Step 1: Update Entites
 			//////////////////////////////////////////////////////////////////////////////////////////////
+			if (mLightsChanged && HasbeenBakedBefore)
+			{
+				Bake(mLastBake);
+				auto meshes = Core::Scene::Get().GetRegistry().view<Components::MeshComponent>();
+				for (auto entity : meshes)
+				{
+					auto& mesh = meshes.get<Components::MeshComponent>(entity);
+					mesh.SetMaterial(mesh.GetMaterial());
+				}
+			}
 			UpdateLights();
 			bool hasdefpasss = false, hasshadowpass = false;
 			if (GetRenderPass<Rendering::DefferedPass>())
@@ -191,6 +217,7 @@ namespace Nuclear
 			for (auto entity : meshview)
 			{
 				auto& mesh = meshview.get<Components::MeshComponent>(entity);
+				mesh.AdvanceClip(dt);
 				mesh.SetRenderSystemFlags(hasdefpasss, hasshadowpass);
 				mesh.Update();
 			}
@@ -334,6 +361,9 @@ namespace Nuclear
 
 		void RenderSystem::BakeLights()
 		{
+			mRenderData.DirLights.clear();
+			mRenderData.PointLights.clear();
+			mRenderData.SpotLights.clear();
 			auto LightSourcesView = Core::Scene::Get().GetRegistry().view<Components::LightComponent>();
 
 			std::vector<Components::LightComponent*> DirLights_noShadows;

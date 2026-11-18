@@ -3,6 +3,8 @@
 #include "Assets\Shader.h"
 #include "Assets\Mesh.h"
 
+#include <Assets/Animations.h>
+#include <Animation/Animator.h>
 namespace Nuclear 
 {
 	namespace Components
@@ -126,8 +128,36 @@ namespace Nuclear
 				mDirty = true;
 			}
 		}
-		void MeshComponent::SetMesh(Assets::Mesh* mesh)
+        bool MeshComponent::PlayClip(int index, float seconds)
+        {
+            if (!std::isfinite(seconds) || seconds < 0) return false;
+            if (index < 0)
+            {
+                mOwnedAnimator.reset();
+                pAnimator = nullptr;
+            }
+            else
+            {
+                auto* clips = pMesh ? pMesh->GetImportedAnimations() : nullptr;
+                if (!clips || size_t(index) >= clips->mClips.size()) return false;
+                if (!mOwnedAnimator) mOwnedAnimator = std::make_shared<Animation::Animator>();
+                mOwnedAnimator->BlendTo(&clips->mClips[index], seconds);
+                pAnimator = mOwnedAnimator.get();
+            }
+            ClipIndex = index;
+            BlendSeconds = seconds;
+            mDirty = true;
+            return true;
+        }
+
+        void MeshComponent::AdvanceClip(float seconds)
+        {
+            if (mOwnedAnimator) mOwnedAnimator->UpdateAnimation(seconds);
+        }
+
+        void MeshComponent::SetMesh(Assets::Mesh* mesh)
 		{
+			if (mesh != pMesh && mOwnedAnimator) PlayClip(-1, 0.f);
 			pMesh = mesh;
 			mDirty = true;
 		}

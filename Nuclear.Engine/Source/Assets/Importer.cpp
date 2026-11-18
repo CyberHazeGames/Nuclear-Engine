@@ -388,7 +388,9 @@ namespace Nuclear
 			TightAtlasPacker packer;
 			packer.setDimensionsConstraint(TightAtlasPacker::DimensionsConstraint::SQUARE);
 			packer.setMinimumScale(std::clamp<double>(desc.Height, 8.0, 256.0));
+			// Leave enough distance on each side of the outline for small labels to cover a full screen pixel.
 			packer.setPixelRange(2.0);
+			packer.setUnitRange(1.0 / 12.0);
 			packer.setMiterLimit(1.0);
 			if (packer.pack(glyphs.data(), static_cast<int>(glyphs.size())) != 0)
 			{
@@ -563,7 +565,7 @@ namespace Nuclear
 			{
 				return AssetType::Material;
 			}
-			else if (extension == ".NEScene")
+			else if (extension == ".NEScene" || _stricmp(extension.c_str(), ".NMap") == 0)
 			{
 				return AssetType::Scene;
 			}

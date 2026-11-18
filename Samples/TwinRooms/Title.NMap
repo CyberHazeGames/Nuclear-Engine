@@ -1,0 +1,10 @@
+NuclearMap 2
+prefabs 0
+startup "Title" 0.035 0.07 0.12 1 0
+entities 1
+entity "Player" "Title-0" ""
+transform 0 1 5 0 0 0 1 1 1 1
+mesh 0
+light 0
+components 1 0 -1 -1 0 0 "" 1 "Samples.RoomGame" 0 "{\"MainMenu\":{\"Title\":\"Twin Rooms\",\"Buttons\":[[\"New game\",\"start\"],[\"Continue\",\"continue\"]]}}"
+end

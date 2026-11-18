@@ -5,8 +5,8 @@
 
 namespace Nuclear::Platform
 {
-	std::filesystem::path FileDialog::OpenFile(Window& owner, const std::string& title,
-		const std::string& patterns, const std::filesystem::path& directory, std::string& error)
+	static std::filesystem::path SelectFile(Window& owner, const std::string& title,
+		const std::string& patterns, const std::filesystem::path& directory, const std::string& extension, bool save, std::string& error)
 	{
 		error.clear();
 		const auto handle = static_cast<HWND>(owner.GetNativeHandle());
@@ -18,7 +18,7 @@ namespace Nuclear::Platform
 
 		const auto nativeTitle = Detail::ToWide(title);
 		const auto nativeDirectory = directory.wstring();
-		std::wstring filter = L"Supported assets";
+		std::wstring filter = L"Supported files";
 		filter.push_back(L'\0');
 		filter += Detail::ToWide(patterns);
 		filter.push_back(L'\0');
@@ -37,13 +37,29 @@ namespace Nuclear::Platform
 		options.lpstrInitialDir = nativeDirectory.c_str();
 		options.lpstrFile = filename.data();
 		options.nMaxFile = static_cast<DWORD>(filename.size());
-		options.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
-		if (GetOpenFileNameW(&options))
+		const auto defaultExtension = Detail::ToWide(extension);
+		options.lpstrDefExt = save ? defaultExtension.c_str() : nullptr;
+		options.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR |
+			(save ? OFN_OVERWRITEPROMPT : OFN_FILEMUSTEXIST);
+		if (save ? GetSaveFileNameW(&options) : GetOpenFileNameW(&options))
 			return std::filesystem::path(filename.data());
 
 		const DWORD code = CommDlgExtendedError();
 		if (code != 0)
 			error = "File dialog failed (Windows error " + std::to_string(code) + ").";
 		return {};
+	}
+
+	std::filesystem::path FileDialog::OpenFile(Window& owner, const std::string& title,
+		const std::string& patterns, const std::filesystem::path& directory, std::string& error)
+	{
+		return SelectFile(owner, title, patterns, directory, {}, false, error);
+	}
+
+	std::filesystem::path FileDialog::SaveFile(Window& owner, const std::string& title,
+		const std::string& patterns, const std::filesystem::path& directory, const std::string& extension,
+		std::string& error)
+	{
+		return SelectFile(owner, title, patterns, directory, extension, true, error);
 	}
 }

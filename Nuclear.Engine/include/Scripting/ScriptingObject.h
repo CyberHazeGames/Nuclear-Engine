@@ -14,6 +14,8 @@ namespace Nuclear::Scripting
 		bool IsValid() const;
 		void CallMethod(const std::string& method);
 		void CallMethod(const std::string& method, float value);
+		/// Dispatches a method taking a versioned ECS entity ID.
+		void CallEntityMethod(const std::string& method, Uint32 entity);
 		ScriptingClass* GetScriptingClass();
 	private:
 		friend class ScriptingClass;

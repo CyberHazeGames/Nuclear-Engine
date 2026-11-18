@@ -143,8 +143,9 @@ namespace Nuclear
 			if (desc.AutoInitScriptingModule)
 			{
 				Scripting::CSharp::CSharpBackendDesc scriptingDesc;
-				scriptingDesc.mScriptingCoreAssemblyDir = std::filesystem::current_path().string();
-				scriptingDesc.mClientAssemblyPath = std::filesystem::current_path().string() + "/" + desc.mScriptingClientDllName;
+				scriptingDesc.mScriptingCoreAssemblyDir = (desc.mScriptingRuntimeDirectory.empty()
+					? std::filesystem::current_path() : desc.mScriptingRuntimeDirectory).string();
+				scriptingDesc.mClientAssemblyPath = std::filesystem::absolute(desc.mScriptingClientDllName).string();
 				scriptingDesc.mClientNamespace = desc.mScriptingAssemblyNamespace;
 				if (!Scripting::CSharp::RegisterCSharpBackend(std::move(scriptingDesc))) return failStartup();
 				Scripting::ScriptingModule::Get().SetStartupDesc({ "CSharp" });

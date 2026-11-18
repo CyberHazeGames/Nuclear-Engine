@@ -22,6 +22,24 @@ namespace Nuclear
         internal static delegate* unmanaged[Cdecl]<uint, Color*, void> LightSetColor;
         internal static delegate* unmanaged[Cdecl]<uint, float> LightGetIntensity;
         internal static delegate* unmanaged[Cdecl]<uint, float, void> LightSetIntensity;
+        internal static delegate* unmanaged[Cdecl]<NativeString, uint, ulong> OpenScreen;
+        internal static delegate* unmanaged[Cdecl]<ulong, NativeString, uint, uint> ScreenButton;
+        internal static delegate* unmanaged[Cdecl]<ulong, uint> PollScreen;
+        internal static delegate* unmanaged[Cdecl]<uint, NativeString> ScriptFields;
+        internal static delegate* unmanaged[Cdecl]<Math.Vector3*, Math.Vector3*, float, float*, uint> Raycast;
+        internal static delegate* unmanaged[Cdecl]<uint, int, float, uint> PlayClip;
+        internal static delegate* unmanaged[Cdecl]<uint, Math.Vector3*, uint> SetVelocity;
+        internal static delegate* unmanaged[Cdecl]<uint, uint, uint> AudioControl;
+        internal static delegate* unmanaged[Cdecl]<uint, Gamepad*, uint> ReadGamepad;
+        internal static delegate* unmanaged[Cdecl]<uint, NativeString> GameName;
+        internal static delegate* unmanaged[Cdecl]<NativeString, uint> LoadLevel;
+        internal static delegate* unmanaged[Cdecl]<uint, uint, uint> SetPaused;
+        internal static delegate* unmanaged[Cdecl]<NativeString, Math.Vector3*, uint> SpawnPrefab;
+        internal static delegate* unmanaged[Cdecl]<NativeString, uint> FindPersistent;
+        internal static delegate* unmanaged[Cdecl]<NativeString, uint> EntityFind;
+        internal static delegate* unmanaged[Cdecl]<uint, Math.Vector3*, uint, uint> EntityPosition;
+        internal static delegate* unmanaged[Cdecl]<uint, uint> EntityDestroy;
+        internal static delegate* unmanaged[Cdecl]<NativeString, void> SetHudText;
 #pragma warning restore CS0649
     }
 }

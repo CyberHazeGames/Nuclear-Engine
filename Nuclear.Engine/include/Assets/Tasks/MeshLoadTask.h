@@ -44,21 +44,6 @@ namespace Nuclear
 					return false;
 				}
 
-				//should do for meshes and materials?
-				if (mResult.pAnimations)
-				{
-					if (mResult.pAnimations->GetState() != IAsset::State::Loaded)
-					{
-						AssetLibrary::Get().mImportedAnimations.mData.erase(mResult.pAnimations->GetUUID());
-						mResult.pAnimations = nullptr;
-					}
-					else
-					{
-						mResult.pAnimations->SetState(IAsset::State::Loaded);
-					}
-				}
-
-
 				if (mResult.pMesh)
 				{
 					//create task

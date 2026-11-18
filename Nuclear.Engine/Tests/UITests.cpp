@@ -317,6 +317,11 @@ namespace
 				distances[index] = static_cast<Byte>(index * 17);
 			EdgeProbe.Create({16, 1, distances});
 			Check(EdgeProbe.mTextureView != nullptr, "SDF edge probe upload");
+			// A stroke narrower than a display pixel misses the center sample at 100% scale.
+			Byte stem[16]{};
+			stem[1] = stem[2] = 255;
+			StemProbe.Create({16, 1, stem});
+			Check(StemProbe.mTextureView != nullptr, "SDF thin stroke probe upload");
 			Check(EdgeRenderer.Initialize(), "SDF edge probe renderer initialization");
 			auto probes = std::make_unique<CanvasPanel>();
 			auto& red = probes->Add<Border>();
@@ -393,6 +398,7 @@ namespace
 	private:
 		UISample Sample;
 		Assets::Font EdgeProbe;
+		Assets::Font StemProbe;
 		UIRenderer EdgeRenderer;
 		void Readback()
 		{
@@ -402,12 +408,19 @@ namespace
 			auto* source = graphics.GetSwapChain()->GetCurrentBackBufferRTV()->GetTexture();
 			auto desc = source->GetDesc();
 			// A fractional straight contour isolates antialiasing from font shapes.
-			// A two-pixel smoothing band leaves a visible halo at x=17; one pixel does not.
+			// Exactly three quarters of pixel 18 lie inside the contour.
 			DrawList edge;
 			const UI::Rect clip{0, 0, float(desc.Width), float(desc.Height)};
 			edge.Add({5, 200, 40, 40}, clip, {0, 0, 0, 1});
 			edge.Add({10.25f, 210, 16, 16}, clip, {1, 1, 1, 1}, EdgeProbe.mTextureView,
 				{0, 0, 1, 1}, true);
+			for (float scale : {1.f, 1.5f})
+			{
+				DrawList stem;
+				stem.Add({60, 200, 12, 20}, clip, {0, 0, 0, 1});
+				stem.Add({62, 202, 2, 16}, clip, {1, 1, 1, 1}, StemProbe.mTextureView, {0, 0, 1, 1}, true);
+				EdgeRenderer.Render(stem, {float(desc.Width), float(desc.Height)}, scale);
+			}
 			EdgeRenderer.Render(edge, {float(desc.Width), float(desc.Height)}, 1);
 			Check(desc.Format == TEX_FORMAT_RGBA8_UNORM || desc.Format == TEX_FORMAT_RGBA8_UNORM_SRGB,
 				  "Expected RGBA8 readback target");
@@ -434,8 +447,11 @@ namespace
 			const auto* edgeOutside = pixel(17, 215);
 			const auto* edgeInside = pixel(18, 215);
 			const bool srgb = desc.Format == TEX_FORMAT_RGBA8_UNORM_SRGB;
-			Check(edgeOutside[0] < 3 && edgeInside[0] > (srgb ? 230 : 208) &&
-				edgeInside[0] < (srgb ? 245 : 222), "SDF edges use a single-pixel antialiasing band");
+			Check(edgeOutside[0] < 3 && std::abs(int(edgeInside[0]) - (srgb ? 225 : 191)) < 5,
+				"SDF edges preserve fractional pixel coverage");
+			for (const auto* stem : {pixel(62, 210), pixel(93, 315)})
+				Check(stem[0] > (srgb ? 100 : 35) && stem[0] < (srgb ? 200 : 145),
+					"Subpixel strokes stay visible with partial coverage at 100% and 150% scale");
 			const auto* red = pixel(10, 10);
 			const auto* blend = pixel(30, 10);
 			VerifiedPixels = red[0] > 245 && red[1] < 5 && red[2] < 5 && blend[0] > 120 && blend[0] < 136 &&

@@ -173,7 +173,7 @@ float4 DoLighting(PixelInputType input)
     float3 norm = NEMat_Normal1.Sample(NEMat_Normal1_sampler, input.TexCoord).xyz;
     norm = normalize(mul(norm, 2.0f) - 1.0f);
     norm = normalize(mul(norm, input.TBN));
-    float4 albedo = float4(NEMat_Diffuse1.Sample(NEMat_Diffuse1_sampler, input.TexCoord).xyz, NEMat_Specular1.Sample(NEMat_Specular1_sampler, input.TexCoord).x);
+    float4 albedo = float4(input.MaterialTint * NEMat_Diffuse1.Sample(NEMat_Diffuse1_sampler, input.TexCoord).xyz, NEMat_Specular1.Sample(NEMat_Specular1_sampler, input.TexCoord).x);
 #endif
 
     float3 viewDir = normalize(ViewPos.xyz - FragPos);

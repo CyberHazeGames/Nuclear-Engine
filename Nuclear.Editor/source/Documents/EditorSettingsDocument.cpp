@@ -116,7 +116,7 @@ namespace Nuclear::Editor
 			vsyncDesc.SetWrap(true);
 
 			Label(displaySection, "PerMonitorV2 DPI awareness is enabled for main and detached windows.", 13);
-			Label(displaySection, "SDF font rendering antialiasing: 1-pixel band.", 12);
+			Label(displaySection, "Text uses a high-resolution font atlas and subpixel coverage sampling.", 12);
 
 			auto& sessionSection = Section(page, "SESSION & WORKSPACE");
 			Label(sessionSection, "Session changes are held in-memory; project file saving is disabled.", 13);

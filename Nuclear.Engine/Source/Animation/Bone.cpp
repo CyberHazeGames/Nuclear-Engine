@@ -51,7 +51,7 @@ namespace Nuclear
 				if (animationTime < mData.m_Positions[index + 1].timeStamp)
 					return index;
 			}
-			return 0;
+			return mData.m_NumPositions - 2;
 		}
 		inline int Bone::GetRotationIndex(float animationTime)
 		{
@@ -60,7 +60,7 @@ namespace Nuclear
 				if (animationTime < mData.m_Rotations[index + 1].timeStamp)
 					return index;
 			}
-			return 0;
+			return mData.m_NumRotations - 2;
 		}
 		inline int Bone::GetScaleIndex(float animationTime)
 		{
@@ -69,18 +69,19 @@ namespace Nuclear
 				if (animationTime < mData.m_Scales[index + 1].timeStamp)
 					return index;
 			}
-			return 0;
+			return mData.m_NumScalings - 2;
 		}
 		inline float Bone::GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime)
 		{
 			float scaleFactor = 0.0f;
 			float midWayLength = animationTime - lastTimeStamp;
 			float framesDiff = nextTimeStamp - lastTimeStamp;
-			scaleFactor = midWayLength / framesDiff;
+			scaleFactor = framesDiff > 0 ? glm::clamp(midWayLength / framesDiff, 0.f, 1.f) : 0.f;
 			return scaleFactor;
 		}
 		inline Math::Matrix4 Bone::InterpolatePosition(float animationTime)
 		{
+			if (mData.m_NumPositions == 0) return Math::Matrix4(1.f);
 			if (1 == mData.m_NumPositions)
 				return glm::translate(Math::Matrix4(1.0f), mData.m_Positions[0].position);
 
@@ -94,6 +95,7 @@ namespace Nuclear
 		}
 		inline Math::Matrix4 Bone::InterpolateRotation(float animationTime)
 		{
+			if (mData.m_NumRotations == 0) return Math::Matrix4(1.f);
 			if (1 == mData.m_NumRotations)
 			{
 				auto rotation = glm::normalize(mData.m_Rotations[0].orientation);
@@ -112,6 +114,7 @@ namespace Nuclear
 		}
 		inline Math::Matrix4 Bone::InterpolateScaling(float animationTime)
 		{
+			if (mData.m_NumScalings == 0) return Math::Matrix4(1.f);
 			if (1 == mData.m_NumScalings)
 				return glm::scale(Math::Matrix4(1.0f), mData.m_Scales[0].scale);
 

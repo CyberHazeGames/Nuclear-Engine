@@ -67,6 +67,11 @@ namespace Nuclear
 
 
 			void Update();
+            /// Updates the inherited parent matrix. Set to identity for an unparented transform.
+            Math::Quaternion GetWorldRotation() const; ///< Parent orientation composed with the authored rotation.
+            Math::Vector3 ToLocalPosition(const Math::Vector3& world) const; ///< Converts a physics position into parent space.
+            Math::Quaternion ToLocalRotation(const Math::Quaternion& world) const; ///< Converts a physics orientation into parent space.
+            void SetParentMatrix(const Math::Matrix4& parent) { mParentMatrix = parent; Update(); }
 
 			constexpr static auto serialize(auto& archive, auto& self)
 			{
@@ -82,6 +87,7 @@ namespace Nuclear
 			Math::Vector3 mWorldPosition = Math::Vector3(0.0f);
 
 		private:
+			Math::Matrix4 mParentMatrix{1.f}; ///< Cached parent world matrix.
 			Math::Matrix4 mWorldMatrix = Math::Matrix4(1.0f);
 			Byte mDirty = NONE;
 		};

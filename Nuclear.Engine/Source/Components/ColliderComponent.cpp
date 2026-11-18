@@ -31,6 +31,11 @@ namespace Nuclear
 					physx::PxBoxGeometry(Geo->mHalfExtents.x, Geo->mHalfExtents.y, Geo->mHalfExtents.z), *material);
 
 				mStaticActor.mPtr = PhysX::PhysXModule::Get().GetPhysics()->createRigidStatic(PhysX::To(Geo->mTransform));
+				if (IsTrigger)
+				{
+					mShape.mPtr->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+					mShape.mPtr->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+				}
 				mStaticActor.mPtr->attachShape(*mShape.mPtr);
 			}
 			else if (mType == ColliderShape::Plane)
@@ -45,6 +50,11 @@ namespace Nuclear
 
 				mShape.mPtr = PhysX::PhysXModule::Get().GetPhysics()->createShape(physx::PxSphereGeometry(Geo->radius), *material);
 				mStaticActor.mPtr = PhysX::PhysXModule::Get().GetPhysics()->createRigidStatic(PhysX::To(Geo->mTransform));
+				if (IsTrigger)
+				{
+					mShape.mPtr->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+					mShape.mPtr->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+				}
 				mStaticActor.mPtr->attachShape(*mShape.mPtr);
 			}
 			else

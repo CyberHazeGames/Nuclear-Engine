@@ -70,23 +70,6 @@ namespace Nuclear
 				//}
 
 
-				//should do for meshes and materials?
-				if (mImportingDesc.mImportAnimations)
-				{
-					if (mResult.pAnimations)
-					{
-						if (mResult.pAnimations->GetState() != IAsset::State::Loaded)
-						{
-							AssetLibrary::Get().mImportedAnimations.mData.erase(mResult.pAnimations->GetUUID());
-							mResult.pAnimations = nullptr;
-						}
-						else
-						{
-							mResult.pAnimations->SetState(IAsset::State::Loaded);
-						}
-					}
-				}
-
 				if (mResult.pMesh)
 				{
 					//create task
@@ -103,7 +86,7 @@ namespace Nuclear
 						if (mResult.pMaterial)
 							meshloadingdesc->mMaterialUUID = mResult.pMaterial->GetUUID();
 
-						if (mResult.pAnimations)
+						if (mResult.pAnimations && mResult.pAnimations->GetState() == IAsset::State::Loaded)
 							meshloadingdesc->mAnimationsUUID = mResult.pAnimations->GetUUID();
 
 						//Export Meta

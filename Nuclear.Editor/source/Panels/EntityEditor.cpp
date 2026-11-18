@@ -1,4 +1,5 @@
 #include <EntityEditor.h>
+#include <Assets/Animations.h>
 #include <EditorSettings.h>
 #include <EditorWidgets.h>
 #include <EditorHistory.h>
@@ -159,7 +160,14 @@ namespace Nuclear::Editor
 		};
 		if (!Component<SkyboxComponent>(entity))
 		{
-			auto& transform = ComponentSection(*root, entity,
+			Label(*root, "Entity ID: " + info->PersistentId, 12);
+            Label(*root, "Parent entity ID", 12);
+            auto& parentField = root->Add<UI::TextBox>(info->ParentId);
+            parentField.OnCommitted = [entity, changed, &history](const std::string& value) {
+                history.Edit(entity, "Change parent", [&]() { Core::Scene::Get().SetParent(entity, value); });
+                changed(true);
+            };
+            auto& transform = ComponentSection(*root, entity,
 				entt::type_hash<Components::EntityInfoComponent>::value(), "TRANSFORM", {});
 			Label(transform, "Required by every entity. Enter commits a value. Rotation is in degrees.", 12).SetWrap(true);
 			for (int group = 0; group < 3; ++group)
@@ -353,7 +361,28 @@ namespace Nuclear::Editor
 				if (auto* mesh = Component<Components::MeshComponent>(entity))
 					mesh->SetEnableRendering(value);
 			});
-			toggle(section, "Cast shadows", mesh->GetCastShadow(), [entity](bool value) {
+			if (auto* clips = mesh->GetMesh() ? mesh->GetMesh()->GetImportedAnimations() : nullptr; clips && !clips->mClips.empty())
+            {
+                number(section, "Crossfade seconds", mesh->BlendSeconds, [entity](float v) {
+                    if (auto* mesh = Component<Components::MeshComponent>(entity)) mesh->BlendSeconds = v;
+                }, 0, 60);
+                for (size_t index = 0; index < clips->mClips.size(); ++index)
+                    Action(section, "Play clip " + std::to_string(index) + " / " + clips->mClips[index].Name, [entity, index, &history]() {
+                        history.Edit(entity, "Select animation", [&]() {
+                            if (auto* mesh = Component<Components::MeshComponent>(entity)) mesh->PlayClip(int(index), mesh->BlendSeconds);
+                        });
+                    });
+            }
+            vector(section, "Material tint", mesh->Tint, [entity](int axis, float v) {
+                if (auto* mesh = Component<Components::MeshComponent>(entity)) mesh->Tint[axis] = v;
+            }, 0, 1);
+            number(section, "Metallic (-1 uses map)", mesh->Metallic, [entity](float v) {
+                if (auto* mesh = Component<Components::MeshComponent>(entity)) mesh->Metallic = v;
+            }, -1, 1);
+            number(section, "Roughness (-1 uses map)", mesh->Roughness, [entity](float v) {
+                if (auto* mesh = Component<Components::MeshComponent>(entity)) mesh->Roughness = v;
+            }, -1, 1);
+            toggle(section, "Cast shadows", mesh->GetCastShadow(), [entity](bool value) {
 				if (auto* mesh = Component<Components::MeshComponent>(entity))
 					mesh->SetCastShadow(value);
 			});
@@ -373,7 +402,9 @@ namespace Nuclear::Editor
 		if (Component<Components::ColliderComponent>(entity))
 		{
 			auto& section = componentSection.operator()<Components::ColliderComponent>("COLLIDER");
-			Label(section, "Collider / authoring data", 13);
+			toggle(section, "Trigger", Component<Components::ColliderComponent>(entity)->IsTrigger, [entity](bool value) {
+				if (auto* collider = Component<Components::ColliderComponent>(entity)) collider->IsTrigger = value;
+			});
 		}
 		if (Component<Components::CameraComponent>(entity))
 		{
@@ -383,7 +414,24 @@ namespace Nuclear::Editor
 		if (Component<Components::ScriptComponent>(entity))
 		{
 			auto& section = componentSection.operator()<Components::ScriptComponent>("SCRIPT");
-			Label(section, "Script / runtime execution disabled", 13);
+			Label(section, "C# class (namespace and type)", 13);
+			auto assign = [entity, changed, &history](const std::string& value) {
+				history.Edit(entity, "Assign C# class", [&]() {
+					if (auto* script = Component<Components::ScriptComponent>(entity)) script->ClassName = value;
+				});
+				changed(false);
+			};
+			auto& field = section.Add<UI::TextBox>(Component<Components::ScriptComponent>(entity)->ClassName);
+			field.OnCommitted = assign;
+            Label(section, "Public fields (JSON object)", 13);
+            auto& fields = section.Add<UI::TextBox>(Component<Components::ScriptComponent>(entity)->Fields);
+            fields.OnCommitted = [entity, changed, &history](const std::string& value) {
+                history.Edit(entity, "Edit script fields", [&]() {
+                    if (auto* script = Component<Components::ScriptComponent>(entity)) script->Fields = value;
+                });
+                changed(false);
+            };
+			Action(section, "Pickup player", [assign]() { assign("Samples.PickupPlayer"); });
 		}
 		if (Component<Components::AudioListenerComponent>(entity))
 		{
@@ -393,7 +441,15 @@ namespace Nuclear::Editor
 		if (Component<Components::AudioSourceComponent>(entity))
 		{
 			auto& section = componentSection.operator()<Components::AudioSourceComponent>("AUDIO SOURCE");
-			Label(section, "Audio source / authoring data", 13);
+			Label(section, "Audio clip path (play on start)", 13);
+			auto& field = section.Add<UI::TextBox>(Component<Components::AudioSourceComponent>(entity)->ClipPath);
+			field.OnCommitted = [entity, changed, &history](const std::string& path) {
+				history.Edit(entity, "Assign audio clip", [&]() {
+					if (auto* source = Component<Components::AudioSourceComponent>(entity))
+						source->ClipPath = path.empty() ? "" : std::filesystem::absolute(path).lexically_normal().string();
+				});
+				changed(false);
+			};
 		}
 		AddComponent<Components::LightComponent>(add, entity, "Light", changed, history);
 		AddComponent<Components::MeshComponent>(add, entity, "Mesh", changed, history);

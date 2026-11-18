@@ -55,6 +55,9 @@ namespace Nuclear
 		}
 		AudioSystem::~AudioSystem()
 		{
+			auto& registry = Core::Scene::Get().GetRegistry();
+			registry.on_construct<Components::AudioListenerComponent>().disconnect<&AudioListenerInit>();
+			registry.on_construct<Components::AudioSourceComponent>().disconnect<&AudioSourceInit>();
 		}
 		void AudioSystem::Update(ECS::TimeDelta dt)
 		{

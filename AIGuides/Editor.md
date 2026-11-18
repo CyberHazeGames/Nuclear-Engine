@@ -13,8 +13,50 @@ shrinking the entire workspace to a 1440x900 design. `EditorToolbar` wraps viewp
 actions onto additional rows at narrow widths. Bottom tools keep at least 180
 logical units (capped at 60% of workspace height) so full-size controls retain a
 usable scroll viewport. Moving between monitors applies
-the OS-suggested bounds through the platform's DPI-change resize event. The shared
-SDF shader uses a one-pixel antialiasing band to keep small letter edges sharper.
+the OS-suggested bounds through the platform's DPI-change resize event. At startup
+the editor reads the actual client size and monitor DPI before building its workspace.
+Detached windows also use their actual client size for the swap chain and first layout.
+The default font atlas uses at least 96 texels per em. Text antialiasing samples a
+4-by-4 grid within each physical pixel, including at 100% display scale.
+
+## Save a project and play its startup scene
+
+Open **File > Open project** and choose [Three Pickups](../Samples/Pickups/Pickups.nuclearproject).
+Press **Play** and walk forward with W to collect three spheres. The C# player displays the
+score in the game's retained HUD. Escape closes the game window. **Stop** in the editor
+also exits Play. A new run starts with the original three pickups.
+
+Each game has one main `.nuclearproject` file. Its version 3 manifest stores the project name, assembly, prefab registrations, named map links and startup map path. Every map, including the startup map, is a separate `.NMap` asset containing scene settings, camera selection, entities and their components. Meshes, audio and map-local prefabs resolve relative to the map that owns them.
+
+**File > Open project** opens the startup map. **Open map**, **Save map** and **Save map as** work on individual maps. The Asset Browser Files view can also open a map or main project. **Save project** writes the current map and the main manifest. Saving while editing a linked map preserves the project's startup selection. On first save the editor creates a sibling startup map. Opening an older version 1 or 2 project still works. Saving it writes the embedded scene and legacy linked levels as separate maps and preserves the old linked source files.
+
+[ProjectDocument](../Nuclear.Editor/source/Core/ProjectDocument.cpp) implements the format.
+
+To author a game camera, add **Camera** to an entity, set its transform and use
+**Project > Use selected camera for Play**. Identity faces negative Z. Add **Script**
+and enter a fully qualified class name, or choose **Pickup player**. **Project >
+Choose C# assembly** selects a compiled .NET 10 assembly referencing the matching
+Nuclear.ScriptCore. **Use bundled C# behaviors** selects SamplesScripts.dll shipped
+beside the editor. The bundled pickup behavior looks for **Pickup 1**, **Pickup 2**
+and **Pickup 3**, using a one-unit distance check. Assign an audio file path to an
+audio source for playback at startup. Rigidbody/collider authoring uses box collision
+scaled to the entity. A collider without a body is static.
+
+Play writes a private snapshot and launches [ProjectPlayer](../Nuclear.Editor/source/Core/ProjectPlayer.cpp)
+in a separate instance of Nuclear.Editor.exe with its own working directory, registry
+and log. The player starts only the services its level uses. Scripts run before fixed
+60 Hz physics steps and audio updates. Game input and the camera belong to the game
+window. Closing it preserves editor selection, undo history and unsaved edits.
+
+### Create and distribute a Windows game
+
+Open [Twin Rooms](../Samples/TwinRooms/TwinRooms.nuclearproject) to edit [Title.NMap](../Samples/TwinRooms/Title.NMap). Use **File > Open map** to edit [Gallery.NMap](../Samples/TwinRooms/Gallery.NMap) or [Atrium.NMap](../Samples/TwinRooms/Atrium.NMap). **Project > Link saved level** registers another map for `GameScene.Load`. Export produces one `Game.nuclearproject` manifest and an individual `.NMap` for each packaged map.
+
+Use **Save selected as prefab** to register a single reusable entity, then **Place prefab** in the editor or call `Entity.Spawn` in a script. The inspector shows the persistent ID and accepts a parent ID. A child inherits its parent's transform. In the script inspector, enter a JSON object whose property names match public fields on the C# class. Twin Rooms uses this to supply menu buttons, movement speed and the next room.
+
+Select a mesh entity to edit its tint, metallic and roughness settings, choose an imported animation clip and set the crossfade duration. **Project > Save material preset** and **Apply material preset** reuse surface settings between entities.
+
+After building Release x64, choose **Project > Build Windows game** and select a fresh destination. Distribute the complete output folder and launch `Game.exe`. The exporter packages the player, runtime libraries, engine assets, linked scenes, prefab sources and managed assemblies. The recipient needs the x64 Visual C++ runtime and .NET 10 runtime. [Build and package validation](BuildAndValidation.md#windows-game-packaging)
 
 ## Workspace and ownership
 
@@ -27,7 +69,7 @@ at `Assets/NuclearEngine/Editor/NuclearLogo.png`.
 
 Dropdown commands reuse scene/project/selection/workspace actions. Edit offers
 Undo, Redo, Duplicate, Copy, Paste, Delete selected, and Editor Settings... (also accessible from Window / Editor Settings...).
-Saving and project settings remain disabled because they are not implemented.
+File provides Open, Save and Save As. Project selects the gameplay camera and compiled C# assembly.
 Hover switches open menus; outside click, Escape and focus loss dismiss. Left/Right switches
 headers, Up/Down selects enabled commands, and Enter executes. Window / Manage
 panels opens the active document's recovery menu. Edit / Editor Settings... opens
@@ -310,17 +352,17 @@ The popup blocks underlying workspace clicks and removes itself before creation.
 selects the existing background. The inspector exposes **Visible**; translation,
 scale and gizmos are omitted because the sky surrounds the camera. Creation,
 visibility, deletion and restoration participate in normal entity undo/redo.
-Removing/hiding the sky restores the scene clear color. New scenes start without it.
+A fresh project starts with one visible skybox in its startup map. Removing or hiding it reveals the scene clear color.
+Saving and reopening a map preserves its skybox setting. **New scene** within an existing project starts without a skybox.
 
 [EditorSkybox](../Nuclear.Editor/include/Rendering/EditorSkybox.h) owns a generated blue sky,
-horizon and ground cubemap, so creation needs no external texture assets. GPU
-creation is queued for Update. It reuses the engine
+horizon and ground cubemap, so creation needs no external texture assets. Manual creation runs during Update. It reuses the engine
 [Skybox](../Nuclear.Engine/include/Rendering/Skybox.h) renderer after scene geometry,
 with the camera's actual offscreen color/depth formats and current camera constants,
 including in scenes without meshes. Far-depth drawing preserves foreground geometry
 and ignores camera translation. GPU resources are released before graphics shutdown;
 ECS/history snapshots hold only the visibility marker. The generated background is
-session authoring data; custom cubemap assignment and disk persistence are not provided.
+generated from a visibility marker stored in the project. The marker uses the built-in sky.
 
 ## Scene settings
 
@@ -335,13 +377,12 @@ range 0 to 1. Blank scene names become **Untitled Scene**. Changes
 refresh the scene heading and settings controls outside input dispatch.
 
 [EditorSceneState](../Nuclear.Editor/include/Settings/EditorSceneState.h) captures these
-settings separately from entities, using the borrowed active scene identity and
+settings separately from entities, using the active map instance UUID and
 resolving the current camera on restore. Scene settings share the same 128-action
 undo/redo order as entity edits and preserve entity selection during replay.
 Snapshots from another scene are rejected. New scenes/projects restore the
 default name and clear color, including in an open detached settings panel;
-project modals disable its input. These settings are held in memory; the existing
-scene binary format and disk persistence remain unchanged.
+project modals disable its input. The active .NMap stores both values.
 
 ## Color picker
 
@@ -449,24 +490,21 @@ outside scene history.
 
 ## Assets and diagnostics
 
-[AssetLibraryViewer](../Nuclear.Editor/source/Panels/AssetLibraryViewer.cpp) has Files,
-Textures, Meshes, Materials and Scenes categories. The filesystem browser supports
-parent navigation and an editable directory path, and reports filesystem errors.
-An **Import...** button sits on the right side of the asset browser tabs bar across all categories and opens a native
-single-file picker in the current browsing directory. Its supported-assets filter
-covers the existing texture, geometry, NuclearShader and TTF formats; All files
-allows other selections, which receive the existing unsupported-format feedback.
+[AssetLibraryViewer](../Nuclear.Editor/source/Panels/AssetLibraryViewer.cpp) uses a compact navigation bar, a collapsible Sources sidebar and a wrapping asset grid. **Files** browses directories. **Maps** opens saved `.NMap` scenes from the project folder and its subfolders, including startup and linked maps stored elsewhere. **Textures**, **Meshes** and **Materials** show imported session assets. The Folders tree expands along the active path. Use the breadcrumb buttons or back and forward to revisit folders. **Path** accepts a directory directly.
+
+In Files, **Filter** restricts the grid to a type such as Map, Mesh or Texture. Search filters the active view as you type and the footer counts the matching items. Folder cards navigate, map and project cards open their documents, and file cards queue imports. Library cards retain their previews, context menus and mesh drag-to-place behavior. The grid reflows in docked and detached panels.
+
+**Import...** opens a native single-file picker in the current directory for textures, geometry, NuclearShader and TTF files.
 The picker is owned by the focused main/detached editor window, preserves the
 process working directory and queues selection outside retained input dispatch.
 Cancel creates no asset. Selection reuses the existing load-only import flow:
-resources belong to the current project session; no source copying or disk project
-persistence is added. Existing file-row Import actions remain available.
+resources belong to the session library. Saved levels reference the source models and their imported materials by relative path.
 Explicit Import actions queue work for Update. Texture, geometry, shader and TTF
 imports use existing importers; model imports include materials and their textures
-by default and omit animations. After successful GPU creation,
-`EditorUI::PrepareImportedMaterial` assigns the engine PBR shader to the associated
+and available animation clips by default. After successful GPU creation,
+`Project::PrepareImportedMaterial` assigns the engine PBR shader to the associated
 library material, retaining named texture sets and submesh indices. Its editor
-shader excludes deferred, shadow, animation, SSAO and IBL variants. Missing maps use
+shader selects static or skinned forward rendering according to the imported mesh. Missing maps use
 white albedo/AO, black metallic, flat normal and grey roughness; provided GPU-backed
 maps are preserved. Untextured source slots remain distinct from textured slots.
 The Materials category lists these library materials with shader and source-set
@@ -477,7 +515,7 @@ still uses the importer's main-thread task queue, which the editor drains after
 synchronous decoding. Readiness is checked separately from decoding; failed texture
 decoding must not report the fallback texture as a successful import. Textures and meshes
 display in an Unreal-style grid of thumbnail icon buttons with asset names, dimensions or
-triangle counts, and direct document-opening actions; mesh cards also retain an **Add to scene**
+triangle counts, and direct document-opening actions; mesh cards also offer a **Place in scene**
 action button. Mesh previews are rendered and cached on-demand by
 [MeshPreviewCache](../Nuclear.Editor/include/Rendering/MeshPreviewCache.h) using an offscreen depth-tested
 render target and directional Blinn-Phong lighting.
@@ -521,7 +559,7 @@ self-snapping. Readback and resource creation run in Update/Render, outside inpu
 dispatch. Placement does not rotate to the surface, use physics collision, or
 implement grid snapping; screen-edge/unsupported-depth contacts fall back to up.
 
-Right-click an imported texture, mesh, material or scene card for **Add to scene**,
+Right-click an imported texture, mesh or material card for **Add to scene**,
 **Delete** and **Rename**. Add to scene is enabled only for created meshes and uses
 the existing entity creation/history path. Rename opens a browser form; Enter or
 Save name commits a trimmed, nonblank session display name, preserving the UUID
@@ -658,8 +696,7 @@ Build with [BuildAndValidation.md](BuildAndValidation.md). Launch
 `../Bin/DebugX64/Nuclear.Editor.exe` from `Nuclear.Editor/` so `../Assets/` resolves.
 No `EditorClient.dll`, sample model library, audio device or managed runtime is
 required by this editor startup configuration. Graphics/UI/rendering/fallbacks
-remain enabled. Projects and scenes are held in memory; disk project persistence,
-disk layout persistence, play mode and shader/material authoring remain absent.
+remain enabled. Dock layouts are session-local. Play starts the saved or unsaved level in a separate game window.
 
 The focused `Nuclear.Editor/Nuclear.Editor.Tests.vcxproj` project is separate from
 the solution default build. Build it with Debug x64 MSBuild using the normalized
@@ -743,3 +780,23 @@ Headless UI checks and the D3D11 UI GPU run with ImGui passed. The actual Debug
 editor reached rendering and closed normally in a hidden launch. These focused
 checks do not establish a full Release editor build, physical drag feel, automatic
 per-monitor DPI or other graphics backends.
+
+## Visual scripting proof of concept
+
+Open **Window > Visual Script** for a dockable graph with a connected Begin Play, Boolean,
+Branch and Print Text example. Add cards from the palette. Select a card to edit its
+literal or delete it. Drag between matching pins to connect them. Each input takes one
+wire, and right-clicking a pin disconnects its wires. Drag the background to pan, use
+the wheel to zoom around the pointer, or choose **Frame graph** to recenter the view.
+
+**Copy JSON** exports the graph to the system clipboard. **Paste JSON** replaces the
+graph after validating the whole document. Version 1 stores a node ID, kind, position
+and applicable literal for each card. Link endpoints are pairs of node ID and pin name.
+Closing and reopening the tab preserves the graph for the editor session. Copy the
+JSON to keep it across restarts. The prototype is editor-only and has no runtime bindings.
+
+[VisualScriptDocument](../Nuclear.Editor/include/Documents/VisualScriptDocument.h) owns
+the controls. [VisualScriptCanvas](../Nuclear.Editor/include/Widgets/VisualScriptCanvas.h)
+handles painting and gestures. [VisualScriptGraph](../Nuclear.Editor/include/Documents/VisualScriptGraph.h)
+owns topology and JSON validation. Run the focused editor test with the `--visual-script`
+argument from the editor working directory.

@@ -190,7 +190,7 @@ namespace Nuclear::Editor::Tests
 		}
 		Action(editor, "Files");
 		frame();
-		Action(editor, "Import / preview.bmp");
+		Action(editor, "preview.bmp");
 		frame();
 		Action(editor, "Textures");
 		frame();

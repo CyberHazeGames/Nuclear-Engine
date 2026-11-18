@@ -62,7 +62,35 @@ namespace Nuclear
 			SetScale(Math::Vector3(scale));
 		}
 
-		void Transform::Update()
+        namespace
+        {
+            Math::Quaternion Orientation(const Math::Matrix4& matrix)
+            {
+                glm::mat3 basis(matrix);
+                for (int i = 0; i < 3; ++i)
+                {
+                    float length = glm::length(basis[i]);
+                    if (length <= 1e-8f) return Math::Quaternion(1, 0, 0, 0);
+                    basis[i] /= length;
+                }
+                return glm::normalize(glm::quat_cast(basis));
+            }
+        }
+        Math::Quaternion Transform::GetWorldRotation() const
+        {
+            auto local = glm::dot(mLocalRotation, mLocalRotation) > 1e-8f ? glm::normalize(mLocalRotation) : Math::Quaternion(1,0,0,0);
+            return Orientation(mParentMatrix) * local;
+        }
+        Math::Vector3 Transform::ToLocalPosition(const Math::Vector3& world) const
+        {
+            if (std::abs(glm::determinant(mParentMatrix)) < 1e-8f) return mLocalPosition;
+            return Math::Vector3(glm::inverse(mParentMatrix) * Math::Vector4(world, 1));
+        }
+        Math::Quaternion Transform::ToLocalRotation(const Math::Quaternion& world) const
+        {
+            return glm::inverse(Orientation(mParentMatrix)) * world;
+        }
+        void Transform::Update()
 		{
 
 			Math::Matrix4 model(1.0f);
@@ -70,7 +98,7 @@ namespace Nuclear
 			model = Math::scale(model, mLocalScale);
 			model = model * Math::toMat4(mLocalRotation);
 
-			mWorldMatrix = model;
+			mWorldMatrix = mParentMatrix * model;
 
 			mWorldPosition = mWorldMatrix[3];
 

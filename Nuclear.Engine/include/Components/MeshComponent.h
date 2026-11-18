@@ -8,6 +8,7 @@
 #include <Assets/AssetType.h>
 #include <Serialization/IsLoading.h>
 #include <vector>
+#include <memory>
 
 namespace Nuclear {
 	namespace Assets 
@@ -30,6 +31,9 @@ namespace Nuclear {
 		{
 		public:			
 			MeshComponent();
+            Math::Vector3 Tint{1.f}; ///< Linear RGB multiplier applied by the forward game material.
+            float Metallic = -1.f; ///< [0,1] override, or -1 to use the PBR map.
+            float Roughness = -1.f; ///< [0,1] override, or -1 to use the PBR map.
 			MeshComponent(Assets::Mesh* mesh, Assets::Material* material = nullptr, Animation::Animator* Animator = nullptr);
 			~MeshComponent();
 
@@ -76,7 +80,13 @@ namespace Nuclear {
 			{
 				return pMaterial;
 			}
-			FORCE_INLINE Animation::Animator* GetAnimator()
+			/// Selects an imported clip and crossfades in seconds. Negative index disables authored animation.
+            bool PlayClip(int index, float blendSeconds);
+            /// Updates only the component-owned animator, preserving manual sample animators.
+            void AdvanceClip(float seconds);
+            int ClipIndex = -1; ///< Authored/current clip index; negative means static mesh.
+            float BlendSeconds = .2f; ///< Duration used when the author selects a new clip.
+            FORCE_INLINE Animation::Animator* GetAnimator()
 			{
 				return pAnimator;
 			}
@@ -115,6 +125,7 @@ namespace Nuclear {
 
 			Assets::Mesh* pMesh;
 			Assets::Material* pMaterial;
+			std::shared_ptr<Animation::Animator> mOwnedAnimator; ///< Per-instance playback for editor-authored clips.
 			Animation::Animator* pAnimator;
 			Graphics::ShaderPipelineSwitchController mPipelineCntrl;
 

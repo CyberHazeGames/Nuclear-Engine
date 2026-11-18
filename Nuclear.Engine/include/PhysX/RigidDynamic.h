@@ -14,7 +14,7 @@ namespace Nuclear
 			RigidDynamic();
 			~RigidDynamic();
 
-			physx::PxRigidDynamic* mPtr;
+			physx::PxRigidDynamic* mPtr = nullptr; ///< Borrowed by component operations until the owning actor/shape is released.
 		};
 	}
 }

@@ -31,6 +31,7 @@ namespace Nuclear
 		class NEAPI ColliderComponent
 		{
 		public:
+			bool IsTrigger = false; ///< Overlap-only shape that reports entry and exit without collision response.
 			ColliderComponent();
 			ColliderComponent(const ColliderDesc& desc);
 			~ColliderComponent();

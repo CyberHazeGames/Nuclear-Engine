@@ -37,7 +37,9 @@ namespace Nuclear
 
 		inline physx::PxTransform To(ECS::Transform& trans)
 		{
-			return physx::PxTransform(To(trans.GetWorldPosition()));
+			auto rotation = trans.GetWorldRotation();
+			if (Math::dot(rotation, rotation) < .000001f) rotation = Math::Quaternion(1, 0, 0, 0);
+			return physx::PxTransform(To(trans.GetWorldPosition()), To(Math::normalize(rotation)));
 		}
 
 		inline const  Math::Vector3& From(const physx::PxVec3& vec)

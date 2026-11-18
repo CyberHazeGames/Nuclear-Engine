@@ -85,6 +85,8 @@ namespace Nuclear
 			void SetProjectionMatrix(Math::Matrix4 projectionMatrix);
 
 			void SetPosition(Math::Vector3 cameraposition);
+			/// Applies the authored local-to-world orientation (identity looks down -Z) to the camera.
+			void SetOrientation(const Math::Quaternion& rotation);
 			FORCE_INLINE const Math::Vector3 GetPosition() const
 			{
 				return Position;

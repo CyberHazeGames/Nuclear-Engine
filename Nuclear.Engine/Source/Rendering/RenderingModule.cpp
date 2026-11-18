@@ -78,6 +78,11 @@ namespace Nuclear
 
 		void RenderingModule::RenderFinalRT()
 		{
+			RenderToScreen(GetFinalRT().GetSRV());
+		}
+
+		void RenderingModule::RenderToScreen(Diligent::ITextureView* color)
+		{
 			auto* RTV = Graphics::GraphicsModule::Get().GetSwapChain()->GetCurrentBackBufferRTV();
 			auto* DSV = Graphics::GraphicsModule::Get().GetSwapChain()->GetDepthBufferDSV();
 			Graphics::GraphicsModule::Get().GetContext()->SetRenderTargets(1, &RTV, DSV, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -85,7 +90,7 @@ namespace Nuclear
 			Graphics::GraphicsModule::Get().GetContext()->ClearDepthStencil(DSV, CLEAR_DEPTH_FLAG, 1.0f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 			Graphics::GraphicsModule::Get().GetContext()->SetPipelineState(pSceneToScreenPSO);
-			pSceneToScreenSRB->GetVariableByIndex(SHADER_TYPE_PIXEL, 0)->Set(GetFinalRT().GetSRV());
+			pSceneToScreenSRB->GetVariableByIndex(SHADER_TYPE_PIXEL, 0)->Set(color);
 			Graphics::GraphicsModule::Get().GetContext()->CommitShaderResources(pSceneToScreenSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 			Assets::DefaultMeshes::RenderScreenQuad();

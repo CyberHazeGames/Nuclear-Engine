@@ -23,6 +23,11 @@ namespace Nuclear::Editor
 		bool Exists = false; ///< Whether the captured entity existed.
 		ECS::Transform Transform; ///< Local position, quaternion and scale; no parent ownership.
 	private:
+		friend class GameExporter; ///< Relocates authored clip paths while staging distributable content.
+		friend class ProjectDocument; ///< Serializes authored values and resolves asset references before restoration.
+		std::string mClipPath; ///< Authored audio source path, independent of backend handles.
+		std::string mFields; ///< Per-instance managed field overrides.
+		std::string mScriptClass; ///< Fully qualified behavior name, including on undo and duplicate.
 		/// Library references and editable mesh flags, without shader-controller caches.
 		struct MeshData
 		{
@@ -31,6 +36,10 @@ namespace Nuclear::Editor
 			bool Visible = true; ///< Whether the preview draws this mesh.
 			bool CastShadows = true; ///< Authored shadow casting flag.
 			bool ReceiveShadows = true; ///< Authored shadow reception flag.
+			int ClipIndex = -1; ///< Startup animation clip.
+			float BlendSeconds = .2f; ///< Clip transition duration.
+			Math::Vector3 Tint{1.f}; ///< Forward material color multiplier.
+			float Metallic = -1.f, Roughness = -1.f; ///< Negative values retain the imported PBR map.
 			bool operator==(const MeshData&) const = default; ///< Compares authored mesh data.
 		};
 		/// Editable light values; GPU bindings and derived positions are rebuilt separately.
@@ -48,12 +57,14 @@ namespace Nuclear::Editor
 			bool CastShadows; ///< Authored shadow casting flag.
 			bool operator==(const LightData&) const = default; ///< Compares editable light values.
 		};
+		std::string mId, mParent; ///< Stable authored entity and optional parent identity.
 		std::string mName; ///< Entity display name.
 		std::optional<MeshData> mMesh; ///< Missing when the entity has no mesh component.
 		std::optional<LightData> mLight; ///< Missing when the entity has no light component.
 		std::optional<bool> mKinematic; ///< Body presence and authored kinematic flag; no actor.
 		std::optional<bool> mSkybox; ///< Editor skybox presence and visibility; GPU resources remain controller-owned.
 		bool mCamera = false; ///< Presence of an inactive, targetless authoring camera.
+		bool mTrigger = false; ///< Authored overlap-only collider mode.
 		bool mCollider = false; ///< Presence of an uninitialized authoring collider.
 		bool mScript = false; ///< Presence of an uninitialized authoring script component.
 		bool mListener = false; ///< Presence of an authoring audio listener.

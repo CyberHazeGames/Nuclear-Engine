@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -77,3 +77,8 @@
 /graphify-out/cost.json
 /graphify-out/manifest.json
 /graphify-out/build_config.json
+
+# Native editor and player MSBuild intermediates
+/Nuclear.Editor/Build/
+/Nuclear.ScriptCore/Tests/bin/
+/Nuclear.ScriptCore/Tests/obj/

@@ -1,4 +1,5 @@
 #include <EditorWidgets.h>
+#include <Assets/Texture.h>
 #include <EditorSettings.h>
 #include <cmath>
 #include <iomanip>
@@ -214,51 +215,55 @@ namespace Nuclear::Editor
 	UI::Button& AssetTile(UI::PanelWidget& parent, const std::string& name,
 						  const UI::Brush& brush, UI::Vec2 imageSize,
 						  std::function<void()> callback, const std::string& subtext,
-						  EditorAssetButton::DragCallback dragged, std::function<void()> cancelled)
+						  EditorAssetButton::DragCallback dragged, std::function<void()> cancelled,
+						  std::unique_ptr<UI::Widget> icon, UI::Color accent)
 	{
 		UI::Button& button = dragged
 			? parent.Add<EditorAssetButton>(std::move(dragged), std::move(cancelled))
 			: parent.Add<UI::Button>();
-		const float buttonWidth = imageSize.x + 16.0f;
-		button.SetSizeLimits({buttonWidth, 0}, {buttonWidth + 12.0f, 1000000});
-		button.SetPadding({6, 6, 6, 6});
-
+		const float width = imageSize.x + 8;
+		button.SetSizeLimits({width, 0}, {width, 10000});
+		button.SetPadding({4, 4, 4, 3});
 		UI::ControlStyle style;
-		style.Normal = {.08f, .10f, .13f, 1};
-		style.Hovered = {.13f, .18f, .24f, 1};
-		style.Pressed = {.05f, .24f, .26f, 1};
-		style.Focus = {.15f, .7f, .6f, 1};
+		style.Normal = {.075f, .085f, .102f, 1};
+		style.Hovered = {.13f, .18f, .25f, 1};
+		style.Pressed = {.10f, .24f, .41f, 1};
+		style.Focus = EditorSettings::Get().GetAccentColor();
 		button.SetStyle(style);
 
 		auto& tile = button.Add<UI::VerticalBox>();
-		tile.SetSpacing(4);
-
-		auto& image = tile.Add<UI::Image>();
-		image.SetBrush(brush);
-		image.SetImageSize(imageSize);
-		auto imgSlot = tile.GetSlot(image.GetId());
-		imgSlot.Horizontal = UI::Alignment::Center;
-		tile.SetSlot(image.GetId(), imgSlot);
-
-		auto& label = Label(tile, name, 11);
+		if (icon)
+			tile.AddChild(std::move(icon));
+		else
+		{
+			auto& well = tile.Add<UI::Border>();
+			well.SetBrush({nullptr, {.048f, .056f, .069f, 1}});
+			well.SetSizeLimits(imageSize, imageSize);
+			auto& image = well.Add<UI::Image>();
+			UI::Vec2 fitted = imageSize;
+			if (brush.pTexture && brush.pTexture->GetWidth() && brush.pTexture->GetHeight())
+			{
+				const float scale = std::min(imageSize.x / brush.pTexture->GetWidth(), imageSize.y / brush.pTexture->GetHeight());
+				fitted = {scale * brush.pTexture->GetWidth(), scale * brush.pTexture->GetHeight()};
+			}
+			image.SetBrush(brush);
+			image.SetImageSize(fitted);
+			auto slot = well.GetSlot(image.GetId());
+			slot.Horizontal = slot.Vertical = UI::Alignment::Center;
+			well.SetSlot(image.GetId(), slot);
+		}
+		auto& stripe = tile.Add<UI::Border>();
+		stripe.SetBrush({nullptr, accent});
+		stripe.SetSizeLimits({0, 2}, {10000, 2});
+		auto& label = Label(tile, name, 12);
 		label.SetWrap(true);
-		// A grid measures each tile against the wider row. Reserve three lines for the
-		// name so its wrapped text remains visible when arranged at thumbnail width.
-		label.SetSizeLimits({imageSize.x, 36}, {imageSize.x, 36});
-		label.SetTextAlignment(UI::Alignment::Center);
-		auto lblSlot = tile.GetSlot(label.GetId());
-		lblSlot.Horizontal = UI::Alignment::Center;
-		tile.SetSlot(label.GetId(), lblSlot);
-
+		label.SetPadding({2, 3, 2, 0});
+		label.SetSizeLimits({imageSize.x, 32}, {imageSize.x, 32});
 		if (!subtext.empty())
 		{
 			auto& sub = Label(tile, subtext, 10);
-			sub.SetColor({.50f, .55f, .62f, 1});
-			sub.SetWrap(true);
-			sub.SetTextAlignment(UI::Alignment::Center);
-			auto subSlot = tile.GetSlot(sub.GetId());
-			subSlot.Horizontal = UI::Alignment::Center;
-			tile.SetSlot(sub.GetId(), subSlot);
+			sub.SetColor({.58f, .64f, .71f, 1});
+			sub.SetPadding({2, 0, 0, 0});
 		}
 
 		button.OnClicked = std::move(callback);

@@ -84,6 +84,9 @@ namespace Nuclear
 			Rendering::ImageBasedLighting* pIBLContext = nullptr;
 
 			RenderSystemBakeStatus mStatus;
+			RenderSystemBakingDesc mLastBake{}; ///< Configuration to reuse after the live light set changes.
+			bool mLightsChanged = false; ///< Rebuild before the next dereference of cached light pointers.
+			void InvalidateLights(); ///< Called on construction/removal in the active registry.
 
 			size_t Baked_DirLights_Size = 0;
 			size_t Baked_PointLights_Size = 0;

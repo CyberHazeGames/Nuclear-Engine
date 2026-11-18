@@ -29,7 +29,10 @@ namespace Nuclear
 
 			void ResizeRTs(Uint32 RTWidth, Uint32 RTHeight);
 
+			/// Draws the module's final color target into the swap chain.
 			void RenderFinalRT();
+			/// Draws a borrowed, sampleable scene color view into the swap chain for this frame.
+			void RenderToScreen(Diligent::ITextureView* color);
 
 			void UpdateCameraCB(Components::CameraComponent* component);
 			void UpdateCameraCB(const Components::CameraBuffer& bufferdata);

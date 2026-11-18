@@ -8,8 +8,9 @@ namespace Nuclear
 			: pParentScript(nullptr)
 		{
 		}
-		ScriptComponent::ScriptComponent(Assets::Script* _asset)
-			: pParentScript(_asset)
+		ScriptComponent::ScriptComponent(Assets::Script* asset) : ScriptComponent(asset, {}) {}
+		ScriptComponent::ScriptComponent(Assets::Script* asset, std::string fields)
+			: Fields(std::move(fields)), pParentScript(asset)
 		{
 		}
 		ScriptComponent::~ScriptComponent()

@@ -26,6 +26,17 @@ namespace Nuclear
             Input(Input const&) = delete;
             void operator=(Input const&) = delete;
 
+            /// Polls a Windows-compatible controller. Buttons use XInput bit positions, sticks are normalized
+            /// to [-1, 1] after dead zones and triggers to [0, 1]. Slots range from 0 to 3.
+            struct GamepadState
+            {
+                std::uint32_t Buttons = 0; ///< Bit set for each held digital button.
+                float LeftX = 0, LeftY = 0, RightX = 0, RightY = 0; ///< Positive Y points up.
+                float LeftTrigger = 0, RightTrigger = 0; ///< Analog trigger pressure.
+            };
+            /// Clears state and returns false when the slot is invalid or disconnected.
+            static bool ReadGamepad(std::uint32_t slot, GamepadState& state);
+
             /// Returns the shared input service; it does not own a window.
             static Input& Get();
 

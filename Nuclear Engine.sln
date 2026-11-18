@@ -22,6 +22,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Nuclear.Editor", "Nuclear.Editor\Nuclear.Editor.vcxproj", "{C5861902-6DB0-475E-A0EC-12E518F02354}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1E657253-3D76-4C77-A747-4D85EEFA91DA} = {1E657253-3D76-4C77-A747-4D85EEFA91DA}
+		{94839814-8B49-44D9-9811-097E9B13D0C1} = {94839814-8B49-44D9-9811-097E9B13D0C1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Nuclear.Player", "Nuclear.Editor\Nuclear.Player.vcxproj", "{4105958A-D1C9-4A57-81CE-F56546F59EA1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E657253-3D76-4C77-A747-4D85EEFA91DA} = {1E657253-3D76-4C77-A747-4D85EEFA91DA}
+		{94839814-8B49-44D9-9811-097E9B13D0C1} = {94839814-8B49-44D9-9811-097E9B13D0C1}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuclear.ScriptCore", "Nuclear.ScriptCore\Nuclear.ScriptCore.csproj", "{F2A7FA26-B783-445A-A44C-8E9634B5AB0F}"
@@ -45,6 +52,14 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Debug|Any CPU.Build.0 = Debug|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Debug|x64.ActiveCfg = Debug|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Debug|x64.Build.0 = Debug|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Release|Any CPU.ActiveCfg = Release|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Release|Any CPU.Build.0 = Release|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Release|x64.ActiveCfg = Release|x64
+		{4105958A-D1C9-4A57-81CE-F56546F59EA1}.Release|x64.Build.0 = Release|x64
 		{D9AF2902-8042-45CD-AD9E-1234F7EA3B80}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{D9AF2902-8042-45CD-AD9E-1234F7EA3B80}.Debug|Any CPU.Build.0 = Debug|x64
 		{D9AF2902-8042-45CD-AD9E-1234F7EA3B80}.Debug|x64.ActiveCfg = Debug|x64

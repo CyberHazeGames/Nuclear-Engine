@@ -1,0 +1,13 @@
+NuclearProject 2
+project "Twin Rooms"
+assembly ""
+levels 0
+prefabs 0
+startup "Coin" 0.035 0.07 0.12 1 -1
+entities 1
+entity "Coin" "Coin-0" ""
+transform 0 1 0 0 0 0 1 0.8 0.8 0.8
+mesh 1 "sphere" "default" 1 1 1 1 1 1 -1 -1 -1 0.2
+light 0
+components 0 1 -1 -1 0 0 "" 0 "" 1 ""
+end

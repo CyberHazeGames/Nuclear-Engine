@@ -19,15 +19,14 @@ namespace Nuclear::Editor
 		mWindow.Display(show);
 		auto& graphics = Graphics::GraphicsModule::Get();
 		auto swapDesc = graphics.GetSwapChain()->GetDesc();
-		swapDesc.Width = desc.WindowWidth;
-		swapDesc.Height = desc.WindowHeight;
+		mWindow.GetSize(swapDesc.Width, swapDesc.Height);
 		if (!graphics.CreateWindowSwapChain(mWindow, swapDesc, &pSwapChain) || !mRenderer.Initialize())
 		{
 			Shutdown();
 			return false;
 		}
 		mContext.SetDefaultFont(font);
-		mContext.SetViewport(float(desc.WindowWidth), float(desc.WindowHeight), mWindow.GetDpiScale());
+		mContext.SetViewport(float(swapDesc.Width), float(swapDesc.Height), mWindow.GetDpiScale());
 		mContext.SetInputMode(UI::InputMode::UIOnly);
 		auto root = std::make_unique<UI::VerticalBox>();
 		auto& caption = root->Add<EditorTitleBar>(mWindow);

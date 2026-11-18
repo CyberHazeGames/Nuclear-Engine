@@ -23,7 +23,10 @@ namespace Nuclear::UI
 		}
 		// The library owns imported assets. Copy the font's metrics and ref-counted GPU view
 		// so client asset flushes cannot invalidate the module's default typeface.
-		if (auto* font = Assets::AssetManager::Get().Import<Assets::Font>("@NuclearAssets@/Fonts/Roboto-Medium.ttf"))
+		// Use the same high-resolution outlines at every monitor scale and canvas zoom.
+		Assets::FontImportingDesc fontDesc;
+		fontDesc.Height = 96;
+		if (auto* font = Assets::AssetManager::Get().Import<Assets::Font>("@NuclearAssets@/Fonts/Roboto-Medium.ttf", fontDesc))
 			pDefaultFont = std::make_unique<Assets::Font>(*font);
 		else
 			NUCLEAR_WARN("[UI] Default font unavailable; shapes remain usable and labels reserve space.");

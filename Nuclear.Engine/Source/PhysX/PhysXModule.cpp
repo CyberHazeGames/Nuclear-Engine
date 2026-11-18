@@ -76,6 +76,7 @@ namespace Nuclear
 			PX_RELEASE(gDefaultMaterial)
 			PX_RELEASE(gPvd)
 			PX_RELEASE(gDispatcher)
+			if (gPhysics) PxCloseExtensions();
 			PX_RELEASE(gPhysics)
 			PX_RELEASE(gFoundation)	
 		}

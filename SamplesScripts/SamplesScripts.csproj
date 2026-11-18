@@ -13,6 +13,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Sample3.cs" />
+    <Compile Include="PickupPlayer.cs" />
+    <Compile Include="RoomGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <ProjectReference Include="..\Nuclear.ScriptCore\Nuclear.ScriptCore.csproj" />
   </ItemGroup>

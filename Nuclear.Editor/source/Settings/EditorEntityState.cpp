@@ -24,11 +24,13 @@ namespace Nuclear::Editor
 		if (!info)
 			return result;
 		result.Exists = true;
+		result.mId = info->PersistentId;
+		result.mParent = info->ParentId;
 		result.mName = info->mName;
 		result.Transform = info->mTransform;
 		if (auto* mesh = registry.try_get<Components::MeshComponent>(entity))
 			result.mMesh = MeshData{mesh->GetMesh(), mesh->GetMaterial(), mesh->GetEnableRendering(),
-				mesh->GetCastShadow(), mesh->GetReceiveShadows()};
+				mesh->GetCastShadow(), mesh->GetReceiveShadows(), mesh->ClipIndex, mesh->BlendSeconds, mesh->Tint, mesh->Metallic, mesh->Roughness};
 		if (auto* light = registry.try_get<Components::LightComponent>(entity))
 		{
 			const auto color = light->GetColor();
@@ -42,9 +44,13 @@ namespace Nuclear::Editor
 			result.mSkybox = sky->Enabled;
 		result.mCamera = registry.all_of<Components::CameraComponent>(entity);
 		result.mCollider = registry.all_of<Components::ColliderComponent>(entity);
+		if (result.mCollider) result.mTrigger = registry.get<Components::ColliderComponent>(entity).IsTrigger;
 		result.mScript = registry.all_of<Components::ScriptComponent>(entity);
+		if (result.mScript) result.mFields = registry.get<Components::ScriptComponent>(entity).Fields;
+		if (result.mScript) result.mScriptClass = registry.get<Components::ScriptComponent>(entity).ClassName;
 		result.mListener = registry.all_of<Components::AudioListenerComponent>(entity);
 		result.mSource = registry.all_of<Components::AudioSourceComponent>(entity);
+		if (result.mSource) result.mClipPath = registry.get<Components::AudioSourceComponent>(entity).ClipPath;
 		return result;
 	}
 
@@ -69,6 +75,8 @@ namespace Nuclear::Editor
 			}
 		}
 		auto& info = registry.get_or_emplace<Components::EntityInfoComponent>(entity);
+		if (!mId.empty()) info.PersistentId = mId;
+		info.ParentId = mParent;
 		info.mName = mName;
 		info.mTransform.SetPosition(Transform.GetLocalPosition());
 		info.mTransform.SetRotation(Transform.GetLocalRotation());
@@ -79,6 +87,11 @@ namespace Nuclear::Editor
 			auto& mesh = registry.get<Components::MeshComponent>(entity);
 			mesh.SetMesh(mMesh->Mesh);
 			mesh.SetMaterial(mMesh->Material);
+			if (mesh.ClipIndex != mMesh->ClipIndex) mesh.PlayClip(mMesh->ClipIndex, mMesh->BlendSeconds);
+			mesh.BlendSeconds = mMesh->BlendSeconds;
+			mesh.Tint = mMesh->Tint;
+			mesh.Metallic = mMesh->Metallic;
+			mesh.Roughness = mMesh->Roughness;
 			mesh.SetEnableRendering(mMesh->Visible);
 			mesh.SetCastShadow(mMesh->CastShadows);
 			mesh.SetReceiveShadows(mMesh->ReceiveShadows);
@@ -102,12 +115,16 @@ namespace Nuclear::Editor
 		if (mKinematic)
 			registry.get<Components::RigidBodyComponent>(entity).isKinematic = *mKinematic;
 		RestorePresence<Components::ColliderComponent>(registry, entity, mCollider);
+		if (mCollider) registry.get<Components::ColliderComponent>(entity).IsTrigger = mTrigger;
 		RestorePresence<SkyboxComponent>(registry, entity, mSkybox.has_value());
 		if (mSkybox)
 			registry.get<SkyboxComponent>(entity).Enabled = *mSkybox;
 		RestorePresence<Components::ScriptComponent>(registry, entity, mScript);
+		if (mScript) registry.get<Components::ScriptComponent>(entity).Fields = mFields;
+		if (mScript) registry.get<Components::ScriptComponent>(entity).ClassName = mScriptClass;
 		RestorePresence<Components::AudioListenerComponent>(registry, entity, mListener);
 		RestorePresence<Components::AudioSourceComponent>(registry, entity, mSource);
+		if (mSource) registry.get<Components::AudioSourceComponent>(entity).ClipPath = mClipPath;
 		if (mCamera && !registry.all_of<Components::CameraComponent>(entity))
 		{
 			Components::CameraComponentDesc desc;
@@ -126,12 +143,15 @@ namespace Nuclear::Editor
 		if (!Exists) return entt::null;
 		auto& scene = Core::Scene::Get();
 		const auto entity = scene.CreateEntity(name).GetEntityID();
+		auto id = scene.GetRegistry().get<Components::EntityInfoComponent>(entity).PersistentId;
 		if (!Restore(entity))
 		{
 			scene.GetRegistry().destroy(entity);
 			return entt::null;
 		}
-		scene.GetRegistry().get<Components::EntityInfoComponent>(entity).mName = name;
+		auto& copy = scene.GetRegistry().get<Components::EntityInfoComponent>(entity);
+		copy.mName = name;
+		copy.PersistentId = std::move(id);
 		return entity;
 	}
 
@@ -139,11 +159,11 @@ namespace Nuclear::Editor
 	{
 		if (!Exists || !other.Exists)
 			return Exists == other.Exists;
-		return mName == other.mName && Transform.GetLocalPosition() == other.Transform.GetLocalPosition() &&
+		return mId == other.mId && mParent == other.mParent && mName == other.mName && Transform.GetLocalPosition() == other.Transform.GetLocalPosition() &&
 			Transform.GetLocalRotation() == other.Transform.GetLocalRotation() &&
 			Transform.GetLocalScale() == other.Transform.GetLocalScale() && mMesh == other.mMesh &&
 			mLight == other.mLight && mKinematic == other.mKinematic && mCamera == other.mCamera &&
-			mCollider == other.mCollider && mScript == other.mScript && mListener == other.mListener &&
-			mSource == other.mSource && mSkybox == other.mSkybox;
+			mTrigger == other.mTrigger && mCollider == other.mCollider && mScript == other.mScript && mFields == other.mFields && mScriptClass == other.mScriptClass && mListener == other.mListener &&
+			mSource == other.mSource && mClipPath == other.mClipPath && mSkybox == other.mSkybox;
 	}
 }

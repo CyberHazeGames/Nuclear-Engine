@@ -18,5 +18,9 @@ namespace Nuclear::Platform
 		/// success/cancellation and receives diagnostic text on failure. Owner must outlive the call.
 		static std::filesystem::path OpenFile(Window& owner, const std::string& title,
 			const std::string& patterns, const std::filesystem::path& directory, std::string& error);
+		/// Selects a destination, prompting before overwriting an existing file. Extension omits the dot.
+		static std::filesystem::path SaveFile(Window& owner, const std::string& title,
+			const std::string& patterns, const std::filesystem::path& directory, const std::string& extension,
+			std::string& error);
 	};
 }

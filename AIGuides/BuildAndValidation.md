@@ -290,3 +290,28 @@ There is a focused Windows platform smoke project, but no general engine test su
 | Docs only | Verify relative links/source paths and `git diff --check`; no engine build required |
 
 The selector labels identify sample intent; they do not establish that each sample is runnable from a clean clone. Report the exact configuration, command, sample, and any missing prerequisite. Separate compiler failures, linker/dependency failures, missing runtime content, and behavior regressions.
+
+### Project save, Play and C# gameplay
+
+Build the Debug x64 solution and `Nuclear.Editor/Nuclear.Editor.Tests.vcxproj`.
+From `Nuclear.Editor/`, run `../Bin/DebugX64/Nuclear.Editor.Tests.exe --project-play`.
+The test requires Windows/D3D11, PhysX, the x64 .NET 10 runtime, and the managed
+assemblies in the Debug executable directory. It uses a temporary project with an
+imported model and launches a real separate game window. It checks save/overwrite,
+malformed input preserving the open scene, reopening under a fresh editor controller,
+Stop preserving entities, physics and repeatable C# pickup/HUD behavior. The game
+process only initializes audio when the authored scene requests it. See the
+[editor workflow](Editor.md#save-a-project-and-play-its-startup-scene) for the playable example.
+
+## Windows game packaging
+
+Build the Release x64 solution and export Twin Rooms from the repository root to a new directory.
+
+~~~powershell
+./BuildSupport/Build.ps1 -Configuration Release
+./Bin/ReleaseX64/Nuclear.Editor.exe --build-game Samples/TwinRooms/TwinRooms.nuclearproject Bin/ReleaseX64 Assets Build/TwinRooms-Windows-x64
+python BuildSupport/TestPackagedGame.py
+dotnet run --project Nuclear.ScriptCore/Tests/GameplayTests.csproj -c Debug
+~~~
+
+The standalone smoke test uses its own temporary export and save folder. It relocates the game, drives the title and pause menus, rebinds and persists a movement key, collects prefab pickups, quits after a level change, continues from the saved checkpoint and completes the game. Run the editor test executable with `--project-play` from `Nuclear.Editor` for hierarchy, mesh settings, clip transitions, project persistence and isolated Play. A separate machine requires the x64 .NET 10 runtime and Microsoft Visual C++ runtime.

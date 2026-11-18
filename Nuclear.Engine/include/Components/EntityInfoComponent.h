@@ -14,6 +14,8 @@ namespace Nuclear
 
 			ECS::Transform mTransform;
 			std::string mName;
+            std::string PersistentId; ///< Stable project identity; duplicated and spawned entities receive fresh IDs.
+            std::string ParentId; ///< Persistent parent identity, or empty for a root entity.
 
 		//private:
 		//	friend Serialization::Access;

@@ -11,15 +11,25 @@ SamplerState UITexture_sampler;
 
 float4 main(PixelInput input) : SV_TARGET
 {
-    float4 sampled = UITexture.Sample(UITexture_sampler, input.UV);
-    // Each quad has a constant SDF value. Evaluate derivatives before branching.
-    // fwidth is the full distance change over a screen pixel. Use half on
-    // either side of the contour to avoid a two-pixel-wide blurred edge.
-    float smoothing = max(0.5 * fwidth(sampled.r), 0.0005);
-    if (input.SDF > 0.5)
+    float2 pixelX = ddx(input.UV);
+    float2 pixelY = ddy(input.UV);
+    if (input.SDF < 0.5)
+        return UITexture.SampleGrad(UITexture_sampler, input.UV, pixelX, pixelY) * input.Color;
+
+    // Integrate the contour over one physical pixel. Narrow stems and counters can
+    // cross only part of a pixel even when its center is wholly inside or outside.
+    float coverage = 0;
+    [unroll]
+    for (int y = 0; y < 4; ++y)
     {
-        float coverage = smoothstep(0.5 - smoothing, 0.5 + smoothing, sampled.r);
-        return float4(input.Color.rgb, input.Color.a * coverage);
+        [unroll]
+        for (int x = 0; x < 4; ++x)
+        {
+            float2 offset = (float2(x, y) + 0.5) / 4.0 - 0.5;
+            float distance = UITexture.SampleLevel(UITexture_sampler, input.UV + offset.x * pixelX + offset.y * pixelY, 0).r;
+            float subpixelBand = max(0.25 * fwidth(distance), 1.0 / 255.0);
+            coverage += saturate((distance - 0.5) / subpixelBand + 0.5);
+        }
     }
-    return sampled * input.Color;
+    return float4(input.Color.rgb, input.Color.a * (coverage / 16.0));
 }

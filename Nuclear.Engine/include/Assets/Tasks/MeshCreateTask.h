@@ -3,6 +3,8 @@
 #include <Assets/Importer.h>
 #include <Assets/Loader.h>
 #include <Assets/Mesh.h>
+#include <Assets/AssetLibrary.h>
+#include <algorithm>
 
 #include <Threading/MainThreadTask.h>
 #include <Threading/ThreadingModule.h>
@@ -34,31 +36,23 @@ namespace Nuclear
 			{
 				bool result = Graphics::GraphicsModule::Get().CreateMesh(pMesh);
 
-				if (mFactoryType == 1)
+				if (mFactoryType == IMPORTER_FACTORY_TYPE || mFactoryType == LOADER_FACTORY_TYPE)
 				{
-					auto& vec = Importer::Get().GetQueuedAssets();
-					for (Uint32 i = 0; i < vec.size(); i++)
+					auto& queued = mFactoryType == IMPORTER_FACTORY_TYPE
+						? Importer::Get().GetQueuedAssets() : Loader::Get().GetQueuedAssets();
+					std::erase(queued, static_cast<IAsset*>(pMesh));
+					if (auto* clips = pMesh->pImportedAnimations)
 					{
-						if (vec.at(i)->GetUUID() == pMesh->GetUUID())
+						std::erase(queued, static_cast<IAsset*>(clips));
+						if (clips->GetState() != IAsset::State::Loaded)
 						{
-							vec.erase(vec.begin() + i);
-							break;
+							pMesh->pImportedAnimations = nullptr;
+							// An import allocated a private placeholder. A load may share its UUID with another mesh.
+							if (mFactoryType == IMPORTER_FACTORY_TYPE)
+								AssetLibrary::Get().mImportedAnimations.mData.erase(clips->GetUUID());
 						}
 					}
 				}
-				else if (mFactoryType == 2)
-				{
-					auto& vec = Loader::Get().GetQueuedAssets();
-					for (Uint32 i = 0; i < vec.size(); i++)
-					{
-						if (vec.at(i)->GetUUID() == pMesh->GetUUID())
-						{
-							vec.erase(vec.begin() + i);
-							break;
-						}
-					}
-				}
-
 
 				if (!result)
 				{

@@ -170,3 +170,7 @@ Source-observed constraints, not runtime-verified bug reproductions:
 
 See [Editor.md](Editor.md#assets-and-diagnostics) for automatic imported-material
 assignment and the separate neutral mesh-document/thumbnail preview limitations.
+
+## Authored mesh appearance and animation
+
+[MeshComponent](../Nuclear.Engine/include/Components/MeshComponent.h) carries instance tint, metallic and roughness values. The forward pass supplies them with each mesh draw. Imported skinned meshes retain their animation clips. Selecting a clip starts it or crossfades from the displayed pose over the requested duration. The editor stores these choices with each entity and can save surface values as a material preset.

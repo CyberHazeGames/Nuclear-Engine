@@ -22,6 +22,8 @@ struct PixelInputType
     float4 Position : SV_POSITION;
     float2 TexCoord : TEXCOORD0;
 #ifndef NE_DEFFERED
+    nointerpolation float3 MaterialTint : MATERIAL0;
+    nointerpolation float2 MaterialPBR : MATERIAL1;
     float3 Normals : NORMAL0;
     float3 FragPos : TEXCOORD1;
     float3x3 TBN : TANGENT0;

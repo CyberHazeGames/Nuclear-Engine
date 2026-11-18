@@ -397,3 +397,30 @@ namespace Nuclear::Platform
 		Detail::UpdateCursor();
 	}
 }
+
+#include <Xinput.h>
+#include <cmath>
+#pragma comment(lib, "Xinput9_1_0.lib")
+
+bool Nuclear::Platform::Input::ReadGamepad(std::uint32_t slot, GamepadState& state)
+{
+    state = {};
+    XINPUT_STATE native{};
+    if (slot >= XUSER_MAX_COUNT || XInputGetState(slot, &native) != ERROR_SUCCESS) return false;
+    const auto& pad = native.Gamepad;
+    state.Buttons = pad.wButtons;
+    auto axis = [](SHORT value, int deadzone)
+    {
+        int magnitude = std::abs(int(value));
+        if (magnitude <= deadzone) return 0.f;
+        float scale = float(magnitude - deadzone) / float((value < 0 ? 32768 : 32767) - deadzone);
+        return value < 0 ? -scale : scale;
+    };
+    state.LeftX = axis(pad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+    state.LeftY = axis(pad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+    state.RightX = axis(pad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+    state.RightY = axis(pad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+    state.LeftTrigger = pad.bLeftTrigger / 255.f;
+    state.RightTrigger = pad.bRightTrigger / 255.f;
+    return true;
+}

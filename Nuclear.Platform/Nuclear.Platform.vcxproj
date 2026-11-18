@@ -71,6 +71,7 @@
   <ItemGroup>
     <ClInclude Include="include\Nuclear.Platform\Export.h" />
     <ClInclude Include="include\Nuclear.Platform\FileDialog.h" />
+    <ClInclude Include="include\Nuclear.Platform\ChildProcess.h" />
     <ClInclude Include="include\Nuclear.Platform\Diagnostics.h" />
     <ClInclude Include="include\Nuclear.Platform\Event.h" />
     <ClInclude Include="include\Nuclear.Platform\Input.h" />
@@ -83,6 +84,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Windows\Win32Platform.cpp" />
     <ClCompile Include="Source\Windows\FileDialog.cpp" />
+    <ClCompile Include="Source\Windows\ChildProcess.cpp" />
     <ClCompile Include="Source\Windows\Win32Diagnostics.cpp" />
     <ClCompile Include="Source\Windows\Win32Window.cpp" />
     <ClCompile Include="Source\Windows\Win32Input.cpp" />

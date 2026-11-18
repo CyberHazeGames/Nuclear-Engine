@@ -1,4 +1,10 @@
+#include <GameExporter.h>
+#include <iomanip>
 #include <EditorUI.h>
+#include <ProjectDocument.h>
+#include <Nuclear.Platform/FileDialog.h>
+#include <Nuclear.Platform/Platform.h>
+#include <fstream>
 #include <EditorHierarchyRow.h>
 #include <EditorAssetPicker.h>
 #include <EditorTitleBar.h>
@@ -13,6 +19,7 @@
 #include <MeshPreviewViewport.h>
 #include <MeshPlacementPreview.h>
 #include <AboutDocument.h>
+#include <VisualScriptDocument.h>
 #include <EditorSettings.h>
 #include <EditorSettingsDocument.h>
 #include <GameViewPort.h>
@@ -237,36 +244,24 @@ namespace Nuclear::Editor
 			pViewport->SetSelectedEntity(entity);
 			pInspector->SetOffset(0);
 		};
-		Assets::ShaderImportingDesc desc;
-		desc.mCommonOptions.mAsyncImport = false;
-		desc.mCommonOptions.mLoadOnly = true;
-		desc.mExcludedVariants = {"NE_DEFFERED", "NE_SHADOWS", "NE_ANIMATION"};
-		pShader = Assets::AssetManager::Get().Import<Assets::Shader>(
-			"@NuclearAssets@/Shaders/BlinnPhong.NuclearShader", desc);
-		if (!pShader || pShader->GetState() != Assets::IAsset::State::Loaded)
-			throw std::runtime_error("Editor preview shader could not be imported");
-		desc.mExcludedVariants = {"NE_DEFFERED", "NE_SHADOWS", "NE_ANIMATION", "NE_SSAO", "IBL_ENABLED"};
-		pImportedShader = Assets::AssetManager::Get().Import<Assets::Shader>(
-			"@NuclearAssets@/Shaders/PBR/PBR.NuclearShader", desc);
-		if (!pImportedShader || pImportedShader->GetState() != Assets::IAsset::State::Loaded)
-			throw std::runtime_error("Editor imported-material shader could not be imported");
-		auto& material = Assets::AssetLibrary::Get().mImportedMaterials.AddAsset();
-		material.SetName("Editor / Default material");
-		pMaterial = &material;
+		mProject.InitializeMaterials();
+		pMaterial = mProject.GetDefaultMaterial();
 		mProject.Initalize({"Untitled Project"});
-		mProject.SetDefaultMaterial(pMaterial);
 		mProject.SetPath(std::filesystem::absolute(Assets::AssetLibrary::Get().GetPath()));
 		mAssets.SetProject(&mProject);
 		mAssets.OnChanged = [this]() {
 			mAssetsDirty = true;
 		};
-		mAssets.OnMeshImported = [this](Assets::Mesh& mesh) { PrepareImportedMaterial(mesh); };
 		mAssets.OnEntityAdded = [this](entt::entity entity) {
 			mHistory.RecordCreated(entity);
 			mSelected = entity;
 			mHierarchyDirty = mInspectorDirty = true;
 			pInspector->SetOffset(0);
 			pWorkspace->Show("viewport");
+		};
+		mAssets.OnDocumentOpened = [this](const std::filesystem::path& file) {
+			if (ProjectDocument::IsMap(file)) OpenMap(file);
+			else OpenProject(file);
 		};
 		mAssets.OnAssetOpened = [this](Assets::AssetType type, Core::UUID id) {
 			mPendingDocuments.emplace_back(type, id);
@@ -290,16 +285,17 @@ namespace Nuclear::Editor
 					found->second->SetText(title);
 			}
 		};
-		NewScene();
+		NewScene(true);
 		pSelectionRenderer = std::make_unique<EditorSelectionRenderer>();
 		if (!pSelectionRenderer->Initialize(*Core::Scene::Get().GetMainCamera()))
 			throw std::runtime_error("Editor selection renderer could not be initialized");
+		int width = 0, height = 0;
+		Core::Engine::Get().GetMainWindow()->GetSize(width, height);
+		Resize(width, height);
 		BuildWorkspace();
 		CreateEntity(1);
 		mHistory.Clear();
 		auto& context = UI::UIModule::Get().GetContext();
-		const auto size = context.GetPixelSize();
-		Resize(static_cast<int>(size.x), static_cast<int>(size.y));
 		context.SetInputMode(UI::InputMode::UIOnly);
 		context.OnPreviewEvent = [this, &context](const Platform::Event& event) {
 			return ProcessShortcut(event, context);
@@ -307,8 +303,319 @@ namespace Nuclear::Editor
 		Platform::Input::Get().SetMouseInputMode(Platform::Input::MouseInputMode::Normal);
 	}
 
-	void EditorUI::NewScene()
+	void EditorUI::SaveProject(const std::filesystem::path& file)
 	{
+		if (!ProjectDocument::IsProject(file)) throw std::runtime_error("Use .nuclearproject for the main project");
+		const auto target = std::filesystem::absolute(file).lexically_normal();
+		const bool startup = mStartupMap.empty() || mMapFile == mStartupMap;
+		auto map = mMapFile;
+		if (!ProjectDocument::IsMap(map) || (startup && target != mProjectFile && !mProjectFile.empty()))
+		{
+			map = target.parent_path() / target.stem();
+			map += ".NMap";
+			if (std::filesystem::exists(map))
+				map = target.parent_path() / (target.stem().string() + "-" + Core::UUID::CreateNewUUID().str() + ".NMap");
+		}
+		auto levels = mLevels;
+		if (!startup)
+		{
+			const auto name = Core::Scene::Get().GetSceneAsset()->GetName();
+			const bool registered = std::any_of(levels.begin(), levels.end(), [&](const auto& entry) {
+				return entry.second == map;
+			});
+			if (!registered && (name == ProjectDocument::Read(mStartupMap).SceneName || !levels.emplace(name, map).second))
+				throw std::runtime_error("Give the map a unique scene name before saving the project");
+		}
+		SaveMap(map);
+		ProjectDocument manifest;
+		manifest.ProjectName = mProject.GetProjectInfo().mProjectName;
+		manifest.Assembly = mScriptAssembly;
+		manifest.StartupMap = startup ? map : mStartupMap;
+		manifest.Levels = std::move(levels);
+		manifest.Prefabs = mPrefabs;
+		manifest.ConvertLegacyLevels(target.parent_path());
+		manifest.SaveManifest(target);
+		mStartupMap = manifest.StartupMap;
+		mLevels = std::move(manifest.Levels);
+		mProjectFile = target;
+		mProject.SetPath(target.parent_path());
+		mNotice = "Saved " + target.string();
+	}
+
+	void EditorUI::SaveMap(const std::filesystem::path& file)
+	{
+		if (!ProjectDocument::IsMap(file)) throw std::runtime_error("Save maps with the .NMap extension");
+		auto target = std::filesystem::absolute(file).lexically_normal();
+		auto doc = ProjectDocument::Capture(mProject, mCamera, mGameCamera);
+		doc.Prefabs = mMapPrefabs;
+		const bool startup = mStartupMap.empty() || (mMapFile == mStartupMap &&
+			(target == mMapFile || !ProjectDocument::IsMap(mMapFile)));
+		if (!startup && target == mStartupMap) throw std::runtime_error("This filename belongs to the startup map");
+		doc.Save(target, mProject);
+		if (startup) mStartupMap = target;
+		mMapFile = target;
+		mAssetsDirty = true;
+		mNotice = "Saved map " + target.string();
+	}
+
+	void EditorUI::OpenMap(const std::filesystem::path& file)
+	{
+		if (!ProjectDocument::IsMap(file)) throw std::runtime_error("Open a .NMap asset");
+		auto doc = ProjectDocument::Read(file);
+		ApplyMap(doc);
+		mMapFile = std::filesystem::absolute(file).lexically_normal();
+		mMapPrefabs = std::move(doc.Prefabs);
+		if (mStartupMap.empty()) mStartupMap = mMapFile;
+		mNotice = "Opened map " + mMapFile.string();
+	}
+
+	void EditorUI::OpenProject(const std::filesystem::path& file)
+	{
+		if (!ProjectDocument::IsProject(file)) throw std::runtime_error("Open a main .nuclearproject file");
+		auto doc = ProjectDocument::Read(file);
+		ApplyMap(doc);
+		mProject.Initalize({doc.ProjectName});
+		mProjectFile = std::filesystem::absolute(file).lexically_normal();
+		mProject.SetPath(mProjectFile.parent_path());
+		mMapFile = mStartupMap = doc.StartupMap.empty() ? mProjectFile : doc.StartupMap;
+		mScriptAssembly = doc.Assembly;
+		mLevels = std::move(doc.Levels);
+		mPrefabs = std::move(doc.Prefabs);
+		mMapPrefabs = std::move(doc.StartupPrefabs);
+		mNotice = "Opened " + mProjectFile.string();
+	}
+
+	void EditorUI::ApplyMap(ProjectDocument& doc)
+	{
+		doc.Resolve(mProject);
+		NewScene();
+		auto& scene = Core::Scene::Get();
+		auto& reg = scene.GetRegistry();
+		// NewScene supplies one default light for empty authoring sessions.
+		for (auto id : reg.view<Components::LightComponent>()) reg.destroy(id);
+		mGameCamera = doc.Instantiate();
+		scene.SetMainCamera(reg.try_get<Components::CameraComponent>(mCamera));
+		auto settings = EditorSceneState::Capture();
+		settings.Name = doc.SceneName;
+		settings.ClearColor = doc.ClearColor;
+		settings.Restore();
+		if (!reg.view<SkyboxComponent>().empty() && !PrepareSkybox())
+			throw std::runtime_error("Unable to initialize the map skybox");
+		mRendererDirty = true;
+	}
+
+	void EditorUI::Play()
+	{
+		if (mPlayer) { mNotice = "Game already running"; return; }
+		auto& reg = Core::Scene::Get().GetRegistry();
+		if (!reg.valid(mGameCamera) || !reg.all_of<Components::CameraComponent>(mGameCamera))
+			throw std::runtime_error("Select a camera entity, then Project > Use selected camera for Play");
+		auto doc = ProjectDocument::Capture(mProject, mCamera, mGameCamera);
+		doc.Assembly = mScriptAssembly;
+		doc.Levels = mLevels;
+		doc.Prefabs = mPrefabs;
+		const auto directory = std::filesystem::temp_directory_path() / (".nuclear-play-" + Core::UUID::CreateNewUUID().str());
+		if (!std::filesystem::create_directory(directory)) throw std::runtime_error("Could not create play directory");
+		mPlayDirectory = directory;
+		try
+		{
+			auto snapshot = std::filesystem::absolute(mPlayDirectory / "play.nuclearproject");
+			std::erase_if(doc.Levels, [&](const auto& entry) { return entry.second == mMapFile || entry.first == doc.SceneName; });
+			if (!mStartupMap.empty() && mMapFile != mStartupMap)
+			{
+				auto startup = ProjectDocument::Read(mStartupMap);
+				if (startup.SceneName != doc.SceneName) doc.Levels.emplace(startup.SceneName, mStartupMap);
+			}
+			doc.StartupMap = mPlayDirectory / "play.NMap";
+			doc.ConvertLegacyLevels(mPlayDirectory);
+			auto map = doc;
+			map.Prefabs = mMapPrefabs;
+			map.Save(doc.StartupMap, mProject);
+			doc.SaveManifest(snapshot);
+			auto executable = Platform::GetExecutablePath().parent_path() / "Nuclear.Editor.exe";
+			auto assets = std::filesystem::absolute(Assets::AssetLibrary::Get().GetPath());
+			auto child = std::make_unique<Platform::ChildProcess>();
+			child->Start(executable, {"--play", snapshot, assets}, mPlayDirectory);
+			mPlayer = std::move(child);
+			mNotice = "Playing / Escape or Stop ends the game";
+		}
+		catch (...) { FinishPlay(); throw; }
+	}
+
+	void EditorUI::Stop()
+	{
+		mStopping = true;
+		if (mPlayer) mPlayer->RequestClose();
+	}
+
+	void EditorUI::FinishPlay()
+	{
+		mPlayer.reset();
+		mStopping = false;
+		if (mPlayDirectory.empty()) return;
+		std::error_code error;
+		std::filesystem::remove_all(mPlayDirectory, error); // Private directory created for this Play session.
+		mPlayDirectory.clear();
+	}
+
+	void EditorUI::UpdateProjectActions()
+	{
+		try
+		{
+			if (mPlayer)
+			{
+				if (auto code = mPlayer->ExitCode())
+				{
+					std::string reason;
+					std::ifstream diagnostic(mPlayDirectory / "play-error.txt");
+					std::getline(diagnostic, reason);
+					diagnostic.close();
+					mNotice = *code == 0 ? "Play stopped" : "Play failed: " + (reason.empty() ? std::to_string(*code) : reason);
+					if (*code != 0)
+					{
+						// Keep diagnostics when startup fails, including SDK/device and managed loader messages.
+						mNotice += " / log: " + (mPlayDirectory / "NuclearEngine.log").string();
+						std::error_code error;
+						std::filesystem::remove(mPlayDirectory / "play.nuclearproject", error);
+						std::filesystem::remove(mPlayDirectory / "play.NMap", error);
+						mPlayDirectory.clear();
+					}
+					FinishPlay();
+				}
+				else if (mStopping) mPlayer->RequestClose();
+			}
+			const auto action = std::exchange(mProjectAction, ProjectAction::None);
+			if (action == ProjectAction::None) return;
+			if (action == ProjectAction::Play) { Play(); return; }
+			if (action == ProjectAction::Stop) { Stop(); return; }
+			auto& window = *Core::Engine::Get().GetMainWindow();
+			const auto base = mProjectFile.empty() ? mProject.GetPath() : mProjectFile.parent_path();
+			std::string error;
+			if (action == ProjectAction::Assembly)
+			{
+				auto file = Platform::FileDialog::OpenFile(window, "Select gameplay assembly", "*.dll", base, error);
+				if (!file.empty()) { mScriptAssembly = file; mNotice = "Gameplay assembly: " + file.string(); }
+			}
+			else if (action == ProjectAction::Export)
+            {
+                if (mProjectFile.empty()) throw std::runtime_error("Save the project before building the game");
+                auto output = Platform::FileDialog::SaveFile(window, "Name the new game folder", "*.*", base, "", error);
+                if (!output.empty())
+                {
+                    SaveProject(mProjectFile);
+                    auto release = Platform::GetExecutablePath().parent_path().parent_path() / "ReleaseX64";
+                    GameExporter::Build(mProject, ProjectDocument::Read(mProjectFile), release,
+                        Assets::AssetLibrary::Get().GetPath(), output);
+                    mNotice = "Built " + (output / "Game.exe").string();
+                }
+            }
+            else if (action == ProjectAction::SavePrefab || action == ProjectAction::PlacePrefab)
+            {
+                if (action == ProjectAction::SavePrefab && (mSelected == mCamera || mSelected == entt::null))
+                    throw std::runtime_error("Select a scene entity to save as a prefab");
+                auto file = action == ProjectAction::SavePrefab
+                    ? Platform::FileDialog::SaveFile(window, "Save selected prefab", "*.nuclearprefab", base, "nuclearprefab", error)
+                    : Platform::FileDialog::OpenFile(window, "Place prefab", "*.nuclearprefab", base, error);
+                if (!file.empty())
+                {
+                    if (action == ProjectAction::SavePrefab) ProjectDocument::CapturePrefab(mSelected).Save(file, mProject);
+                    else
+                    {
+                        auto doc = ProjectDocument::Read(file);
+                        doc.Resolve(mProject);
+                        PasteEntity(doc.Template());
+                    }
+                    mPrefabs[file.stem().string()] = file;
+                    mNotice = "Registered prefab " + file.stem().string();
+                }
+            }
+            else if (action == ProjectAction::SaveSurface || action == ProjectAction::LoadSurface)
+            {
+                auto& reg = Core::Scene::Get().GetRegistry();
+                auto* mesh = reg.try_get<Components::MeshComponent>(mSelected);
+                if (!mesh) throw std::runtime_error("Select an entity with a mesh");
+                bool save = action == ProjectAction::SaveSurface;
+                auto path = save ? Platform::FileDialog::SaveFile(window, "Save material preset", "*.nuclearmaterial", base, "nuclearmaterial", error)
+                    : Platform::FileDialog::OpenFile(window, "Apply material preset", "*.nuclearmaterial", base, error);
+                if (!path.empty() && save)
+                {
+                    auto temp = path.parent_path() / (Core::UUID::CreateNewUUID().str() + ".tmp");
+                    try
+                    {
+                        std::ofstream out(temp);
+                        out.exceptions(std::ios::badbit | std::ios::failbit);
+                        out.imbue(std::locale::classic());
+                        out << "NuclearMaterial 1\\n" << std::setprecision(9) << mesh->Tint.r << ' ' << mesh->Tint.g << ' ' << mesh->Tint.b
+                            << ' ' << mesh->Metallic << ' ' << mesh->Roughness;
+                        out.close();
+                        std::filesystem::rename(temp, path);
+                    }
+                    catch (...) { std::error_code ignored; std::filesystem::remove(temp, ignored); throw; }
+                }
+                else if (!path.empty())
+                {
+                    std::ifstream input(path);
+                    input.imbue(std::locale::classic());
+                    std::string magic;
+                    int version;
+                    Math::Vector3 tint;
+                    float metal, rough;
+                    if (!(input >> magic >> version >> tint.r >> tint.g >> tint.b >> metal >> rough) ||
+                        magic != "NuclearMaterial" || version != 1 || !(input >> std::ws).eof() ||
+                        !(tint.r >= 0 && tint.r <= 1 && tint.g >= 0 && tint.g <= 1 && tint.b >= 0 && tint.b <= 1 &&
+                            metal >= -1 && metal <= 1 && rough >= -1 && rough <= 1))
+                        throw std::runtime_error("Invalid material preset");
+                    mHistory.Edit(mSelected, "Apply material preset", [&]() { mesh->Tint = tint; mesh->Metallic = metal; mesh->Roughness = rough; });
+                    RefreshInspector();
+                }
+            }
+            else if (action == ProjectAction::OpenMap)
+			{
+				auto file = Platform::FileDialog::OpenFile(window, "Open map", "*.NMap", base, error);
+				if (!file.empty()) OpenMap(file);
+			}
+			else if (action == ProjectAction::SaveMap || action == ProjectAction::SaveMapAs)
+			{
+				auto file = mMapFile;
+				if (!ProjectDocument::IsMap(file) || action == ProjectAction::SaveMapAs)
+					file = Platform::FileDialog::SaveFile(window, "Save map", "*.NMap", base, "NMap", error);
+				if (!file.empty()) SaveMap(file);
+			}
+			else if (action == ProjectAction::AddLevel)
+            {
+                auto file = Platform::FileDialog::OpenFile(window, "Link a saved map", "*.NMap", base, error);
+                if (!file.empty())
+                {
+                    if (!ProjectDocument::IsMap(file) || file == mStartupMap) throw std::runtime_error("Choose a separate .NMap asset");
+                    const auto level = ProjectDocument::Read(file);
+                    const auto found = mLevels.find(level.SceneName);
+                    if (level.SceneName.empty() || (found != mLevels.end() && found->second != file))
+                        throw std::runtime_error("Choose a level with a unique scene name");
+                    mLevels[level.SceneName] = file;
+                    mAssetsDirty = true;
+                    mNotice = "Linked level " + level.SceneName;
+                }
+            }
+            else if (action == ProjectAction::Open)
+			{
+				auto file = Platform::FileDialog::OpenFile(window, "Open project", "*.nuclearproject", base, error);
+				if (!file.empty()) OpenProject(file);
+			}
+			else
+			{
+				auto file = mProjectFile;
+				if (file.empty() || action == ProjectAction::SaveAs)
+					file = Platform::FileDialog::SaveFile(window, "Save project", "*.nuclearproject", base, "nuclearproject", error);
+				if (!file.empty()) SaveProject(file);
+			}
+			if (!error.empty()) mNotice = error;
+		}
+		catch (const std::exception& e) { mNotice = e.what(); }
+	}
+
+	void EditorUI::NewScene(bool defaultSkybox)
+	{
+		mGameCamera = entt::null;
 		if (pWorkspace) pWorkspace->GetColorPicker().Close();
 		CloseHierarchyMenu();
 		mCopiedEntity.reset();
@@ -347,81 +654,23 @@ namespace Nuclear::Editor
 			keyLight.AddComponent<Components::LightComponent>(Components::LightComponent::Type::Directional);
 		light.SetDirection({-.4f, -1.0f, -.3f});
 		light.SetIntensity(1.0f);
+		if (defaultSkybox)
+		{
+			if (!PrepareSkybox()) throw std::runtime_error("Unable to initialize the default skybox");
+			scene.CreateEntity("Skybox").AddComponent<SkyboxComponent>();
+		}
 		mSelected = entt::null;
 		RebuildRenderer();
 		mHierarchyDirty = mInspectorDirty = mAssetsDirty = true;
-		mNotice = "New scene / session changes are held in memory";
+		mNotice = "New scene / use File > Save project";
 		if (pWorkspace)
 			pWorkspace->Show("viewport");
 	}
 
 	void EditorUI::RebuildRenderer()
 	{
-		pRenderer = std::make_unique<Systems::RenderSystem>();
-		pRenderer->RegisterShader(pShader);
-		pRenderer->RegisterShader(pImportedShader);
-		std::unordered_set<Assets::Shader*> shaders = {pShader, pImportedShader};
-		for (auto entity : Core::Scene::Get().GetRegistry().view<Components::MeshComponent>())
-		{
-			auto* material = Core::Scene::Get().GetRegistry().get<Components::MeshComponent>(entity).GetMaterial();
-			auto* shader = material ? material->GetShader() : nullptr;
-			if (shader && shaders.insert(shader).second) pRenderer->RegisterShader(shader);
-		}
-		Systems::RenderSystemBakingDesc desc;
-		desc.RTWidth = 800;
-		desc.RTHeight = 600;
-		desc.mRenderToScreen = false;
-		pRenderer->Bake(desc);
-		pRenderer->AddRenderPass(&mGeometry);
-		if (pMaterial->GetTextures().empty())
-		{
-			Assets::MaterialTextureSet set;
-			set.mData.push_back(Fallbacks::FallbacksModule::Get().GetDefaultDiffuseTex());
-			pMaterial->GetTextures().push_back(set);
-		}
-		if (pMaterial->GetState() != Assets::IAsset::State::Created)
-			pMaterial->Create(pShader);
-		for (auto entity : Core::Scene::Get().GetRegistry().view<Components::MeshComponent>())
-		{
-			auto& mesh = Core::Scene::Get().GetRegistry().get<Components::MeshComponent>(entity);
-			mesh.SetMaterial(mesh.GetMaterial());
-		}
+		pRenderer = mProject.BuildRenderer(mGeometry);
 		mRendererDirty = false;
-	}
-
-	void EditorUI::PrepareImportedMaterial(Assets::Mesh& mesh)
-	{
-		auto* material = mesh.GetImportedMaterial();
-		if (!material || (material->GetState() == Assets::IAsset::State::Created && material->GetShader()))
-			return;
-
-		auto& sets = material->GetTextures();
-		// Even untextured submeshes need a complete set; keep every existing index stable.
-		for (const auto& part : mesh.mSubMeshes)
-			if (sets.size() <= part.data.TexSetIndex)
-				sets.resize(size_t(part.data.TexSetIndex) + 1);
-
-		auto& fallbacks = Fallbacks::FallbacksModule::Get();
-		const std::array<Assets::MaterialTexture, 5> defaults = {{
-			{fallbacks.GetDefaultWhiteImage(), Assets::TextureUsageType::Albedo},
-			{fallbacks.GetDefaultBlackImage(), Assets::TextureUsageType::Metallic},
-			fallbacks.GetDefaultNormalTex(),
-			{fallbacks.GetDefaultGreyImage(), Assets::TextureUsageType::Roughness},
-			{fallbacks.GetDefaultWhiteImage(), Assets::TextureUsageType::AO}}};
-		for (auto& set : sets)
-		{
-			for (const auto& fallback : defaults)
-			{
-				auto found = std::find_if(set.mData.begin(), set.mData.end(), [&fallback](const auto& texture) {
-					return texture.mUsageType == fallback.mUsageType;
-				});
-				if (found == set.mData.end())
-					set.mData.push_back(fallback);
-				else if (!found->pTexture || !found->pTexture->GetTextureView())
-					*found = fallback;
-			}
-		}
-		material->Create(pImportedShader);
 	}
 
 	void EditorUI::CreateEntity(int shape)
@@ -474,15 +723,22 @@ namespace Nuclear::Editor
 			auto& form = modal->Add<UI::VerticalBox>();
 			form.SetSpacing(16);
 			Label(form, "CREATE PROJECT", 26);
-			Label(form, "Creates an in-memory project and replaces the current scene.").SetWrap(true);
+			Label(form, "Creates a project with a new startup scene.").SetWrap(true);
 			auto& name = form.Add<UI::TextBox>("New Project");
 			const auto id = modal->GetId();
 			mModal = id;
 			auto& row = form.Add<UI::HorizontalBox>();
 			row.SetSpacing(10);
 			Action(row, "Create project", [this, &name, id]() {
+				mProjectFile.clear();
+				mMapFile.clear();
+				mStartupMap.clear();
+				mMapPrefabs.clear();
+				mLevels.clear();
+				mPrefabs.clear();
+				mScriptAssembly.clear();
 				mProject.Initalize({name.GetText().empty() ? "New Project" : name.GetText()});
-				NewScene();
+				NewScene(true);
 				UI::UIModule::Get().GetContext().RemoveFromViewport(id);
 			});
 			Action(row, "Cancel", [id]() {
@@ -496,8 +752,12 @@ namespace Nuclear::Editor
 			context.AddToViewport(std::move(modal), 100);
 		});
 		auto& newScene = Action(actions, "New scene", [this]() {
+			mMapFile.clear();
+			mMapPrefabs.clear();
 			NewScene();
 		});
+		Action(actions, "Play", [this]() { mProjectAction = ProjectAction::Play; });
+		Action(actions, "Stop", [this]() { mProjectAction = ProjectAction::Stop; });
 		auto& add = Action(actions, "Add", {});
 		add.OnClicked = [this, &add]() { OpenAddMenu(add.GetBounds()); };
 		auto& documentHost = shell.Add<EditorDockArea>();
@@ -574,7 +834,7 @@ namespace Nuclear::Editor
 
 		auto assetsWidget = std::make_unique<UI::VerticalBox>();
 		auto& assets = *assetsWidget;
-		assets.SetPadding({12, 10, 12, 10});
+		assets.SetPadding({5, 3, 5, 2});
 		pAssets = &assets.Add<UI::ContentWidget>();
 		Fill(assets, *pAssets);
 		pWorkspace->Add("assets", "Asset Browser", std::move(assetsWidget), EditorDockRegion::BottomLeft);
@@ -621,7 +881,12 @@ namespace Nuclear::Editor
 		};
 
 		pTitleBar->AddMenu("File", {{"New project", newProject.OnClicked}, {"New scene", newScene.OnClicked},
-			{"Save scene (unavailable)", {}}, {"Exit", []() { Core::Engine::Get().GetMainWindow()->RequestClose(); }}});
+			{"Open map...", [this]() { mProjectAction = ProjectAction::OpenMap; }},
+			{"Save map", [this]() { mProjectAction = ProjectAction::SaveMap; }},
+			{"Save map as...", [this]() { mProjectAction = ProjectAction::SaveMapAs; }},
+			{"Open project...", [this]() { mProjectAction = ProjectAction::Open; }},
+			{"Save project", [this]() { mProjectAction = ProjectAction::Save; }},
+			{"Save project as...", [this]() { mProjectAction = ProjectAction::SaveAs; }}, {"Exit", []() { Core::Engine::Get().GetMainWindow()->RequestClose(); }}});
 		pTitleBar->AddMenu("Edit", {{"Undo", {}}, {"Redo", {}},
 			{"Delete selected", deleteSelected.OnClicked},
 			{"Editor Settings...", openSettings}});
@@ -643,10 +908,33 @@ namespace Nuclear::Editor
 			{"Frame selected", frameSelected.OnClicked}, {"Reset layout", [this]() { pWorkspace->ResetLayout(); }}});
 		pTitleBar->AddMenu("Project", {{"New project", newProject.OnClicked},
 			{"Asset Browser", [this]() { pWorkspace->Show("assets"); }},
-			{"Project settings (unavailable)", {}}});
+			{"Use selected camera for Play", [this]() {
+				auto& reg = Core::Scene::Get().GetRegistry();
+				if (mSelected != mCamera && reg.valid(mSelected) && reg.all_of<Components::CameraComponent>(mSelected))
+				{
+					mGameCamera = mSelected;
+					mNotice = "Game camera: " + reg.get<Components::EntityInfoComponent>(mSelected).mName;
+				}
+				else mNotice = "Select an entity with a Camera component";
+			}},
+			{"Build Windows game...", [this]() { mProjectAction = ProjectAction::Export; }},
+			{"Save material preset...", [this]() { mProjectAction = ProjectAction::SaveSurface; }},
+			{"Apply material preset...", [this]() { mProjectAction = ProjectAction::LoadSurface; }},
+			{"Save selected as prefab...", [this]() { mProjectAction = ProjectAction::SavePrefab; }},
+			{"Place prefab...", [this]() { mProjectAction = ProjectAction::PlacePrefab; }},
+			{"Link saved level...", [this]() { mProjectAction = ProjectAction::AddLevel; }},
+			{"Choose C# assembly...", [this]() { mProjectAction = ProjectAction::Assembly; }},
+			{"Use bundled C# behaviors", [this]() { mScriptAssembly.clear(); mNotice = "Using bundled C# behaviors"; }}});
 		pTitleBar->AddMenu("Window", {{"Manage panels...", [this]() { pWorkspace->ToggleWindowMenu(); }},
 			{"Scene settings", [this]() { pWorkspace->Show("scene-settings"); }},
 			{"Editor Settings...", openSettings},
+			{"Visual Script", [this]() {
+				if (pWorkspace->Contains("visual-script"))
+					pWorkspace->Show("visual-script");
+				else
+					pWorkspace->Add("visual-script", "Visual Script", std::make_unique<VisualScriptDocument>(),
+						EditorDockRegion::Documents, true);
+			}},
 			{"Reset layout", [this]() { pWorkspace->ResetLayout(); }}});
 		pTitleBar->AddMenu("Help", {{"About Nuclear Engine", [this]() {
 			if (pWorkspace->Contains("about"))
@@ -683,6 +971,16 @@ namespace Nuclear::Editor
 		context.SetFocus(mAddMenu);
 	}
 
+	bool EditorUI::PrepareSkybox()
+	{
+		if (pSkybox) return true;
+		auto* camera = Core::Scene::Get().GetMainCamera();
+		auto sky = std::make_unique<EditorSkybox>();
+		if (!camera || !sky->Initialize(*camera)) return false;
+		pSkybox = std::move(sky);
+		return true;
+	}
+
 	void EditorUI::CreateSkybox()
 	{
 		auto& scene = Core::Scene::Get();
@@ -694,15 +992,10 @@ namespace Nuclear::Editor
 		}
 		if (selected == entt::null)
 		{
-			if (!pSkybox)
+			if (!PrepareSkybox())
 			{
-				auto sky = std::make_unique<EditorSkybox>();
-				if (!scene.GetMainCamera() || !sky->Initialize(*scene.GetMainCamera()))
-				{
-					mNotice = "Skybox could not be created";
-					return;
-				}
-				pSkybox = std::move(sky);
+				mNotice = "Skybox could not be created";
+				return;
 			}
 			selected = scene.CreateEntity("Skybox").GetEntityID();
 			scene.GetRegistry().emplace<SkyboxComponent>(selected);
@@ -870,6 +1163,7 @@ namespace Nuclear::Editor
 
 	void EditorUI::Update(float deltaTime)
 	{
+		UpdateProjectActions();
 		pTitleBar->UpdateMenu();
 		auto& context = UI::UIModule::Get().GetContext();
 		if (mModal && !context.Find(mModal))
@@ -952,7 +1246,11 @@ namespace Nuclear::Editor
 			RefreshInspector();
 		if (mAssetsDirty)
 		{
-			pAssets->SetContent(mAssets.Build());
+			auto root = mProjectFile.empty() ? mStartupMap.parent_path() : mProjectFile.parent_path();
+			if (root.empty()) root = std::filesystem::absolute(Assets::AssetLibrary::Get().GetPath());
+			std::vector<std::filesystem::path> maps{mStartupMap, mMapFile};
+			for (const auto& [name, path] : mLevels) maps.push_back(path);
+			pAssets->SetContent(mAssets.Build(root, maps));
 			mAssetsDirty = false;
 		}
 		pStatus->SetText(mProject.GetProjectInfo().mProjectName + " / " + mNotice);
@@ -1023,6 +1321,7 @@ namespace Nuclear::Editor
 
 	void EditorUI::Shutdown()
 	{
+		FinishPlay();
 		CloseHierarchyMenu();
 		mCopiedEntity.reset();
 		CancelMeshPlacement();
@@ -1093,6 +1392,9 @@ namespace Nuclear::Editor
 		if (!control || !event.mPressed || (event.mKey != Key::KEYCODE_Z && event.mKey != Key::KEYCODE_Y &&
 			event.mKey != Key::KEYCODE_C && event.mKey != Key::KEYCODE_V))
 			return false;
+		// The graph owns its editing surface even when a toolbar button has focus.
+		auto* graph = pWorkspace ? pWorkspace->GetDocumentLayout("visual-script") : nullptr;
+		if (graph && graph->GetContext() == &context && graph->IsVisible()) return false;
 		if (mModal || context.GetInputMode() == UI::InputMode::GameOnly)
 			return false;
 		for (auto* focus = context.Find(context.GetFocusedWidget()); focus; focus = focus->GetParent())

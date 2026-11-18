@@ -1,4 +1,5 @@
 #include "AssimpImporter.h"
+#include "ModelSourceIO.h"
 #include <Assets\AssetManager.h>
 #include "Graphics\GraphicsModule.h"
 #include <Assets\Material.h>
@@ -15,15 +16,76 @@
 #include <Platform/FileSystem.h>
 #include <filesystem>
 #include <algorithm>
+#include <cctype>
+#include <fstream>
+#include <Assimp/contrib/rapidjson/include/rapidjson/document.h>
+#include <Assimp/contrib/rapidjson/include/rapidjson/istreamwrapper.h>
 
 namespace Nuclear {
 	namespace Assets {
 		namespace Importers
 		{				
+			// The bundled glTF2 reader dereferences this optional accessor unconditionally.
+			// Check the JSON chunk before entering that decoder, including binary glTF assets.
+			static bool CanReadSkinMatrices(const std::string& path)
+			{
+				auto extension = std::filesystem::path(path).extension().string();
+				std::transform(extension.begin(), extension.end(), extension.begin(),
+					[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+				if (extension != ".gltf" && extension != ".glb") return true;
+
+				std::ifstream input(path, std::ios::binary);
+				if (!input) return false;
+				if (extension == ".glb")
+				{
+					uint32_t header[5]{};
+					if (!input.read(reinterpret_cast<char*>(header), sizeof(header))) return false;
+					if (header[0] != 0x46546c67 || header[1] != 2) return true;
+					if (header[4] != 0x4e4f534a) return false;
+				}
+
+				rapidjson::IStreamWrapper stream(input);
+				rapidjson::Document root;
+				root.ParseStream<rapidjson::kParseStopWhenDoneFlag>(stream);
+				if (root.HasParseError() || !root.IsObject()) return false;
+				if (!root.HasMember("skins") || !root["skins"].IsArray()) return true;
+				for (const auto& skin : root["skins"].GetArray())
+				{
+					bool valid = skin.IsObject() && skin.HasMember("joints") && skin["joints"].IsArray()
+						&& skin.HasMember("inverseBindMatrices") && skin["inverseBindMatrices"].IsUint()
+						&& root.HasMember("accessors") && root["accessors"].IsArray()
+						&& skin["inverseBindMatrices"].GetUint() < root["accessors"].Size();
+					if (valid)
+					{
+						const auto& matrices = root["accessors"][skin["inverseBindMatrices"].GetUint()];
+						valid = matrices.IsObject() && matrices.HasMember("count") && matrices["count"].IsUint()
+							&& matrices["count"].GetUint() >= skin["joints"].Size()
+							&& matrices.HasMember("type") && matrices["type"].IsString()
+							&& std::string_view(matrices["type"].GetString()) == "MAT4";
+					}
+					if (!valid)
+					{
+						NUCLEAR_ERROR("[AssimpImporter] Export an inverse bind matrix per joint for skinned glTF: {0}", path);
+						return false;
+					}
+				}
+				return true;
+			}
+
 			inline void SetVertexBoneData(Assets::Mesh::Vertex& vertex, int boneID, float weight)
 			{
-				vertex.Weights = Math::Vector4(weight);
-				vertex.BoneIDs = Math::Vector4i(boneID);
+				if (boneID < 0 || boneID >= 100 || weight <= 0) return;
+                int slot = 0;
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (vertex.BoneIDs[i] < 0) { slot = i; break; }
+                    if (vertex.Weights[i] < vertex.Weights[slot]) slot = i;
+                }
+                if (vertex.BoneIDs[slot] < 0 || weight > vertex.Weights[slot])
+                {
+                    vertex.BoneIDs[slot] = boneID;
+                    vertex.Weights[slot] = weight;
+                }
 			}
 
 			AssimpImporter::AssimpImporter()
@@ -36,6 +98,7 @@ namespace Nuclear {
 
 			bool AssimpImporter::Import(const std::string& importPath, const std::string& _exportPath, const Model& model, const Assets::MeshImportingDesc& desc)
 			{
+				if (!CanReadSkinMatrices(importPath)) return false;
 				mTextureOptions = desc.mCommonOptions;
 				mTextureOptions.mAssetName.clear();
 				mDiscoverCompanions = desc.mDiscoverCompanionTextures;
@@ -44,6 +107,7 @@ namespace Nuclear {
 				mModel = model;
 				exportPath = _exportPath;
 				Assimp::Importer importer;
+				if (model.pMesh) importer.SetIOHandler(new ModelSourceIO(model.pMesh->SourceFiles));
 				scene = importer.ReadFile(importPath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 				//Failed?
@@ -82,6 +146,7 @@ namespace Nuclear {
 
 			bool AssimpImporter::Load(const std::string& Path, const Model& model, const MeshLoadingDesc& desc)
 			{
+				if (!CanReadSkinMatrices(Path)) return false;
 				save_materials_names = desc.mSaveMaterialNames;
 				mModel = model;
 
@@ -282,6 +347,8 @@ namespace Nuclear {
 
 			Assets::Texture* AssimpImporter::ImportExternalTexture(const std::string& path, Assets::TextureUsageType usage)
 			{
+				if (mModel.pMesh && std::find(mModel.pMesh->SourceFiles.begin(), mModel.pMesh->SourceFiles.end(), path) == mModel.pMesh->SourceFiles.end())
+					mModel.pMesh->SourceFiles.push_back(path);
 				const bool srgb = usage == Assets::TextureUsageType::Albedo;
 				const auto key = path + (srgb ? "|srgb" : "|linear");
 				if (auto found = mTextureCache.find(key); found != mTextureCache.end()) return found->second;
@@ -408,17 +475,17 @@ namespace Nuclear {
 				for (Uint32 i = 0; i < scene->mNumAnimations; i++)
 				{
 					mModel.pAnimations->mClips.push_back(Animation::AnimationClip());
-					auto clipptr = &mModel.pAnimations->mClips.at(0);
+					auto clipptr = &mModel.pAnimations->mClips.back();
 					auto animation = scene->mAnimations[i];
 
+					clipptr->Name = animation->mName.C_Str();
 					clipptr->m_Duration = animation->mDuration;
-					clipptr->m_TicksPerSecond = animation->mTicksPerSecond;
+					clipptr->m_TicksPerSecond = animation->mTicksPerSecond > 0 ? animation->mTicksPerSecond : 25.0;
 
 					aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 					globalTransformation = globalTransformation.Inverse();
 					ReadHeirarchyData(&clipptr->mRootNode, scene->mRootNode);
 					ReadMissingBones(animation, clipptr);
-					return;
 				}
 			}
 
@@ -454,7 +521,7 @@ namespace Nuclear {
 					{
 						int vertexId = weights[weightIndex].mVertexId;
 						float weight = weights[weightIndex].mWeight;
-						assert(vertexId <= meshdata->Vertices.size());
+						if (vertexId < 0 || size_t(vertexId) >= meshdata->Vertices.size()) continue;
 						SetVertexBoneData(meshdata->Vertices[vertexId], boneID, weight);
 					}
 				}

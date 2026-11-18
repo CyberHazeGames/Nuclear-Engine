@@ -49,10 +49,12 @@ namespace Nuclear::Editor
 	/// Clicking the tile button executes the callback (typically opening the corresponding asset document).
 	/// The returned button reference is owned by parent.
 	/// Optional drag callbacks preserve click activation until the drag threshold is crossed.
+	/// A supplied icon replaces the image. The accent stripe identifies the asset type.
 	UI::Button& AssetTile(UI::PanelWidget& parent, const std::string& name,
 						  const UI::Brush& brush, UI::Vec2 imageSize,
 						  std::function<void()> callback, const std::string& subtext = {},
-						  EditorAssetButton::DragCallback dragged = {}, std::function<void()> cancelled = {});
+						  EditorAssetButton::DragCallback dragged = {}, std::function<void()> cancelled = {},
+						  std::unique_ptr<UI::Widget> icon = {}, UI::Color accent = {.24f, .50f, .82f, 1});
 	/// Formats a compact number with three fractional digits.
 	std::string Decimal(float value);
 } // namespace Nuclear::Editor

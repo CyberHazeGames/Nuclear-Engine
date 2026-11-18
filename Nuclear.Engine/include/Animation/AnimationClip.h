@@ -43,6 +43,7 @@ namespace Nuclear
 
 			//private:
 
+			std::string Name; ///< Clip name assigned by the source model.
 			Float64 m_Duration;
 			Float64 m_TicksPerSecond;
 			std::vector<Animation::Bone> mBones;

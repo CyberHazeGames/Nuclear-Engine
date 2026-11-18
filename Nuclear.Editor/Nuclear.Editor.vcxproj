@@ -118,6 +118,8 @@
     <ClCompile Include="source\Panels\LoggerView.cpp" />
     <ClCompile Include="source\Panels\SceneSettings.cpp" />
     <!-- Documents -->
+    <ClCompile Include="source\Documents\VisualScriptDocument.cpp" />
+    <ClCompile Include="source\Documents\VisualScriptGraph.cpp" />
     <ClCompile Include="source\Documents\AboutDocument.cpp" />
     <ClCompile Include="source\Documents\AssetDocument.cpp" />
     <ClCompile Include="source\Documents\EditorSettingsDocument.cpp" />
@@ -132,6 +134,8 @@
     <ClCompile Include="source\Widgets\EditorAssetProperty.cpp" />
     <ClCompile Include="source\Widgets\EditorAssetPicker.cpp" />
     <ClCompile Include="source\Widgets\EditorAssetItem.cpp" />
+    <ClCompile Include="source\Widgets\AssetFileIcon.cpp" />
+    <ClCompile Include="source\Widgets\AssetGridView.cpp" />
     <ClCompile Include="source\Widgets\EditorHierarchyRow.cpp" />
     <ClCompile Include="source\Rendering\MeshPlacementPreview.cpp" />
     <ClCompile Include="source\Widgets\EditorAssetButton.cpp" />
@@ -141,11 +145,15 @@
     <ClCompile Include="source\Widgets\TexturePreviewViewport.cpp" />
     <ClCompile Include="source\Widgets\MeshPreviewViewport.cpp" />
     <ClCompile Include="source\Widgets\EditorTitleBar.cpp" />
+    <ClCompile Include="source\Widgets\VisualScriptCanvas.cpp" />
     <ClCompile Include="source\Widgets\EditorToolbar.cpp" />
     <ClCompile Include="source\Widgets\EditorWidgets.cpp" />
     <ClCompile Include="source\Widgets\EditorWindowButton.cpp" />
     <!-- Settings -->
     <ClCompile Include="source\Settings\EditorEntityState.cpp" />
+    <ClCompile Include="source\Core\ProjectDocument.cpp" />
+    <ClCompile Include="source\Core\GameExporter.cpp" />
+    <ClCompile Include="source\Core\ProjectPlayer.cpp" />
     <ClCompile Include="source\Settings\EditorHistory.cpp" />
     <ClCompile Include="source\Settings\EditorSceneState.cpp" />
     <ClCompile Include="source\Settings\EditorSettings.cpp" />
@@ -179,6 +187,8 @@
     <ClInclude Include="include\Panels\LoggerView.h" />
     <ClInclude Include="include\Panels\SceneSettings.h" />
     <!-- Documents -->
+    <ClInclude Include="include\Documents\VisualScriptDocument.h" />
+    <ClInclude Include="include\Documents\VisualScriptGraph.h" />
     <ClInclude Include="include\Documents\AboutDocument.h" />
     <ClInclude Include="include\Documents\AssetDocument.h" />
     <ClInclude Include="include\Documents\EditorSettingsDocument.h" />
@@ -193,6 +203,8 @@
     <ClInclude Include="include\Widgets\EditorAssetProperty.h" />
     <ClInclude Include="include\Widgets\EditorAssetPicker.h" />
     <ClInclude Include="include\Widgets\EditorAssetItem.h" />
+    <ClInclude Include="include\Widgets\AssetFileIcon.h" />
+    <ClInclude Include="include\Widgets\AssetGridView.h" />
     <ClInclude Include="include\Widgets\EditorHierarchyRow.h" />
     <ClInclude Include="include\Rendering\MeshPlacementPreview.h" />
     <ClInclude Include="include\Widgets\EditorAssetButton.h" />
@@ -202,11 +214,15 @@
     <ClInclude Include="include\Widgets\TexturePreviewViewport.h" />
     <ClInclude Include="include\Widgets\MeshPreviewViewport.h" />
     <ClInclude Include="include\Widgets\EditorTitleBar.h" />
+    <ClInclude Include="include\Widgets\VisualScriptCanvas.h" />
     <ClInclude Include="include\Widgets\EditorToolbar.h" />
     <ClInclude Include="include\Widgets\EditorWidgets.h" />
     <ClInclude Include="include\Widgets\EditorWindowButton.h" />
     <!-- Settings -->
     <ClInclude Include="include\Settings\EditorEntityState.h" />
+    <ClInclude Include="include\Core\ProjectDocument.h" />
+    <ClInclude Include="include\Core\GameExporter.h" />
+    <ClInclude Include="include\Core\ProjectPlayer.h" />
     <ClInclude Include="include\Settings\EditorHistory.h" />
     <ClInclude Include="include\Settings\EditorSceneState.h" />
     <ClInclude Include="include\Settings\EditorSettings.h" />

@@ -3,6 +3,7 @@
 #include "AssetPropertyTests.h"
 #include "AssetViewerTests.h"
 #include "SceneSettingsTests.h"
+#include "ProjectPlayTests.h"
 #include "ColorPickerTests.h"
 #include "MeshPreviewTests.h"
 #include "AssetDragTests.h"
@@ -11,6 +12,7 @@
 #include <NuclearEditor.h>
 #include <GameViewPort.h>
 #include <EditorTitleBar.h>
+#include <VisualScriptCanvas.h>
 #include <EditorMenuPopup.h>
 #include <EditorWindowButton.h>
 #include <EditorComponentButton.h>
@@ -23,6 +25,7 @@
 #include <Nuclear.Platform/Platform.h>
 #include <Profiling/ProfilingModule.h>
 #include <fstream>
+#include <iomanip>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -310,6 +313,81 @@ namespace
 
 namespace
 {
+	void RunVisualScriptTests()
+	{
+		using namespace Nuclear::Editor;
+		NuclearEditor editor;
+		editor.Load();
+		auto frame = [&]() {
+			auto& engine = Core::Engine::Get();
+			engine.BeginFrame();
+			editor.Update(1.f / 60);
+			editor.Render(1.f / 60);
+			engine.EndFrame();
+		};
+		for (int i = 0; i < 4; ++i) frame();
+		Action("Window");
+		Action("Visual Script");
+		frame();
+		auto* canvas = Find<VisualScriptCanvas>([](const auto& widget) { return widget.IsVisible(); });
+		Check(canvas != nullptr, "Window menu opens the retained graph document");
+		Action("Frame graph");
+		Context().Layout();
+		const auto bounds = canvas->GetBounds();
+		Check(bounds.Width > 650 && bounds.Height > 300, "Workspace allocates the canvas");
+		// The example spans x=32..642 and y=52..294, centered at its native scale.
+		auto point = [&](float x, float y) {
+			return Vec2{bounds.x + bounds.Width / 2 - 337 + x, bounds.y + bounds.Height / 2 - 173 + y};
+		};
+		auto drag = [&](Vec2 first, Vec2 last) {
+			PointerAt(Platform::EventType::MouseButton, first, true);
+			PointerAt(Platform::EventType::MouseMove, last);
+			PointerAt(Platform::EventType::MouseButton, last);
+		};
+		auto snapshot = [&]() {
+			VisualScriptGraph graph;
+			Check(graph.LoadJson(canvas->ToJson()), "Export is a valid visual script document");
+			return graph;
+		};
+		const auto initial = canvas->ToJson();
+		Check(snapshot().Links().size() == 3, "Example has flow and data connections");
+		drag(point(75, 64), point(115, 84));
+		Check(std::abs(snapshot().Find(1)->Position.x - 72) < 1, "Pointer drag updates serialized node coordinates");
+		const auto input = point(252, 158), flow = point(242, 118), boolean = point(202, 250);
+		PointerAt(Platform::EventType::MouseButton, input, true, MOUSE_BUTTON_RIGHT);
+		PointerAt(Platform::EventType::MouseButton, input, false, MOUSE_BUTTON_RIGHT);
+		Check(snapshot().Links().size() == 2, "Right-click disconnects a pin");
+		drag(boolean, input);
+		Check(snapshot().Links().size() == 2, "Boolean pins cannot feed execution inputs");
+		drag(input, flow);
+		Check(snapshot().Links().size() == 3, "Dragging from input to output creates a directed wire");
+		Action("Print Text");
+		frame();
+		Check(snapshot().Nodes().size() == 5, "Palette adds a selected card");
+		auto* field = Find<TextBox>([](const auto& box) { return box.IsVisible() && box.GetText() == "Hello, world!"; });
+		Check(field != nullptr, "Print Text exposes its literal");
+		Edit(*field, "say \"hello\"");
+		const auto saved = canvas->ToJson();
+		Check(snapshot().Find(5)->Message == "say \"hello\"", "Escaped literal survives JSON round trip");
+		Action("Delete node");
+		Check(snapshot().Nodes().size() == 4, "Delete removes the selected card");
+		Check(canvas->LoadJson(saved) && canvas->ToJson() == saved, "Restoring JSON preserves layout and wires");
+		auto invalid = saved;
+		invalid.replace(invalid.find("\"Then\""), 6, "\"missing\"");
+		Check(!canvas->LoadJson(invalid) && !canvas->LoadJson("{") && canvas->ToJson() == saved,
+			"Malformed JSON and dangling pins preserve the current document");
+		editor.GetWorkspace()->Close("visual-script");
+		frame();
+		Action("Window");
+		Action("Visual Script");
+		frame();
+		Check(canvas->IsVisible() && canvas->ToJson() == saved, "Reopening preserves the graph");
+		Check(canvas->LoadJson(initial), "Restore the example for framebuffer inspection");
+		UIModule::Get().Render();
+		Readback("Build/DebugX64/editor-visual-script.ppm", nullptr, false);
+		editor.Shutdown();
+		std::cout << "Visual script document, gestures, literals and JSON round trip passed.\n";
+	}
 	void RunTabTitleTests()
 	{
 		UIContext context;
@@ -376,8 +454,14 @@ int main(int argc, char** argv)
 		Core::EngineStartupDesc desc;
 		desc.EnableImGui = false;
 		desc.AutoInitAudioModule = false;
-		desc.AutoInitPhysXModule = false;
-		desc.AutoInitScriptingModule = false;
+		const bool projectPlay = argc == 2 && std::string(argv[1]) == "--project-play";
+		desc.AutoInitPhysXModule = projectPlay;
+		desc.AutoInitScriptingModule = projectPlay;
+		if (projectPlay)
+		{
+			desc.mScriptingRuntimeDirectory = Platform::GetExecutablePath().parent_path();
+			desc.mScriptingClientDllName = (desc.mScriptingRuntimeDirectory / "SamplesScripts.dll").string();
+		}
 		desc.AutoInitThreadingModule = false;
 		desc.mAssetsLibraryPath = "../Assets/";
 		desc.mEngineWindowDesc.WindowWidth = 1440;
@@ -386,6 +470,18 @@ int main(int argc, char** argv)
 		auto& engine = Core::Engine::Get();
 		Check(engine.Start(desc), "Editor engine startup");
 		engine.GetMainWindow()->Display(false);
+		if (projectPlay)
+		{
+			Nuclear::Editor::Tests::RunProjectPlayTests();
+			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--visual-script")
+		{
+			RunVisualScriptTests();
+			engine.Shutdown();
+			return 0;
+		}
 		if (argc == 2 && std::string(argv[1]) == "--color-picker")
 		{
 			Nuclear::Editor::Tests::RunColorPickerTests();
@@ -416,6 +512,109 @@ int main(int argc, char** argv)
 			Nuclear::Editor::Tests::RunSceneSettingsTests(editor, frame);
 			editor.Shutdown();
 			engine.Shutdown();
+			return 0;
+		}
+		if (argc == 2 && std::string(argv[1]) == "--asset-browser")
+		{
+			NuclearEditor editor;
+			editor.Load();
+			auto frame = [&]() {
+				engine.BeginFrame(); editor.Update(1.f / 60); editor.Render(1.f / 60); engine.EndFrame();
+			};
+			frame();
+			editor.GetWorkspace()->Dock("assets", Nuclear::Editor::EditorDockRegion::Documents);
+			frame();
+			Action("Path");
+			frame();
+			auto* address = Find<TextBox>([](const auto& box) {
+				return box.GetText() == std::filesystem::absolute(Assets::AssetLibrary::Get().GetPath()).string();
+			});
+			Check(address != nullptr, "Editable browser location");
+			Edit(*address, std::filesystem::absolute("../Samples/TwinRooms").lexically_normal().string());
+			frame();
+			auto* map = Find<TextBlock>([](const auto& text) { return text.GetText() == "Gallery"; });
+			Check(map && map->IsVisible(), "Map visible in file grid");
+			auto* searchLabel = Find<TextBlock>([](const auto& text) { return text.GetText() == "Search" && text.IsVisible(); });
+			Check(searchLabel != nullptr, "Asset search visible");
+			auto* search = Find<TextBox>([&](const auto& box) { return box.GetParent() == searchLabel->GetParent(); });
+			Check(search != nullptr, "Search field exists");
+			Click(*search);
+			Text("gallery");
+			frame();
+			Check(search->HasFocus() && map->IsVisible() && Find<TextBlock>([](const auto& label) {
+				return label.IsVisible() && label.GetText() == "1 item"; }), "Live search keeps focus and filters cards");
+			Text("xyz");
+			frame();
+			Check(!map->IsVisible(), "No matches hide all map cards");
+			Key(Platform::Input::KEYCODE_LCTRL);
+			Key(Platform::Input::KEYCODE_A);
+			Key(Platform::Input::KEYCODE_LCTRL, false);
+			Key(Platform::Input::KEYCODE_BACKSPACE);
+			frame();
+			Action("Filter");
+			frame();
+			Action("Map");
+			frame();
+			Check(Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "3 items"; }),
+				"Map filter includes all three playable maps");
+			Action("Map");
+			frame();
+			Action("All");
+			frame();
+			Action("<");
+			frame();
+			Action(">");
+			frame();
+			Check(Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "Title"; }),
+				"Forward returns to the browsed folder");
+			Action("Sources");
+			frame();
+			Action("Sources");
+			frame();
+			UIModule::Get().Render();
+			Readback("Build/DebugX64/editor-asset-browser.ppm", nullptr, false);
+			Action("Gallery");
+			frame();
+			Check(Core::Scene::Get().GetSceneAsset()->GetName() == "Gallery", "A map card opens its authored scene");
+			Check(Core::Scene::Get().GetRegistry().view<Nuclear::Editor::SkyboxComponent>().empty(),
+				"An authored map with no skybox keeps its clear background");
+			Action("Maps");
+			frame();
+			Check(Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "3 items"; }),
+				"Maps lists the three files once each, including the active map");
+			Action("Atrium");
+			frame();
+			Check(Core::Scene::Get().GetSceneAsset()->GetName() == "Atrium", "Maps opens a different saved level");
+
+			const auto projectDir = std::filesystem::absolute("Build") / Core::UUID::CreateNewUUID().str();
+			const auto levelsDir = projectDir / "Levels";
+			std::filesystem::create_directories(levelsDir);
+			const auto rooms = std::filesystem::absolute("../Samples/TwinRooms").lexically_normal();
+			std::filesystem::copy_file(rooms / "Title.NMap", levelsDir / "Start.NMap");
+			std::filesystem::copy_file(rooms / "Atrium.NMap", levelsDir / "Unlinked.NMap");
+			const auto manifest = projectDir / "MapBrowser.nuclearproject";
+			std::ofstream(manifest) << "NuclearProject 3\nproject \"Browser\"\nassembly \"\"\nlevels 1\nlevel \"Gallery\" "
+				<< std::quoted((rooms / "Gallery.NMap").generic_string()) << "\nprefabs 0\nmap \"Levels/Start.NMap\"\nend\n";
+			Action("Path");
+			frame();
+			address = Find<TextBox>([&](const auto& box) { return box.GetText() == rooms.string(); });
+			Check(address != nullptr, "Browser directory can be changed from Maps");
+			Edit(*address, projectDir.string());
+			frame();
+			Action("MapBrowser");
+			frame();
+			Action("Maps");
+			frame();
+			Check(Find<TextBlock>([](const auto& label) { return label.IsVisible() && label.GetText() == "3 items"; }),
+				"Maps includes the nested startup once, an unlinked nested map and an external linked map");
+			Action("Gallery");
+			frame();
+			Check(Core::Scene::Get().GetSceneAsset()->GetName() == "Gallery", "Externally linked map opens from project Maps");
+			for (const auto& path : {manifest, levelsDir / "Start.NMap", levelsDir / "Unlinked.NMap", levelsDir, projectDir})
+				std::filesystem::remove(path);
+			editor.Shutdown();
+			engine.Shutdown();
+			std::cout << "Asset Browser navigation, live search, sources and map cards passed.\n";
 			return 0;
 		}
 		if (argc == 2 && std::string(argv[1]) == "--mesh-material")
@@ -512,7 +711,7 @@ int main(int argc, char** argv)
 			Check(!Find<TextBlock>([](const auto& label) { return label.GetText() == "Undo"; })->GetParent()->IsEnabled(),
 				"Initial scene has no undoable user edits");
 			Key(Platform::Input::KEYCODE_LEFT);
-			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Save scene (unavailable)"; }),
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Save project"; }),
 				"Left switches to the previous menu");
 			Key(Platform::Input::KEYCODE_ESCAPE);
 			Check(!menu(), "Escape dismisses the menu");
@@ -532,7 +731,7 @@ int main(int argc, char** argv)
 			auto* projectHeader = Find<TextBlock>([](const auto& label) { return label.GetText() == "Project"; });
 			const auto projectBounds = projectHeader->GetBounds();
 			PointerAt(Platform::EventType::MouseMove, {projectBounds.x + 5, projectBounds.y + 5});
-			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Project settings (unavailable)"; }),
+			Check(Find<TextBlock>([](const auto& label) { return label.GetText() == "Use selected camera for Play"; }),
 				"Hover switches open dropdowns");
 			Platform::Event focus;
 			focus.mType = Platform::EventType::FocusChanged;
@@ -885,6 +1084,9 @@ int main(int argc, char** argv)
 			frame();
 			Action("Create project");
 			frame();
+			Check(Entity("Skybox") != entt::null &&
+				Core::Scene::Get().GetRegistry().get<Nuclear::Editor::SkyboxComponent>(Entity("Skybox")).Enabled,
+				"A new project has a visible default skybox");
 			Check(Entity("Entity") == entt::null && Entity("Editor Camera") != entt::null,
 				  "Project creation resets scene and camera");
 			Action("Edit");
@@ -928,6 +1130,8 @@ int main(int argc, char** argv)
 				std::ofstream mesh(fixture / "triangle.obj");
 				mesh << "v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 0 1\nf 1/1/1 2/2/1 3/3/1\n";
 			}
+			Action("Path");
+			frame();
 			auto* path = Find<TextBox>([](const TextBox& input) {
 				return input.GetText() ==
 					   std::filesystem::absolute(Assets::AssetLibrary::Get().GetPath()).string();
@@ -940,7 +1144,7 @@ int main(int argc, char** argv)
 			if (skipNativePicker)
 			{
 				std::cout << "Native picker checks skipped; importing through the browser file row.\n";
-				Action("Import / triangle.obj");
+				Action("triangle.obj");
 				frame();
 			}
 			else
@@ -954,7 +1158,7 @@ int main(int argc, char** argv)
 				"Native file selection preserves the engine working directory");
 			Action("Meshes");
 			frame();
-			Action("Add to scene / editorfixtures_triangle");
+			Action("Place in scene");
 			frame();
 			Check(Entity("editorfixtures_triangle") != entt::null,
 				  "Imported geometry is ready and can be instantiated");

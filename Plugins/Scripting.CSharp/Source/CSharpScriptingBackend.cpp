@@ -17,6 +17,7 @@ namespace Nuclear
 			explicit CSharpScriptObject(std::shared_ptr<Nuclear::Managed::ManagedObject> object) : pObject(std::move(object)) {}
 			bool IsValid() const override { return pObject && pObject->IsValid(); }
 			void CallMethod(const std::string& method) override { if (IsValid()) pObject->InvokeMethod(method); }
+			void CallEntityMethod(const std::string& method, Uint32 entity) override { if (IsValid()) pObject->InvokeMethod(method, entity); }
 			void CallMethod(const std::string& method, float value) override { if (IsValid()) pObject->InvokeMethod(method, value); }
 		private:
 			std::shared_ptr<Nuclear::Managed::ManagedObject> pObject;
@@ -191,6 +192,24 @@ namespace Nuclear
 			REGISTER_CALL("LightSetColor", Components_LightComponent_SetColor);
 			REGISTER_CALL("LightGetIntensity", Components_LightComponent_GetIntensity);
 			REGISTER_CALL("LightSetIntensity", Components_LightComponent_SetIntensity);
+			REGISTER_CALL("OpenScreen", OpenScreen);
+			REGISTER_CALL("ScreenButton", ScreenButton);
+			REGISTER_CALL("PollScreen", PollScreen);
+			REGISTER_CALL("ScriptFields", ScriptFields);
+			REGISTER_CALL("Raycast", Raycast);
+			REGISTER_CALL("SetVelocity", SetVelocity);
+			REGISTER_CALL("PlayClip", PlayClip);
+			REGISTER_CALL("AudioControl", AudioControl);
+			REGISTER_CALL("ReadGamepad", ReadGamepad);
+			REGISTER_CALL("GameName", GameName);
+			REGISTER_CALL("LoadLevel", LoadLevel);
+			REGISTER_CALL("SpawnPrefab", SpawnPrefab);
+			REGISTER_CALL("SetPaused", SetPaused);
+			REGISTER_CALL("FindPersistent", FindPersistent);
+			REGISTER_CALL("EntityFind", EntityFind);
+			REGISTER_CALL("EntityPosition", EntityPosition);
+			REGISTER_CALL("EntityDestroy", EntityDestroy);
+			REGISTER_CALL("SetHudText", SetHudText);
 #undef REGISTER_CALL
 			assembly->UploadInternalCalls();
 		}

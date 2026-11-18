@@ -6,6 +6,9 @@
 #include <Components\RigidBodyComponent.h>
 #include <Components\ColliderComponent.h>
 
+#include <functional>
+#include <memory>
+namespace Nuclear::PhysX { class ContactEvents; }
 namespace physx { class PxScene; };
 
 namespace Nuclear
@@ -30,6 +33,12 @@ namespace Nuclear
 			physx::PxScene* GetPhysXScene();
 			void SetPhysXScene(physx::PxScene* scene);
 
+			/// Releases actors and shape references belonging to an entity before EnTT removes its components.
+			static void ReleaseActor(entt::registry& registry, entt::entity entity);
+			/// Called after simulation with both entity IDs, overlap mode and entry/exit state.
+			std::function<void(Uint32, Uint32, bool, bool)> OnContact;
+			/// Sets a dynamic actor velocity in world units per second. Kinematic or missing actors return false.
+			static bool SetVelocity(entt::entity entity, const Math::Vector3& velocity);
 			void BeginSimulation(ECS::TimeDelta dt);
 
 			void Bake();
@@ -54,6 +63,7 @@ namespace Nuclear
 
 			void Update(ECS::TimeDelta dt) override;
 		private:
+			std::unique_ptr<PhysX::ContactEvents> mEvents; ///< Buffers callbacks until simulation completes.
 			physx::PxScene* mPhysXScene;
 		};
 

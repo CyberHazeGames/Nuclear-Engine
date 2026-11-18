@@ -81,17 +81,24 @@ namespace Nuclear::Editor::Tests
 			engine.BeginFrame(); editor.Update(1.f / 60); editor.Render(1.f / 60); engine.EndFrame();
 		};
 		frame();
+		auto actionByText = [&](const std::string& text) {
+			auto* label = Find<UI::TextBlock>(context, [&text](const auto& item) { return item.IsVisible() && item.GetText() == text; });
+			UI::Button* button = nullptr;
+			for (auto* parent = label ? label->GetParent() : nullptr; parent; parent = parent->GetParent())
+				if ((button = dynamic_cast<UI::Button*>(parent))) break;
+			Check(button != nullptr, ("Action is available: " + text).c_str());
+			button->OnClicked();
+			frame();
+		};
+		actionByText("Path");
 		auto* path = Find<UI::TextBox>(context, [](const auto& input) {
 			return input.GetText() == std::filesystem::absolute(Assets::AssetLibrary::Get().GetPath()).string();
 		});
 		Check(path != nullptr, "Editor file browser has a directory field");
 		path->OnCommitted(fixture.string());
 		frame();
-		auto* action = Find<UI::TextBlock>(context, [](const auto& label) { return label.IsVisible() && label.GetText() == "Import / material.obj"; });
-		Check(action != nullptr, "Fixture is importable through the editor");
 		const auto before = Assets::AssetLibrary::Get().mImportedTextures.mData.size();
-		dynamic_cast<UI::Button*>(action->GetParent())->OnClicked();
-		frame();
+		actionByText("material.obj");
 		Assets::Mesh* imported = nullptr;
 		for (auto& [id, mesh] : Assets::AssetLibrary::Get().mImportedMeshes.mData)
 			if (mesh.GetName() == "materialfixture_material") imported = &mesh;
@@ -114,15 +121,6 @@ namespace Nuclear::Editor::Tests
 		frame();
 		Check(Find<UI::TextBlock>(context, [](const auto& label) { return label.IsVisible() && label.GetText().find("Fixture_R") != std::string::npos; }) != nullptr,
 			"Imported companion maps appear in the editor Textures category");
-		auto actionByText = [&](const std::string& text) {
-			auto* label = Find<UI::TextBlock>(context, [&text](const auto& item) { return item.IsVisible() && item.GetText() == text; });
-			UI::Button* button = nullptr;
-			for (auto* parent = label ? label->GetParent() : nullptr; parent; parent = parent->GetParent())
-				if ((button = dynamic_cast<UI::Button*>(parent))) break;
-			Check(button != nullptr, ("Action is available: " + text).c_str());
-			button->OnClicked();
-			frame();
-		};
 		actionByText("Materials");
 		Check(Assets::AssetLibrary::Get().mImportedMaterials.GetAsset(importedMaterial->GetUUID()) == importedMaterial,
 			"Imported material retains its browser-resolvable library identity");
@@ -137,7 +135,7 @@ namespace Nuclear::Editor::Tests
 		editor.GetWorkspace()->Show("viewport");
 		frame();
 		actionByText("Meshes");
-		actionByText("Add to scene / " + imported->GetName());
+		actionByText("Place in scene");
 		auto& registry = Core::Scene::Get().GetRegistry();
 		auto instances = [&]() {
 			std::vector<entt::entity> result;
@@ -215,7 +213,7 @@ namespace Nuclear::Editor::Tests
 				"vn 0 0 1\nusemtl Textured\nf 1/1/1 2/2/1 3/3/1\nusemtl Untextured\nf 1/1/1 3/3/1 2/2/1\n";
 		}
 		actionByText("Files");
-		actionByText("Import / sparse.obj");
+		actionByText("sparse.obj");
 		Assets::Mesh* sparse = nullptr;
 		for (auto& [id, mesh] : Assets::AssetLibrary::Get().mImportedMeshes.mData)
 			if (mesh.GetName() == "materialfixture_sparse") sparse = &mesh;

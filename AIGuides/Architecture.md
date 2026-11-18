@@ -26,7 +26,7 @@ An external module DLL exports `GetNuclearEngineModulePlugin` using the versione
 
 [Nuclear.Platform](Platform.md) is a separate native DLL with no engine or renderer dependencies. Its Windows backend owns windows, message translation, physical keyboard state, mouse modes/raw motion, clipboard text, and native library operations. The engine retains forwarding headers for Window/Input, translates platform events into client callbacks, and attaches ImGui through a portable event adapter. Graphics borrows a platform window and adapts its native handle for Diligent. Module/audio plugin policy remains in the engine while native DLL operations go through the foundation. Windows x64 is the only implemented backend.
 
-Networking transport is exposed separately through [Nuclear::Platform::Networking](Networking.md), using portable endpoints and movable owned sockets. The Windows backend provides nonblocking UDP/TCP, readiness, address resolution, and shared Winsock lifetime without window initialization. Future replication/session/serialization policy belongs in the engine; no replication module or wire protocol is registered by startup.
+Networking transport is exposed separately through [Nuclear::Platform::Networking](Networking.md), using portable endpoints and movable owned sockets. The Windows backend provides nonblocking UDP/TCP, readiness, address resolution, and shared Winsock lifetime without window initialization. ScriptCore also provides an opt-in managed UDP position snapshot protocol for an explicitly configured peer.
 
 ## Profiling and diagnostics
 
@@ -40,7 +40,7 @@ Networking transport is exposed separately through [Nuclear::Platform::Networkin
 
 [SystemManager](../Nuclear.Engine/include/ECS/System.h) holds shared system instances in an `unordered_map`. `Update_All` iterates that map, so insertion order is not a guaranteed simulation order. Systems bridge components to rendering, physics, audio, scripting, and debug facilities.
 
-Scene snapshots use EnTT archives with zpp::bits. `SaveScene` and `LoadScene` currently enumerate only `EntityInfoComponent`, `LightComponent`, and `MeshComponent`. Persistence of a newly added component is not automatic.
+Scene snapshots use EnTT archives with zpp::bits. `SaveScene` and `LoadScene` currently enumerate only `EntityInfoComponent`, `LightComponent`, and `MeshComponent`. The editor uses a separate main .nuclearproject manifest that links the startup .NMap, additional .NMap assets and single-entity prefabs. Its player and editor resolve the same project-relative resources. See [saving and Play](Editor.md#save-a-project-and-play-its-startup-scene).
 
 ## Assets and threading
 
@@ -106,7 +106,7 @@ The engine [scripting module](../Nuclear.Engine/include/Scripting/ScriptingModul
 
 The C# backend's `InitBindings` uploads native callbacks to the unmanaged Cdecl function-pointer fields in `Nuclear.NativeCalls`. Strings use Nuclear.Managed's disposable `NativeString`; booleans cross the boundary as 32-bit integers. The C# `ScriptingRegistry` keys component operations by Nuclear.Managed type IDs and registers the implemented EntityInfo and Light wrappers. Unknown types and invalid entity IDs fail without inserting empty callbacks.
 
-`ScriptingSystem` constructs a derived `Entity`, calls `BindEntity` before `OnStart`, and invokes `OnUpdate(float)`. Managed scripts override those virtual lifecycle methods. The generic `ScriptingObject` shares a backend object; the C# backend tracks managed handles and destroys them before unloading the context at shutdown. Class lifetime tokens reject construction from an unloaded context. CoreCLR itself remains loaded for the process lifetime. Managed wrappers are in `Nuclear.ScriptCore`, and examples are in `SamplesScripts`.
+`ScriptingSystem` constructs a derived `Entity`, calls `BindEntity` before `OnStart`, and invokes `OnUpdate(float)`. Managed scripts override those virtual lifecycle methods. Entity exposes local Position, exact-name Find, deferred Destroy and ShowHud. Destroy applies after the current script update and protects the main camera. The generic `ScriptingObject` shares a backend object; the C# backend tracks managed handles and destroys them before unloading the context at shutdown. Class lifetime tokens reject construction from an unloaded context. CoreCLR itself remains loaded for the process lifetime. Managed wrappers are in `Nuclear.ScriptCore`, and examples are in `SamplesScripts`.
 
 `PhysXModule` owns SDK-level physics objects; `PhysXSystem` owns a simulation scene and connects collider/rigid-body components to actors. `AudioModule` selects and loads an audio backend DLL at runtime; `AudioSystem` connects source/listener components to it. [XAudio2](../Plugins/Audio.XAudio2/Nuclear.Audio.XAudio2.vcxproj) and [OpenAL](../Plugins/Audio.OpenAL/Nuclear.Audio.OpenAL.vcxproj) are separate DLL projects. `EngineStartupDesc.mAudioBackendName` selects `XAudio2` by default or `OpenAL`; `mAudioPluginDirectory` overrides the executable directory. The [audio plugin ABI](../Nuclear.Engine/include/Audio/AudioBackendPlugin.h) checks size, version, name, and factory functions before constructing the backend. Audio shutdown destroys its backend before unloading the DLL. Plugins are selected by DLL name; their JSON manifests are metadata and are not scanned.
 

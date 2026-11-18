@@ -149,9 +149,9 @@ PS_OUTPUT main(PixelInputType input) : SV_TARGET
 	
 #else
 	float3 FragPos = input.FragPos;
-	float3 albedo = pow(NEMat_Albedo.Sample(NEMat_Albedo_sampler, input.TexCoord).xyz, float3(2.2f,2.2f,2.2f));
-	float metallic = NEMat_Metallic.Sample(NEMat_Metallic_sampler, input.TexCoord).x;
-	float roughness = NEMat_Roughness.Sample(NEMat_Roughness_sampler, input.TexCoord).x;
+	float3 albedo = input.MaterialTint * pow(NEMat_Albedo.Sample(NEMat_Albedo_sampler, input.TexCoord).xyz, float3(2.2f,2.2f,2.2f));
+	float metallic = input.MaterialPBR.x >= 0 ? input.MaterialPBR.x : NEMat_Metallic.Sample(NEMat_Metallic_sampler, input.TexCoord).x;
+	float roughness = input.MaterialPBR.y >= 0 ? max(input.MaterialPBR.y, 0.04) : NEMat_Roughness.Sample(NEMat_Roughness_sampler, input.TexCoord).x;
 	float ao = NEMat_AO.Sample(NEMat_AO_sampler, input.TexCoord).x;
 	float3 N = NEMat_Normal.Sample(NEMat_Normal_sampler, input.TexCoord).xyz;
 	N = normalize(mul(N, 2.0f) - 1.0f);

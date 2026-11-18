@@ -16,7 +16,7 @@ namespace Nuclear
 			~RigidStatic();
 
 
-			physx::PxRigidStatic* mPtr;
+			physx::PxRigidStatic* mPtr = nullptr; ///< Borrowed by component operations until the owning actor/shape is released.
 		};
 	}
 }

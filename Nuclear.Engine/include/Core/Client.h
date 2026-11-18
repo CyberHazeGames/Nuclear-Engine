@@ -2,6 +2,7 @@
 #include <NE_Common.h>
 #include <string>
 
+namespace Nuclear::Systems { class PhysXSystem; }
 namespace Nuclear::Platform { struct Event; }
 
 namespace Nuclear
@@ -43,6 +44,18 @@ namespace Nuclear
 			virtual void Load();          // Loading Assets
 			virtual void Update(float Deltatime);        // Render The Game
 			virtual void Render(float Deltatime);        // Render The Game
+			/// Borrows the active simulation for gameplay queries while this client owns a world.
+			virtual Systems::PhysXSystem* GetPhysicsWorld() { return nullptr; }
+			/// Returns the name of the currently loaded authored level.
+			virtual std::string GetLevelName() const { return {}; }
+			/// Returns the persistent identity used to separate saved progress between games.
+			virtual std::string GetGameName() const { return {}; }
+			/// Pauses simulation while the owning script continues receiving UI updates.
+			virtual bool SetGamePaused(Uint32, bool) { return false; }
+			/// Reserves a prefab instance at a world position, returning the null entity ID on failure.
+			virtual Uint32 SpawnPrefab(const std::string&, float, float, float) { return UINT32_MAX; }
+			/// Queues a named level transition after this frame, returning false for an unknown level.
+			virtual bool RequestLevel(const std::string& name) { return false; }
 			virtual void ExitRendering(); // Exit Rendering
 			virtual void Shutdown();      // At Shutdown
 

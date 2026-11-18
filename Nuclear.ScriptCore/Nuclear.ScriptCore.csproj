@@ -15,6 +15,14 @@
     <Compile Include="Components\LightComponent.cs" />
     <Compile Include="Graphics\Color.cs" />
     <Compile Include="Platform\Input.cs" />
+    <Compile Include="ECS\GameScene.cs" />
+    <Compile Include="ECS\SaveGame.cs" />
+    <Compile Include="Platform\Gamepad.cs" />
+    <Compile Include="UI\GameScreen.cs" />
+    <Compile Include="UI\ScreenDefinition.cs" />
+    <Compile Include="Navigation\NavigationGrid.cs" />
+    <Compile Include="Networking\TransformReplication.cs" />
+    <Compile Include="Platform\InputActions.cs" />
     <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\EntityInfoComponent.cs" />

@@ -29,6 +29,8 @@ namespace Nuclear
 
 			void PlayAnimation(Animation::AnimationClip* pAnimation);
 
+			/// Crossfades from the displayed pose into a borrowed clip over seconds.
+			void BlendTo(AnimationClip* clip, float seconds);
 			void CalculateBoneTransform(const Animation::ClipNodeData* node, Math::Matrix4 parentTransform);
 
 			std::vector<Math::Matrix4> GetFinalBoneMatrices();
@@ -38,6 +40,8 @@ namespace Nuclear
 			Animation::AnimationClip* m_CurrentAnimation;
 			float m_CurrentTime;
 			float m_DeltaTime;
+            std::unordered_map<Uint32, Math::Matrix4> mPose, mFromPose; ///< Evaluated local transforms for interruption-safe fades.
+            float mBlendSeconds = 0.f, mBlendElapsed = 0.f; ///< Active transition duration and elapsed seconds.
 
 		};
 	}

@@ -17,27 +17,27 @@ PixelInputType main(VertexInputType input)
     float4 FinalPos = float4(input.Position.xyz, 1.0f);
     float4 FinalNorm = float4(input.Normals.xyz, 0.0f);
 
-#ifdef ANIMATION
-    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+#if defined(NE_ANIMATION) || defined(ANIMATION)
+    float4 weightedPos = 0, weightedNormal = 0;
+    float totalWeight = 0;
+    for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
     {
-        if (input.BoneIDs[i] == -1)
-        {
-            continue;
-        }
-        if (input.BoneIDs[i] >= MAX_BONES)
-        {
-            break;
-        }
-        FinalPos = float4(0.0f,0.0f,0.0f, 0.0f);
-        FinalNorm = float4(0.0f, 0.0f, 0.0f, 0.0f);
-        float4 localPosition = mul(BoneTransforms[input.BoneIDs[i]], float4(input.Position.xyz, 1.0f));
-        FinalPos += mul(input.Weights[i], float4(localPosition.xyz, 1.0f));
-
-        float3 localNormal = mul((float3x3)BoneTransforms[input.BoneIDs[i]], input.Normals);
-        FinalNorm += mul(input.Weights[i], float4(localNormal, 0.0f));
+        int bone = input.BoneIDs[i];
+        float weight = input.Weights[i];
+        if (bone < 0 || bone >= MAX_BONES || weight <= 0) continue;
+        weightedPos += weight * mul(BoneTransforms[bone], FinalPos);
+        weightedNormal += weight * mul(BoneTransforms[bone], FinalNorm);
+        totalWeight += weight;
+    }
+    if (totalWeight > 0)
+    {
+        FinalPos = weightedPos / totalWeight;
+        FinalNorm = weightedNormal / totalWeight;
     }
 #endif
 
+    output.MaterialTint = SurfaceTint.rgb;
+    output.MaterialPBR = SurfacePBR.xy;
     output.Position = mul(ModelViewProjection, FinalPos);
     output.FragPos = mul(Model, FinalPos).xyz;
     output.Normals = normalize(mul(Model, FinalNorm).xyz);

@@ -30,7 +30,11 @@ namespace Nuclear
 			ECS::Entity CreateSphere(Assets::Material* material, const ECS::Transform& transform = ECS::Transform(), bool addcollider = true);
 			ECS::Entity CreatePlane(Assets::Material* material, const ECS::Transform& transform = ECS::Transform(), bool addcollider = true);
 
-			void Clear();
+			/// Calculates parent-before-child world transforms using persistent entity IDs.
+            void UpdateTransforms();
+            /// Changes parent after checking existence and ancestry. An empty parent detaches the child.
+            bool SetParent(entt::entity child, const std::string& parent);
+            void Clear();
 
 			void SetMainCamera(const ECS::Entity& entity);
 			void SetMainCamera(Components::CameraComponent* camera);

@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include <Core\Scene.h>
 #include <sstream>
 #include <Components\Components.h>
@@ -121,7 +122,64 @@ namespace Nuclear
 			return Result;
 		}
 
-		void Scene::Clear()
+		bool Scene::SetParent(entt::entity child, const std::string& parent)
+        {
+            auto* info = mRegistry.try_get<Components::EntityInfoComponent>(child);
+            if (!info) return false;
+            std::unordered_map<std::string, std::string> parents;
+            auto view = mRegistry.view<Components::EntityInfoComponent>();
+            for (auto id : view)
+            {
+                auto& item = view.get<Components::EntityInfoComponent>(id);
+                parents.emplace(item.PersistentId, item.ParentId);
+            }
+            std::unordered_set<std::string> seen{info->PersistentId};
+            for (auto id = parent; !id.empty(); id = parents.at(id))
+                if (!parents.contains(id) || !seen.insert(id).second) return false;
+            info->ParentId = parent;
+            UpdateTransforms();
+            return true;
+        }
+
+        void Scene::UpdateTransforms()
+        {
+            auto view = mRegistry.view<Components::EntityInfoComponent>();
+            bool hasParents = false;
+            for (auto id : view)
+                if (!view.get<Components::EntityInfoComponent>(id).ParentId.empty()) { hasParents = true; break; }
+            if (!hasParents)
+            {
+                for (auto id : view) view.get<Components::EntityInfoComponent>(id).mTransform.SetParentMatrix(Math::Matrix4(1.f));
+                return;
+            }
+            std::unordered_map<std::string, Components::EntityInfoComponent*> nodes;
+            for (auto id : view)
+            {
+                auto& item = view.get<Components::EntityInfoComponent>(id);
+                nodes.emplace(item.PersistentId, &item);
+            }
+            std::unordered_set<Components::EntityInfoComponent*> done;
+            std::vector<Components::EntityInfoComponent*> chain;
+            for (auto id : view)
+            {
+                auto* item = &view.get<Components::EntityInfoComponent>(id);
+                while (item && done.insert(item).second)
+                {
+                    chain.push_back(item);
+                    auto parent = nodes.find(item->ParentId);
+                    item = parent == nodes.end() ? nullptr : parent->second;
+                }
+                while (!chain.empty())
+                {
+                    auto* node = chain.back();
+                    chain.pop_back();
+                    const auto parent = nodes.find(node->ParentId);
+                    node->mTransform.SetParentMatrix(parent == nodes.end() ? Math::Matrix4(1.f) : parent->second->mTransform.GetWorldMatrix());
+                }
+            }
+        }
+
+        void Scene::Clear()
 		{
 			mSystems.Clear();
 			mRegistry.clear();

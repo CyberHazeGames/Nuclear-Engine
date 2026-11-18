@@ -25,6 +25,8 @@ namespace Nuclear
 			
 		void ForwardRenderingPath::Render(Components::MeshComponent& mesh, const Math::Matrix4& modelmatrix)
 		{
+			pCurrentFrame->pCamera->mCameraData.SurfaceTint = Math::Vector4(mesh.Tint, 1.f);
+			pCurrentFrame->pCamera->mCameraData.SurfacePBR = {mesh.Metallic, mesh.Roughness, 0.f, 0.f};
 			pCurrentFrame->pCamera->SetModelMatrix(modelmatrix);
 			Rendering::RenderingModule::Get().UpdateCameraCB(pCurrentFrame->pCamera);
 

@@ -39,6 +39,8 @@ namespace Nuclear
 			std::filesystem::path mAudioPluginDirectory;
 			std::filesystem::path mModulePluginDirectory;
 
+			/// Directory containing ScriptCore and the managed host. Empty uses the working directory.
+			std::filesystem::path mScriptingRuntimeDirectory;
 			std::string mScriptingClientDllName = "ClientScripts.dll";
 			std::string mScriptingAssemblyNamespace = "ClientScripts";
 			std::string mAssetsLibraryPath = "Assets/";
@@ -75,6 +77,8 @@ namespace Nuclear
 			void SetState(const State& state);
 
 			bool ShouldClose();
+			/// Ends the active client loop after this frame, keeping the window and modules available for the next level.
+			void EndAfterFrame() { mShouldClose = true; }
 
 			bool isDebug();
 

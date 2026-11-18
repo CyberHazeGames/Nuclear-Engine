@@ -10,8 +10,10 @@
 #include <EditorWorkspace.h>
 #include <EditorHistory.h>
 #include <optional>
+#include <Nuclear.Platform/ChildProcess.h>
 namespace Nuclear::Editor
 {
+	class ProjectDocument;
 	class GameViewPort;
 	class EditorTitleBar;
 	class SceneSettings;
@@ -32,7 +34,36 @@ namespace Nuclear::Editor
 		void Shutdown(); ///< Drops borrowed widgets and clears scene resources before client destruction.
 		void OnAuxiliaryWindowEvent(const Platform::Event& event); ///< Routes detached-window input/resize/close.
 		EditorWorkspace* GetWorkspace() const { return pWorkspace.get(); } ///< Borrowed workspace until Shutdown.
+		/// Saves the active map and writes settings and map references to the chosen main project file.
+		void SaveProject(const std::filesystem::path& file);
+		/// Validates and resolves all level resources before replacing the current editor scene.
+		void OpenProject(const std::filesystem::path& file);
+		/// Opens a map in the current project and preserves its startup and level settings.
+		void OpenMap(const std::filesystem::path& file);
+		/// Writes the active scene as a map asset and tracks its path for subsequent saves.
+		void SaveMap(const std::filesystem::path& file);
+		/// Starts the current unsaved scene in an isolated game process, or reports an invalid camera.
+		void Play();
+		/// Requests graceful closure of the current Play window.
+		void Stop();
 	  private:
+		enum class ProjectAction { None, Open, Save, SaveAs, OpenMap, SaveMap, SaveMapAs, Assembly, AddLevel, SavePrefab, PlacePrefab, SaveSurface, LoadSurface, Export, Play, Stop };
+		/// Resolves a map, then replaces the scene and restores its camera and environment.
+		void ApplyMap(ProjectDocument& document);
+		std::filesystem::path mMapFile; ///< Active map asset or legacy embedded source.
+		std::filesystem::path mStartupMap; ///< Project entry map, independent of the map being edited.
+		std::map<std::string, std::filesystem::path> mMapPrefabs; ///< Prefabs specific to the active map.
+		ProjectAction mProjectAction = ProjectAction::None; ///< Executed after UI event dispatch.
+		std::filesystem::path mProjectFile; ///< Last successfully opened/saved project.
+		std::map<std::string, std::filesystem::path> mPrefabs; ///< Registered template sources for this project.
+		std::map<std::string, std::filesystem::path> mLevels; ///< Named scene assets linked to the startup document.
+		std::filesystem::path mScriptAssembly; ///< Absolute custom C# assembly, empty for bundled scripts.
+		entt::entity mGameCamera = entt::null; ///< Author-selected camera, distinct from preview.
+		std::unique_ptr<Platform::ChildProcess> mPlayer; ///< Owned until exit or editor shutdown.
+		std::filesystem::path mPlayDirectory; ///< Unique per-run directory for snapshot, diagnostics and game log.
+		bool mStopping = false; ///< Retry close requests while the game window is starting.
+		void UpdateProjectActions(); ///< Runs pending file commands and polls the child without blocking input.
+		void FinishPlay(); ///< Releases the child and removes its private snapshot after exit.
 		void BuildWorkspace();	 ///< Attaches the persistent shell and tool regions.
 		void RefreshHierarchy(); ///< Replaces hierarchy content outside dispatch.
 		void OpenHierarchyMenu(entt::entity entity, UI::UIContext& context, UI::Vec2 point); ///< Selects a live row and opens commands in its owning context.
@@ -44,16 +75,14 @@ namespace Nuclear::Editor
 		void PasteEntity(const EditorEntityState& state); ///< Creates/selects a snapshot copy and records one undoable creation.
 		void RefreshInspector(); ///< Replaces inspector after selection/component changes.
 		void PickEntity(); ///< Applies a queued visible-mesh pick, synchronizing hierarchy and inspector without history edits.
-		void NewScene();		 ///< Resets renderer, selection and registry, then creates an editor camera.
+		void NewScene(bool defaultSkybox = false); ///< Resets the working map. New projects request a visible skybox.
 		void CreateEntity(int shape); ///< Adds an empty entity or a default primitive and selects it.
+		bool PrepareSkybox(); ///< Creates the shared cubemap for the active camera, returning whether it is ready.
 		void CreateSkybox(); ///< Creates or selects the scene's skybox; GPU creation runs from Update.
 		void OpenAddMenu(UI::Rect anchor); ///< Opens the retained creation menu below the toolbar button.
 		void CloseAddMenu(); ///< Safely dismisses the creation popup through the main context.
 		void RebuildRenderer();	  ///< Refreshes renderer light pointers and shader baking after structural
 								  ///< changes.
-		/// Assigns the editor PBR shader and missing-map defaults to a successfully imported mesh material.
-		/// Runs on the graphics thread after texture/mesh creation, preserving submesh texture-set indices.
-		void PrepareImportedMaterial(Assets::Mesh& mesh);
 		void UpdateDiagnostics(); ///< Samples completed profiler snapshots with explicit unavailable states.
 		void OpenAssetDocument(Assets::AssetType type, const Core::UUID& id); ///< Opens or activates a stable asset tab.
 		void ReplayHistory(bool redo); ///< Cancels live gestures, then replays one scene action.
@@ -91,8 +120,6 @@ namespace Nuclear::Editor
 		std::unique_ptr<Systems::RenderSystem>
 			pRenderer;							 ///< Editor-owned renderer; never runs physics/scripts/audio.
 		Rendering::GeometryPass mGeometry;		 ///< Borrowed by pRenderer for this object's lifetime.
-		Assets::Shader* pShader = nullptr;		 ///< Library-owned preview shader.
-		Assets::Shader* pImportedShader = nullptr; ///< Library-owned static forward PBR shader for imported meshes.
 		Assets::Material* pMaterial = nullptr;	 ///< Library-owned preview primitive material.
 		entt::entity mSelected = entt::null;	 ///< Selected ECS handle; validated before editing.
 		entt::entity mCamera = entt::null;		 ///< Protected editor preview camera handle.
@@ -119,6 +146,6 @@ namespace Nuclear::Editor
 		bool mRendererDirty = false;		   ///< Pending light-list and pipeline refresh.
 		float mDiagnosticTimer = 0;			   ///< Seconds until next bounded diagnostic refresh.
 		std::string mFilter;				   ///< Hierarchy substring filter.
-		std::string mNotice = "Ready / session changes are held in memory"; ///< Current action feedback.
+		std::string mNotice = "Ready"; ///< Current action feedback.
 	};
 } // namespace Nuclear::Editor
